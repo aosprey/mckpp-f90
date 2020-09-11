@@ -1,0 +1,101 @@
+# Makefile for the 3D KPP boundary-layer ocean model
+# Written by Nicholas P. Klingaman
+# University of Reading, Department of Meteorology and NCAS-Climate
+# Substantially revised on 03 Sept. 2009 to remove separate dot files for each target
+
+# NOTE: You *must* run <make clean> if you wish to recompile the model for another target
+# (e.g., if you have compiled for OASIS2 and wish to recompile for OASIS3, you must run <make clean> first,
+# then run <make oasis3_coupled>.)
+
+# Makefile for HECToR - Linux with Pathscale Fortran compiler
+# NOTE: The CFS/GFS targets do not work on HECToR as the CFS/GFS libraries are not installed here.
+
+# Fortran compiler
+F90=ftn
+
+# C Preprocessor
+CPP=cpp
+
+# Flags for the Fortran compiler
+F90_FLAGS=-I. -cpp -O3 -r8 -fixedform
+
+# Extra flag required to pass CPP macros through the Fortran compiler - currently required for only XLF.
+F90_CPP_FLAG=
+
+# Oasis 2 static library
+OASIS2_LIB=/work/n02/n02/pappas/src/oasis/oasis_2.4.1_pathscale/lib/clim/src_MPI1/climmpi1.a
+
+# Oasis 3 modules (directory) and shared libraries (directory and -l flags)
+OASIS3_MODDIR=/work/n02/n02/hum/oasis/oasis3_2-5/prism/crayxt4_pathscale/build/lib/psmile.MPI1
+OASIS3_LIB=-L/work/n02/n02/hum/oasis/oasis3_2-5/prism/crayxt4_pathscale/lib -lpsmile.MPI1 -lmpp_io
+
+# NetCDF dynamic libraries (not required on HECToR; use `module load netcdf` instead)
+#NCDF_LIB=-L/opt/lib/netcdf-gfortran/lib -L/opt/lib -lnetcdf -lnetcdff
+# NetCDF include files (not required on HECToR ; use `module load netcdf` instead)
+#NCDF_INC=-I/opt/lib/netcdf-gfortran/include
+
+# MPI (or OpenMPI) include files (not required on HECToR; compiler locates these automatically)
+#MPI_INC=-I/opt/include
+# MPI dynamic libraries
+#MPI_LIB=-L/opt/lib/openmpi -lmpi_f90 -lmpi_f77
+
+# CFS dynamic libraries (not installed on HECToR)
+CFS_LIB=
+
+# Name of the KPP executable
+EXECUTABLE=KPP_ocean
+
+# -- No user modifications beyond this point --
+
+FORCED_FILES = steves_3D_ocn.f steves_fluxes.f subs1D.f ncdf_in.f ncdf_out.f \
+	ocn.f 3D_netcdf.f init.f kpp.f vmix.f
+OASIS2_COUPLED_FILES = $(FORCED_FILES) couple_io_oasis2.f init_oasis2.f
+OASIS3_COUPLED_FILES = $(FORCED_FILES) couple_io_oasis3.f init_oasis3.f
+CFS_COUPLED_FILES = $(FORCED_FILES) couple_io_cfs.f
+
+FORCED_OBJS = $(FORCED_FILES:.f=.o)
+OASIS2_COUPLED_OBJS = $(OASIS2_COUPLED_FILES:.f=.o)
+OASIS3_COUPLED_OBJS = $(OASIS3_COUPLED_FILES:.f=.o)
+CFS_COUPLED_OBJS = $(CFS_COUPLED_FILES:.f=.o)
+GFS_FORCED_OBJS = $(FORCED_OBJS)
+
+FORCED_LINK = $(F90) $(FORCED_OBJS) -o ${EXECUTABLE} ${NCDF_INC} ${NCDF_LIB}
+OASIS2_COUPLED_LINK = $(F90) $(OASIS2_COUPLED_OBJS) ${OASIS2_LIB} -o ${EXECUTABLE} ${MPI_LIB} ${MPI_INC} ${NCDF_INC} ${NCDF_LIB}
+OASIS3_COUPLED_LINK = $(F90) $(OASIS3_COUPLED_OBJS) ${OASIS3_LIB} -o ${EXECUTABLE} ${MPI_LIB} ${MPI_INC} ${NCDF_INC} ${NCDF_LIB}
+CFS_COUPLED_LINK = $(F90) $(CFS_COUPLED_OBJS) -o $(EXECUTABLE) $(CFS_LIB) $(NCDF_INC) $(NCDF_LIB)
+GFS_FORCED_LINK = $(F90) $(GFS_FORCED_OBJS) -o $(EXECUTABLE) $(CFS_LIB) $(NCDF_INC) $(NCDF_LIB)		
+
+.SUFFIXES:
+.SUFFIXES: .f .o
+
+.f.o :
+	$(F90) $(F90_FLAGS) $(CPP_FLAGS) $(OASIS3_MOD_FLAG) $(NCDF_INC) $(MPI_INC) -c $< -o ${<:.f=.o}
+
+forced : $(FORCED_OBJS)
+	$(FORCED_LINK)
+
+cfs_coupled : CPP_FLAGS=$(F90_CPP_FLAG)-DCFS $(F90_CPP_FLAG)-DCOUPLE
+cfs_coupled : OASIS3_MOD_FLAG=
+cfs_coupled : $(CFS_COUPLED_OBJS)
+	$(CFS_COUPLED_LINK)
+
+gfs_forced : CPP_FLAGS=$(F90_CPP_FLAG)-DCFS
+gfs_forced : OASIS3_MOD_FLAG=
+gfs_forced : $(GFS_FORCED_OBJS)
+	$(GFS_FORCED_LINK)
+
+oasis2_coupled : CPP_FLAGS=$(F90_CPP_FLAG)-DOASIS2 $(F90_CPP_FLAG)-DCOUPLE
+oasis2_coupled : OASIS3_MOD_FLAG=
+oasis2_coupled : $(OASIS2_COUPLED_OBJS)
+	$(OASIS2_COUPLED_LINK)
+
+oasis3_coupled : CPP_FLAGS=$(F90_CPP_FLAG)-DOASIS3 $(F90_CPP_FLAG)-DCOUPLE
+oasis3_coupled : OASIS3_MOD_FLAG=-I$(OASIS3_MODDIR)
+oasis3_coupled : $(OASIS3_COUPLED_OBJS)
+	$(OASIS3_COUPLED_LINK)
+
+clean : 
+	rm -rf *.o $(EXECUTABLE)
+
+obj_clean : 
+	rm -rf *.o
