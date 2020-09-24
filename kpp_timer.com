@@ -1,1 +1,1 @@
-	INTEGER,parameter :: timer_max_timers=100	     
+INTEGER,parameter :: timer_max_timers=100

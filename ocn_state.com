@@ -1,3 +1,3 @@
       REAL albocn
-      common/ ocn state / albocn
+      common /ocn_state/ albocn
 
