@@ -47,7 +47,7 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #ifdef MCKPP_CAM3
         CALL MCKPP_PHYSICS_OVERRIDES_SST0
 #else
-        CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields)
+        CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields,kpp_const_fields)
 #endif
         !CALL KPP_TIMER_TIME(kpp_timer,'SST relaxation',0)
         !CALL KPP_TIMER_TIME(kpp_timer,'Top level',1)

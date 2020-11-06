@@ -52,7 +52,7 @@ END SUBROUTINE mckpp_physics_overrides_bottomtemp
 #ifdef MCKPP_CAM3
 SUBROUTINE mckpp_physics_overrides_sst0
 #else
-SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields)
+SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields,kpp_const_fields)
 #endif
   ! Written by NPK 27/8/07
 
@@ -74,6 +74,7 @@ SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields)
 ! Automatically includes parameter.inc!
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
+  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
 !#include <couple.com>
@@ -90,7 +91,7 @@ SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields)
   DO iy=1,ny
      DO ix=1,nx
         ipoint=(iy-1)*nx+ix
-        kpp_3d_fields%SST0(ipoint)=kpp_3d_fields%SST(ix+ifirst-1,iy+jfirst-1)
+        kpp_3d_fields%SST0(ipoint)=kpp_3d_fields%SST(ix+kpp_const_fields%ifirst-1,iy+kpp_const_fields%jfirst-1)
      ENDDO
   ENDDO
 #endif

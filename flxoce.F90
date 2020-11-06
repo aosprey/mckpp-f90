@@ -1,3 +1,4 @@
+#ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
 
@@ -263,5 +264,7 @@ subroutine flxoce(indx    ,npts    ,pmidm1  ,ubot    ,vbot    , &
 !
   return
 end subroutine flxoce
-
-
+#else
+subroutine flxoce
+end subroutine flxoce
+#endif

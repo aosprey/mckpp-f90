@@ -1,3 +1,4 @@
+#ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
 MODULE mckpp_types
@@ -225,3 +226,7 @@ CONTAINS
   END SUBROUTINE initialize_mckpp
   
 END MODULE mckpp_types
+#else 
+SUBROUTINE dummy 
+END SUBROUTINE dummy 
+#endif 

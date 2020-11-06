@@ -114,14 +114,16 @@ SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
 #else
   REAL par_out(npts,npars)
   REAL*4 :: par_in(nx,ny,npars,nt)
-  REAL x_in(NX_GLOBE),y_in(NY_GLOBE)
+  REAL*4 x_in(NX_GLOBE),y_in(NY_GLOBE)
 #endif
 
-  INTEGER start(4),count(4),ix,iy,ipt,ipar,ixx,iyy
+  INTEGER start(4),count(4),ix,iy,ipt,ipar,ixx,iyy, nx_in, ny_in
   INTEGER status,dimid,varid
   
 #if (! defined MCKPP_CAM3 )
   status=NF_INQ_DIMID(ncid,'longitude',dimid)
+  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
+  status=NF_INQ_DIMLEN (ncid,dimid,nx_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'longitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -130,12 +132,20 @@ SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ixx=1
   DO WHILE (abs(x_in(ixx)-kpp_3d_fields%dlon(1)) .GT. 1.e-3)
-     ixx=ixx+1         
+     ixx=ixx+1        
+     IF (ixx .GE. nx_in) THEN
+       write(nuerr,*) 'Error reading initial conditions'
+       write(nuerr,*) 'Can''t find longitude ',&
+           kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
+       CALL MCKPP_ABORT
+     ENDIF
   ENDDO
   start(1)=ixx
   count(1)=nx
   
   status=NF_INQ_DIMID(ncid,'latitude',dimid)
+  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
+  status=NF_INQ_DIMLEN (ncid,dimid,ny_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'latitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -146,6 +156,12 @@ SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
   DO WHILE (abs(y_in(iyy)-kpp_3d_fields%dlat(1)) .GT. 1.e-3)
      !WRITE(6,*) y_in(iyy),kpp_3d_fields%dlat(1)
      iyy=iyy+1
+     IF (iyy .GE. ny_in) THEN
+       write(nuerr,*) 'Error reading initial conditions'
+       write(nuerr,*) 'Can''t find latitude ',&
+              kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
+       CALL MCKPP_ABORT
+     ENDIF
   ENDDO
   start(2)=iyy
   count(2)=ny
