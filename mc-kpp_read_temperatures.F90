@@ -24,6 +24,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
+  INTEGER,parameter :: my_nx=NX,my_ny=NY
 #endif
 
   INTEGER ix,iy,iz,ipoint,ocnT_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&

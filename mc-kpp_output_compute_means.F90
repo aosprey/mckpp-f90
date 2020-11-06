@@ -189,6 +189,9 @@ SUBROUTINE mckpp_output_compute_means(kpp_3d_fields,kpp_const_fields)
               DO k=1,NZP1
                  kpp_3d_fields(ichnk)%VEC_mean(j,k,i)=&                      
                       field(j,k)/real(kpp_const_fields%ndt_varout_mean(ivar)) + kpp_3d_fields(ichnk)%VEC_mean(j,k,i)
+              ENDDO
+           ENDIF
+        ENDDO
 #else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(private) SHARED(kpp_3d_fields,kpp_const_fields) &
@@ -200,14 +203,14 @@ SUBROUTINE mckpp_output_compute_means(kpp_3d_fields,kpp_const_fields)
               DO k=1,NZP1
                  kpp_3d_fields%VEC_mean(j,k,i)=&
                       field(j,k)/real(kpp_const_fields%ndt_varout_mean(ivar)) + kpp_3d_fields%VEC_mean(j,k,i)
+              ENDDO
+           ENDIF
+        ENDDO
 #ifdef OPENMP
 !$OMP END DO
 !$OMP END PARALLEL
 #endif         
 #endif
-              ENDDO
-           ENDIF
-        ENDDO
         i=i+1
      ENDIF
   ENDDO

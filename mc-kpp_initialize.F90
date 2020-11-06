@@ -38,7 +38,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
 #include <bottomclim.com>
 #include <currclim.com>
 
-#if (! defined MCKPP_CAM3) 
+#ifndef MCKPP_CAM3
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
   
@@ -47,7 +47,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   PARAMETER(nuout=6,nuerr=0)  
   REAL :: alat,alon,delta_lat,delta_lon,dscale
   INTEGER :: i,j,k,l,ipt,ix,iy
-  CHARACTER*50 :: forcing_file          
   
   NAMELIST/NAME_CONSTANTS/grav,vonk,sbc,twopi,onepi,TK0,spd,dpy,&
        epsw,albocn,EL,SL,FL,FLSN
@@ -352,6 +351,8 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
+  INTEGER nuout,nuerr
+  PARAMETER(nuout=6,nuerr=0)  
   INTEGER :: iy,ix,ipt
   
   ! Initialize latitude and longitude areas and the land/sea mask
@@ -372,9 +373,10 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   IF (L_LANDSEA) CALL read_landsea_global
 #else
   IF (kpp_const_fields%L_LANDSEA) THEN
+     WRITE(6,*) "MCKPP_INITIALIZE_FIELDS: Calling MCKPP_INITIALIZE_LANDSEA"
      kpp_3d_fields%dlat(1)=kpp_const_fields%alat
      kpp_3d_fields%dlon(1)=kpp_const_fields%alon
-     CALL MCKPP_INITIALIZE_LANDSEA(kpp_3d_fields)
+     CALL MCKPP_INITIALIZE_LANDSEA(kpp_3d_fields,kpp_const_fields)
   ELSEIF (kpp_const_fields%L_REGGRID) THEN
      DO iy=1,ny
         DO ix=1,nx
@@ -385,7 +387,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
            kpp_3d_fields%L_OCEAN(ipt)=.TRUE.
         ENDDO
      ENDDO
-  ELSEIF (.NOT. L_REGGRID .AND. .NOT. L_LANDSEA) THEN
+  ELSEIF (.NOT. kpp_const_fields%L_REGGRID .AND. .NOT. kpp_const_fields%L_LANDSEA) THEN
      WRITE(nuerr,*) 'KPP : If you set L_REGGRID=.FALSE., you must',&
           ' specify a land-sea mask file from which to read',&
           ' the locations of the gridpoints in the horizontal.'
@@ -415,7 +417,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
      kpp_3d_fields(ichnk)%sst_cpl(:)=0
   ENDDO
 #else
-  IF (L_CPLWGHT) CALL MCKPP_INITIALIZE_COUPLINGWEIGHT(kpp_3d_fields,kpp_const_fields)
+  IF (kpp_const_fields%L_CPLWGHT) CALL MCKPP_INITIALIZE_COUPLINGWEIGHT(kpp_3d_fields,kpp_const_fields)
 #endif
 
   ! Initialize advection options
@@ -460,7 +462,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   CALL MCKPP_INITIALIZE_OPTICS
   IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_FIELDS: Returned from MCKPP_INITIALIZE_OPTICS' 
 #else
-  CALL MCKPP_INITIALIZE_OPTICS(kpp_3d_fields)
+  CALL MCKPP_INITIALIZE_OPTICS(kpp_3d_fields,kpp_const_fields)
 #endif
 
   ! Initialize ocean profiles
@@ -620,8 +622,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   IF (kpp_const_fields%L_INTERP_SAL) kpp_const_fields%L_PERIODIC_SAL=.TRUE.
 
 #ifndef MCKPP_COUPLE
-  kpp_const_fields%forcing_file=forcing_file
-  IF (L_FLUXDATA) THEN
+  IF (kpp_const_fields%L_FLUXDATA) THEN
      CALL MCKPP_INITIALIZE_FLUXES_FILE(kpp_const_fields)       
   ENDIF
 #endif  
@@ -717,8 +718,8 @@ SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
   ENDIF
   
   IF (kpp_const_fields%L_OUTPUT_MEAN) THEN
-     !allocate(kpp_3d_fields%VEC_mean(NPTS,NZP1,NVEC_MEAN))
-     !allocate(kpp_3d_fields%SCLR_mean(NPTS,NSCLR_MEAN))
+     allocate(kpp_3d_fields%VEC_mean(NPTS,NZP1,NVEC_MEAN))
+     allocate(kpp_3d_fields%SCLR_mean(NPTS,NSCLR_MEAN))
      flen=INDEX(mean_output_file,' ')-1
      write(mean_output_file(flen+1:flen+1),'(a)') '_'
      write(mean_output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
@@ -731,13 +732,13 @@ SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
      CALL mckpp_OUTPUT_INITIALIZE(mean_output_file,kpp_3d_fields,kpp_const_fields,'mean')
 #endif
      CALL MCKPP_OUTPUT_OPEN(mean_output_file,kpp_const_fields%mean_ncid_out)
-     !kpp_3d_fields%VEC_mean(:,:,:) = 0.
-     !kpp_3d_fields%SCLR_mean(:,:) = 0.
+     kpp_3d_fields%VEC_mean(:,:,:) = 0.
+     kpp_3d_fields%SCLR_mean(:,:) = 0.
   ENDIF
   
   IF (kpp_const_fields%L_OUTPUT_RANGE) THEN       
-     !allocate(kpp_3d_fields%VEC_range(NPTS,NZP1,NVEC_RANGE,2))
-     !allocate(kpp_3d_fields%SCLR_range(NPTS,NSCLR_RANGE,2))
+     allocate(kpp_3d_fields%VEC_range(NPTS,NZP1,NVEC_RANGE,2))
+     allocate(kpp_3d_fields%SCLR_range(NPTS,NSCLR_RANGE,2))
      flen=INDEX(min_output_file,' ')-1
      write(min_output_file(flen+1:flen+1),'(a)') '_'
      write(min_output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
@@ -758,10 +759,10 @@ SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
      CALL MCKPP_OUTPUT_INITIALIZE(max_output_file,kpp_3d_fields,kpp_const_fields,'maxx')
      CALL MCKPP_OUTPUT_OPEN(max_output_file,kpp_const_fields%max_ncid_out)
 #endif
-     !kpp_3d_fields%VEC_range(:,:,:,1)=2E20
-     !kpp_3d_fields%SCLR_range(:,:,1)=2E20
-     !kpp_3d_fields%VEC_range(:,:,:,2)=-2E20
-     !kpp_3d_fields%SCLR_range(:,:,2)=-2E20
+     kpp_3d_fields%VEC_range(:,:,:,1)=2E20
+     kpp_3d_fields%SCLR_range(:,:,1)=2E20
+     kpp_3d_fields%VEC_range(:,:,:,2)=-2E20
+     kpp_3d_fields%SCLR_range(:,:,2)=-2E20
   ENDIF 
   
 #ifdef MCKPP_CAM3
@@ -770,6 +771,7 @@ SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
   
   ! Write out the data from the initial condition
   IF ( .NOT. kpp_const_fields%L_RESTART .AND. kpp_const_fields%L_OUTPUT_INST) THEN
+     WRITE(6,*) "MCKPP_INITIALIZE_OUTPUT: output initial conditions"
      DO l=1,N_VAROUTS
         IF (kpp_const_fields%ndt_varout_inst(l) .gt. 0) &
 #ifdef MCKPP_CAM3

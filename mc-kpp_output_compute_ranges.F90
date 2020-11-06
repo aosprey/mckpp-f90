@@ -189,6 +189,9 @@ SUBROUTINE mckpp_output_compute_ranges(kpp_3d_fields,kpp_const_fields)
                       kpp_3d_fields(ichnk)%VEC_range(j,k,i,1)=field(j,k)
                  IF (field(j,k) .gt. kpp_3d_fields(ichnk)%VEC_range(j,k,i,2)) &
                       kpp_3d_fields(ichnk)%VEC_range(j,k,i,2)=field(j,k)
+              ENDDO
+           ENDIF
+        ENDDO     
 #else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(private) SHARED(kpp_3d_fields,kpp_const_fields)&
@@ -202,14 +205,14 @@ SUBROUTINE mckpp_output_compute_ranges(kpp_3d_fields,kpp_const_fields)
                       kpp_3d_fields%VEC_range(j,k,i,1)=field(j,k)
                  IF (field(j,k) .gt. kpp_3d_fields%VEC_range(j,k,i,2)) &
                       kpp_3d_fields%VEC_range(j,k,i,2)=field(j,k)
+              ENDDO
+           ENDIF
+        ENDDO     
 #ifdef OPENMP
 !$OMP END DO
 !$OMP END PARALLEL
 #endif
 #endif
-              ENDDO
-           ENDIF
-        ENDDO     
         i=i+1
      ENDIF
   ENDDO

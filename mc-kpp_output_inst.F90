@@ -79,6 +79,7 @@ SUBROUTINE mckpp_output_inst(kpp_3d_fields,kpp_const_fields,diag_num)
         ENDDO
 #else
         temp_2d(:,:)=kpp_3d_fields%X(:,:,1)
+
 #endif
      CASE (4)
 #ifdef MCKPP_CAM3
@@ -389,10 +390,10 @@ SUBROUTINE mckpp_output_inst(kpp_3d_fields,kpp_const_fields,diag_num)
            temp_chunk(1:ncol,ichnk,1)=kpp_3d_fields(ichnk)%cplwght(1:ncol)
         ENDDO
 #else
-        DO ix=ifirst,ilast
-           DO iy=jfirst,jlast
+        DO ix=kpp_const_fields%ifirst,kpp_const_fields%ilast
+           DO iy=kpp_const_fields%jfirst,kpp_const_fields%jlast
               ipt=(iy-1)*NX_GLOBE+ix
-              temp_1d((iy-jfirst)*NX+ix-ifirst+1)=kpp_3d_fields%cplwght(ipt)                     
+              temp_1d((iy-kpp_const_fields%jfirst)*NX+ix-kpp_const_fields%ifirst+1)=kpp_3d_fields%cplwght(ipt)                     
            ENDDO
         ENDDO
 #endif

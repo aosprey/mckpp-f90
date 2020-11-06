@@ -64,7 +64,7 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
                 kpp_global_fields%relax(:,iy)=1./(kpp_const_fields%relax_sst_in(iy)*kpp_const_fields%spd)
 #else
            DO ix=1,nx
-              ipoint=(iy-1)*my_nx+ix
+              ipoint=(iy-1)*nx+ix
               kpp_3d_fields%relax_sst(ipoint)=1./(kpp_const_fields%relax_sst_in(iy)*kpp_const_fields%spd)
            ENDDO
 #endif        
@@ -131,7 +131,7 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
 #else           
            DO ix=1,nx
               ipoint=(iy-1)*nx+ix
-              kpp_3d_fields%relax_ocnT(ipoint)=1./(relax_ocnT_in(iy)*kpp_const_fields%spd)
+              kpp_3d_fields%relax_ocnT(ipoint)=1./(kpp_const_fields%relax_ocnT_in(iy)*kpp_const_fields%spd)
            ENDDO
 #endif
         ENDIF
@@ -144,7 +144,7 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
      ENDDO
 #endif
   ENDIF
-  CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields)
+  CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields,kpp_const_fields)
 
 ! Do we need these initialization statements?
 !  DO iy=1,ny

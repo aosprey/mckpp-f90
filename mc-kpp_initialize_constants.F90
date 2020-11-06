@@ -158,6 +158,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%L_COUPLE_CURRENTS=L_COUPLE_CURRENTS
 
   kpp_const_fields%L_FLUXDATA=L_FLUXDATA
+  kpp_const_fields%forcing_file=forcing_file
   kpp_const_fields%L_REST=L_REST
   kpp_const_fields%L_REGGRID=L_REGGRID
   kpp_const_fields%L_LANDSEA=L_LANDSEA

@@ -87,6 +87,7 @@
           wX(0:NZTmax,NSP1),&
           wXNT(0:NZTmax,NSCLR),&
           ghat(NZTmax),&
+          cplwght,&
           relax_sst,fcorr,SST0,&
           fcorr_twod,&
           sfcorr_twod,sfcorr,&
@@ -115,7 +116,9 @@
           grav,vonk,TK0,sbc,epsw,&
           albocn,sice,EL,SL,FL,FLSN,dto,time,&
           startt,finalt,dtsec,&
-          iso_thresh
+          iso_thresh,dmax,& 
+          relax_sst_in(ny),relax_sal_in(ny),relax_ocnt_in(ny),& 
+          alat,alon,delta_lat,delta_lon,dscale
      real, allocatable :: wmt(:,:),wst(:,:),tri(:,:,:)
      integer :: nstart,nend,ndtocn,ntime,iso_bot,dt_uvdamp
      logical :: LKPP,LRI,LDD,LICE,LBIO,&
@@ -126,8 +129,9 @@
           L_SFCORR,L_SFCORR_WITHZ,&
           L_RELAX_SAL,L_RELAX_OCNT
      CHARACTER*50 :: forcing_file, sst_file, ice_file, fcorr_file, sfcorr_file,&
-          ocnT_file, sal_file, bottom_file
-     CHARACTER*17 :: restart_outfile
+          ocnT_file, sal_file, bottom_file, advect_file, landsea_file, vgrid_file, &
+          cplwght_file, paras_file, initdata_file
+     CHARACTER*17 :: restart_outfile, restart_infile
      INTEGER :: ncid_out,mean_ncid_out,min_ncid_out,max_ncid_out,&
           ndt_per_file,ndt_per_restart,flx_ncid,flx_timein_id,flx_varin_id(7),&
           ndtupdsst,climsst_period,ndtupdice,climice_period,ndtupdcurr,&
@@ -151,7 +155,9 @@
           L_UPD_FCORR,L_PERIODIC_FCORR,L_UPD_SFCORR,L_PERIODIC_SFCORR,&
           L_UPD_OCNT,L_PERIODIC_OCNT,L_INTERP_OCNT,L_UPD_SAL,L_PERIODIC_SAL,L_INTERP_SAL,&
           L_VARY_BOTTOM_TEMP,L_UPD_BOTTOM_TEMP,L_PERIODIC_BOTTOM_TEMP,&
-          L_OUTKELVIN,L_COUPLE_CURRENTS,L_FLUXDATA,L_REST
+          L_OUTKELVIN,L_COUPLE_CURRENTS,L_FLUXDATA,L_REST,L_ADVECT,&
+	  L_REGGRID,L_LANDSEA,L_VGRID_FILE,L_STRETCHGRID,L_CPLWGHT,L_JERLOV,& 
+          L_INITDATA,L_INTERPINIT,L_NO_ISOTHERM,L_NO_FREEZE,L_DAMP_CURR
      LOGICAL,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs_mask
      INTEGER,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs
      INTEGER,dimension(0:N_ZPROFS_MAX) :: zprofs_nvalid   

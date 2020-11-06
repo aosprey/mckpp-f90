@@ -1,0 +1,64 @@
+# Makefile for the 3D KPP boundary-layer ocean model
+# Written by Nicholas P. Klingaman
+# University of Reading, Department of Meteorology and NCAS-Climate
+# Substantially revised on 03 Sept. 2009 to remove separate dot files for each target
+
+# Rewritten for f90 code. 
+# Currently only forced standalone case. 
+
+# NOTE: You *must* run <make clean> if you wish to recompile the model for another target
+# (e.g., if you have compiled for OASIS2 and wish to recompile for OASIS3, you must run <make clean> first,
+# then run <make oasis3_coupled>.)
+
+# Makefile for ARCHER - Linux with Cray Fortran compiler
+# NOTE: The CFS/GFS targets do not work on HECToR as the CFS/GFS libraries are not installed here.
+
+# Fortran compiler
+F90=ftn
+
+# C Preprocessor
+CPP=cpp
+
+# Flags for the Fortran compiler
+F90_FLAGS=-I. -eZ -s real64
+
+# Extra flag required to pass CPP macros through the Fortran compiler - currently required for only XLF.
+F90_CPP_FLAG=
+
+# NetCDF dynamic libraries (not required on ARCHER; use `module load netcdf` instead)
+#NCDF_LIB=-L/opt/lib/netcdf-gfortran/lib -L/opt/lib -lnetcdf -lnetcdff
+# NetCDF include files (not required on HECToR ; use `module load netcdf` instead)
+#NCDF_INC=-I/opt/lib/netcdf-gfortran/include
+
+# MPI (or OpenMPI) include files (not required on ARCHER; compiler locates these automatically)
+#MPI_INC=-I/opt/include
+# MPI dynamic libraries
+#MPI_LIB=-L/opt/lib/openmpi -lmpi_f90 -lmpi_f77
+
+# Name of the KPP executable
+EXECUTABLE=KPP_ocean
+
+# -- No user modifications beyond this point --
+
+FORCED_FILES = $(wildcard *.F90)
+
+FORCED_OBJS = $(FORCED_FILES:.F90=.o)
+
+FORCED_LINK = $(F90) $(FORCED_OBJS) -o ${EXECUTABLE} ${NCDF_INC} ${NCDF_LIB}
+
+.SUFFIXES:
+.SUFFIXES: .F90 .o
+
+.F90.o :
+	$(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(NCDF_INC) $(MPI_INC) -c $< -o ${<:.F90=.o}
+
+forced : CPP_FLAGS=$(F90_CPP_FLAG)-DOPENMP
+forced : $(FORCED_OBJS)
+	$(FORCED_LINK)
+
+clean : 
+	rm -rf *.o $(EXECUTABLE)
+
+obj_clean : 
+	rm -rf *.o
+

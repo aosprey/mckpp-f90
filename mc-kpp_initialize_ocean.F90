@@ -210,8 +210,8 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
            IF (var_in(ix,iy,1) .gt. 200 .and. var_in(ix,iy,1) .lt. 400) offset_sst = kpp_const_fields%TK0
         END DO
      END DO
-     temp_init=temp_init-offset_sst
 #ifdef MCKPP_CAM3
+     temp_init=temp_init-offset_sst
      ENDIF ! End of masterproc section
      CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
      DO ichnk=begchunk,endchunk
@@ -220,7 +220,8 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
      ENDDO
      IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized temperature'
 #else
-     kpp_3d_fields%X(:,:,1) = kpp_3d_fields%X(:,:,1) - offset_sst     
+     kpp_3d_fields%X(:,:,1) = kpp_3d_fields%X(:,:,1) - offset_sst
+     WRITE(nuout,*) " MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized temperature"
 #endif
           
 #ifdef MCKPP_CAM3

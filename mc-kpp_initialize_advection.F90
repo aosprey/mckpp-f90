@@ -28,7 +28,7 @@ SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
 ! Automatically includes parameter.inc!
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_fields) :: kpp_const_fields
+  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER nmode(npts)  
