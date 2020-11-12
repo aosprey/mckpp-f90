@@ -228,7 +228,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
   lat_out=kpp_global_fields%latitude
 #else
   lon_out=kpp_3d_fields%dlon(1:NX)
-  lat_out=kpp_3d_fields%dlat(1:NY)
+  lat_out=kpp_3d_fields%dlat(1::NX)
 #endif
   status=NF_PUT_VAR_REAL(ncid,dim_varids(1),lon_out)
   IF (status.NE.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
