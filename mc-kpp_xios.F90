@@ -37,7 +37,7 @@ IMPLICIT NONE
   levs = kpp_const_fields%zm
   mask = kpp_3d_fields%L_OCEAN
 
-  CALL xios_set_domain_attr("domain_kpp",type="rectilinear", & 
+  CALL xios_set_domain_attr("domain_kpp", type="rectilinear", & 
                             ni_glo=nx, nj_glo=ny, & 
                             data_dim=1, &  
                             lonvalue_1d=lons, latvalue_1d=lats, & 
@@ -61,10 +61,20 @@ USE xios
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
+  INTEGER, PARAMETER :: my_nx=nx, my_ny=ny, my_nzp1=nzp1
+  REAL, DIMENSION(my_nx*my_ny,nzp1) :: temp_2d
+  INTEGER :: k
 
   CALL xios_update_calendar(kpp_const_fields%ntime)
 
+  ! Temperature
   CALL xios_send_field("T", kpp_3d_fields%X(:,:,1)) 
+
+  ! Salinity
+  DO k=1,nzp1
+    temp_2d(:,k) = kpp_3d_fields%X(:,k,2)+kpp_3d_fields%Sref(:)
+  END DO
+  CALL xios_send_field("S", temp_2d)
 
 END SUBROUTINE mckpp_output_xios
 
