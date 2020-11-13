@@ -1,0 +1,48 @@
+<!-- Test KPP output -->
+
+<simulation>
+
+  <context id="xios">
+
+    <variable_definition>
+      <variable id="using_server" type="bool">false</variable>
+      <variable id="info_level" type="int">100</variable>
+      <variable id="print_file" type="bool">true</variable>
+    </variable_definition>
+
+  </context>
+
+  <context id="kpp">
+
+    <domain_definition>
+      <domain id="domain_kpp"/>
+    </domain_definition>
+
+    <axis_definition>
+      <axis id="axis_kpp" />
+    </axis_definition>
+
+    <grid_definition>
+      <grid id="grid_kpp_2d">
+        <domain domain_ref="domain_kpp"/>
+      </grid>
+
+      <grid id="grid_kpp_3d">
+	<domain domain_ref="domain_kpp"/>
+	<axis axis_ref="axis_kpp"/>
+      </grid> 
+    </grid_definition>
+
+    <field_definition enabled="true" default_value="1e20">
+      <field id="T" name="T" long_name="Temperature" grid_ref="grid_kpp_3d"/>
+    </field_definition> 
+
+    <file_definition type="one_file" par_access="collective" enabled=".TRUE.">
+      <file id="output_kpp_3d" name="output_kpp_3d" output_freq="1h"> 
+	<field field_ref="T" freq_op="1h" operation="instant"/> 
+      </file> 
+    </file_definition> 
+
+  </context>
+
+</simulation>

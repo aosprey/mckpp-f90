@@ -21,6 +21,7 @@ PROGRAM mckpp_ocean_model_3d
   CALL mckpp_initialize_namelist(kpp_const_fields)
   CALL mckpp_initialize_fields(kpp_3d_fields,kpp_const_fields)
   CALL mckpp_initialize_output(kpp_3d_fields,kpp_const_fields)
+  CALL mckpp_initialize_xios(kpp_3d_fields,kpp_const_fields)
 
   ! Main time-stepping loop
   ! - again this could go in a timestep routine
@@ -47,6 +48,7 @@ PROGRAM mckpp_ocean_model_3d
 
      ! Output
      CALL mckpp_output_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
+     CALL mckpp_output_xios(kpp_3d_fields,kpp_const_fields) 
      
   END DO
 
@@ -57,6 +59,7 @@ PROGRAM mckpp_ocean_model_3d
   ! - This should maybe be run as part of mckpp_output_control but it's
   !   commented out
   CALL mckpp_restart_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
+  CALL mckpp_finalize_xios() 
 
   ! Files are opened and closed as needed
   
