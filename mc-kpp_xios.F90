@@ -67,6 +67,8 @@ USE xios
 
   CALL xios_update_calendar(kpp_const_fields%ntime)
 
+  ! Depth-varying diagnostics 
+
   ! Temperature
   CALL xios_send_field("T", kpp_3d_fields%X(:,:,1)) 
 
@@ -75,6 +77,11 @@ USE xios
     temp_2d(:,k) = kpp_3d_fields%X(:,k,2)+kpp_3d_fields%Sref(:)
   END DO
   CALL xios_send_field("S", temp_2d)
+
+  ! Single-level diagnostics 
+  
+  ! Mixed-layer depth 
+  CALL xios_send_field("hmix", kpp_3d_fields%hmix) 
 
 END SUBROUTINE mckpp_output_xios
 
