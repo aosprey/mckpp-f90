@@ -107,7 +107,9 @@ USE xios
   CALL xios_send_field("wTnt", kpp_3d_fields%wXNT(:,0:NZ,1))
 
   ! Diffusion coefficient for momentum
-  CALL xios_send_field("difm", kpp_3d_fields%difm(:,1:NZ))
+  temp_2d(:,1)=0.0
+  temp_2d(:,2:NZP1)=kpp_3d_fields%difm(:,1:NZ)
+  CALL xios_send_field("difm", temp_2d)
 
   ! Diffusion coefficient for temperature
   temp_2d(:,1)=0.0

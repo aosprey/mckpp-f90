@@ -354,6 +354,16 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   INTEGER nuout,nuerr
   PARAMETER(nuout=6,nuerr=0)  
   INTEGER :: iy,ix,ipt
+
+  ! Set initial values for flags in kpp_3d_fields, which otherwise
+  ! might never be set if points are not coupled.
+  kpp_3d_fields%dampu_flag(:)=0.
+  kpp_3d_fields%dampv_flag(:)=0.
+  kpp_3d_fields%freeze_flag(:)=0.
+  kpp_3d_fields%reset_flag(:)=0.
+   
+  ! Initialize cplwght. 
+  kpp_3d_fields%cplwght(:)=0.
   
   ! Initialize latitude and longitude areas and the land/sea mask
 #ifdef MCKPP_CAM3

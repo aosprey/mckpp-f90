@@ -116,42 +116,42 @@
 
       <!-- Test all diags -->
       <file id="output_kpp_all" name="output_kpp_all" output_freq="3h"> 
-        <field field_ref="u"/>
-        <field field_ref="v"/>
-	<field field_ref="T"/>
-	<field field_ref="S"/>
-	<field field_ref="B"/>
-	<field field_ref="wu"/>
-	<field field_ref="wv"/>
-	<field field_ref="wT"/>
-	<field field_ref="wS"/>
-	<field field_ref="wB"/>
-	<field field_ref="wTnt"/>
-	<field field_ref="difm"/>
-	<field field_ref="dift"/>
-	<field field_ref="difs"/>
-	<field field_ref="rho"/>
-	<field field_ref="cp"/>
-	<field field_ref="scorr"/>
-	<field field_ref="Rig"/>
-	<field field_ref="dbloc"/>
-	<field field_ref="Shsq"/>
-	<field field_ref="tinc_fcorr"/>
-	<field field_ref="fcorr_z"/>
-	<field field_ref="sinc_fcorr"/>
-	<field field_ref="hmix"/>
-	<field field_ref="fcorr"/>
-	<field field_ref="taux_in"/>
-	<field field_ref="tauy_in"/>
-	<field field_ref="solar_in"/>
-	<field field_ref="nsolar_in"/>
-	<field field_ref="PminusE_in"/>
-	<field field_ref="cplwght"/>
-	<field field_ref="freeze_flag"/>
-	<field field_ref="comp_flag"/>
-	<field field_ref="dampu_flag"/>
-	<field field_ref="dampv_flag"/>
-      </file>
+	<field field_ref="T" operation="instant"/>
+	<field field_ref="S" operation="instant"/>
+        <field field_ref="u" operation="instant"/>
+        <field field_ref="v" operation="instant"/>
+	<field field_ref="B" operation="instant"/>
+	<field field_ref="wu" operation="instant"/>
+	<field field_ref="wv" operation="instant"/>
+	<field field_ref="wT" operation="instant"/>
+	<field field_ref="wS" operation="instant"/>
+	<field field_ref="wB" operation="instant"/>
+	<field field_ref="wTnt" operation="instant"/>
+	<field field_ref="difm" operation="instant"/>
+	<field field_ref="dift" operation="instant"/>
+	<field field_ref="difs" operation="instant"/>
+	<field field_ref="rho" operation="instant"/>
+	<field field_ref="cp" operation="instant"/>
+	<field field_ref="scorr" operation="instant"/>
+	<field field_ref="Rig" operation="instant"/>
+	<field field_ref="dbloc" operation="instant"/>
+	<field field_ref="Shsq" operation="instant"/>
+	<field field_ref="tinc_fcorr" operation="instant"/>
+	<field field_ref="fcorr_z" operation="instant"/>
+	<field field_ref="sinc_fcorr" operation="instant"/>
+	<field field_ref="hmix" operation="instant"/>
+	<field field_ref="fcorr" operation="instant"/>
+	<field field_ref="taux_in" operation="instant"/>
+	<field field_ref="tauy_in" operation="instant"/>
+	<field field_ref="solar_in" operation="instant"/>
+	<field field_ref="nsolar_in" operation="instant"/>
+	<field field_ref="PminusE_in" operation="instant"/>
+	<field field_ref="cplwght" operation="instant"/>
+	<field field_ref="freeze_flag" operation="instant"/>
+	<field field_ref="comp_flag" operation="instant"/>
+	<field field_ref="dampu_flag" operation="instant"/>
+	<field field_ref="dampv_flag" operation="instant"/>
+      </file>-->
 
     </file_definition> 
 
