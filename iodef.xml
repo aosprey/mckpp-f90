@@ -19,7 +19,7 @@
     </domain_definition>
 
     <axis_definition>
-      <axis id="axis_kpp" />
+      <axis id="levels_kpp" />
     </axis_definition>
 
     <grid_definition>
@@ -30,7 +30,7 @@
 
       <grid id="grid_kpp_3d">
 	<domain domain_ref="domain_kpp"/>
-	<axis axis_ref="axis_kpp"/>
+	<axis axis_ref="levels_kpp"/>
       </grid> 
 
     </grid_definition>
@@ -39,7 +39,7 @@
     <field_definition enabled="true" default_value="1e20">
 
       <!-- Depth-varying diagnostics -->
-      <field_group id="fields_3d" grid_ref="grid_kpp_3d">
+      <field_group id="diagnostics_3d" grid_ref="grid_kpp_3d">
         <field id="u" name="u" long_name="Zonal velocity" unit="m/s"/> 
         <field id="v" name="v" long_name="Meridional velocity" unit="m/s"/> 
         <field id="T" name="T" long_name="Temperature" unit="degC"/>
@@ -66,7 +66,7 @@
       </field_group>
 
       <!-- Single-level diagnostics -->
-      <field_group id="fields_2d" grid_ref="grid_kpp_2d">
+      <field_group id="diagnostics_2d" grid_ref="grid_kpp_2d">
         <field id="hmix" name="hmix" long_name="Mixed Layer Depth" unit="m"/>
         <field id="fcorr" name="fcorr" long_name="Flux Correction" unit="W/m^2"/>
         <field id="taux_in" name="taux_in" long_name="Zonal wind stress from " unit="N/m^2"/>
@@ -151,7 +151,7 @@
 	<field field_ref="comp_flag" operation="instant"/>
 	<field field_ref="dampu_flag" operation="instant"/>
 	<field field_ref="dampv_flag" operation="instant"/>
-      </file>-->
+      </file>
 
     </file_definition> 
 
