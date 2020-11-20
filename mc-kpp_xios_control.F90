@@ -32,9 +32,7 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 
   REAL :: restart_time
-  CHARACTER(LEN=9) :: restart_time_str
-  CHARACTER(LEN=20) :: restart_filename
-
+ 
   ! Send diags to XIOS at every ts 
   CALL mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields) 
 
@@ -46,29 +44,42 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
     ! Set correct time for validity of restart file (end of this timestep = start of next timestep)
     restart_time=kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd
 
-    WRITE(6,*) "Writing restart at time ", restart_time 
-
-    WRITE(restart_time_str,'(F9.3)') restart_time
-    restart_filename = "restart_"//TRIM(ADJUSTL(restart_time_str))//".nc" 
-   
-    CALL mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_filename) 
+    WRITE(6,*) "Writing restart at time ", restart_time    
+    CALL mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
   END IF 
 
 END SUBROUTINE mckpp_xios_output_control
 
 
-SUBROUTINE mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_filename) 
+SUBROUTINE mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  CHARACTER(*) :: restart_filename
+  REAL, INTENT(IN) :: restart_time
 
+  CHARACTER(LEN=9) :: restart_time_str
+  CHARACTER(LEN=17) :: restart_filename
+  CHARACTER(LEN=21) :: context_name
+  TYPE(xios_context) :: ctx_hdl_restart
+
+  WRITE(restart_time_str,'(F9.3)') restart_time
+  restart_filename = "restart_"//TRIM(ADJUSTL(restart_time_str))
+  context_name = "ctx_restart_"//TRIM(ADJUSTL(restart_time_str))
+
+  ! Define a new context for this restart file 
+  CALL xios_context_initialize(context_name, xios_comm)
+  CALL xios_get_handle(context_name, ctx_hdl_restart)
+  CALL xios_set_current_context(ctx_hdl_restart)
+
+  ! Define file  
   CALL mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, restart_filename) 
+
+  ! Write fields 
   CALL mckpp_xios_restart_output(kpp_3d_fields, kpp_const_fields) 
 
   ! Now close context and switch back to diagnostic one 
   CALL xios_context_finalize()
-  CALL xios_set_current_context(ctx_hdl_kpp)
+  CALL xios_set_current_context(ctx_hdl_diags)
 
 END SUBROUTINE
 

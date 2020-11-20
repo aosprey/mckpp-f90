@@ -8,6 +8,7 @@
       <variable id="using_server" type="bool">false</variable>
       <variable id="info_level" type="int">100</variable>
       <variable id="print_file" type="bool">true</variable>
+      <variable id="optimal_buffer_size" type="string">memory</variable>
     </variable_definition>
 
   </context>
@@ -87,35 +88,35 @@
     <file_definition type="one_file" par_access="collective" enabled=".TRUE.">
 
       <!-- Instantaneous --> 
-      <file id="output_kpp" name="output_kpp" output_freq="1h"> 
+      <file id="output_kpp" name="output_kpp" output_freq="1h" split_freq="1d"> 
 	<field field_ref="T" name="T_inst" operation="instant"/>
 	<field field_ref="S" name="S_inst" operation="instant"/>
 	<field field_ref="hmix" name="hmix_inst" operation="instant"/>
       </file> 
 
       <!-- Mean -->
-      <file id="output_kpp_means" name="output_kpp_means" output_freq="3h"> 
+      <file id="output_kpp_means" name="output_kpp_means" output_freq="3h" split_freq="1d">  
 	<field field_ref="T" name="T_mean" operation="average"/>
 	<field field_ref="S" name="S_mean" operation="average"/>
 	<field field_ref="hmix" name="hmix_mean" operation="average"/>
       </file> 
      
       <!-- Minimum -->
-      <file id="output_kpp_min" name="output_kpp_min" output_freq="3h"> 
+      <file id="output_kpp_min" name="output_kpp_min" output_freq="3h" split_freq="1d"> 
 	<field field_ref="T" name="T_min" operation="minimum"/>
 	<field field_ref="S" name="S_min" operation="minimum"/>
 	<field field_ref="hmix" name="hmix_min" operation="minimum"/>
       </file> 
     
       <!-- Maximum -->
-      <file id="output_kpp_max" name="output_kpp_max" output_freq="3h"> 
+      <file id="output_kpp_max" name="output_kpp_max" output_freq="3h" split_freq="1d"> 
 	<field field_ref="T" name="T_max" operation="maximum"/>
 	<field field_ref="S" name="S_max" operation="maximum"/>
 	<field field_ref="hmix" name="hmix_max" operation="maximum"/>
       </file> 
 
       <!-- Test all diags -->
-      <file id="output_kpp_all" name="output_kpp_all" output_freq="3h"> 
+      <file id="output_kpp_all" name="output_kpp_all" output_freq="3h" split_freq="1d"> 
 	<field field_ref="T" operation="instant"/>
 	<field field_ref="S" operation="instant"/>
         <field field_ref="u" operation="instant"/>

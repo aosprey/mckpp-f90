@@ -7,7 +7,7 @@ IMPLICIT NONE
 #include <mc-kpp_3d_type.com>
 
   INTEGER :: xios_comm
-  TYPE(xios_context) :: ctx_hdl_kpp, ctx_hdl_restart
+  TYPE(xios_context) :: ctx_hdl_diags
 
   INTEGER, PRIVATE, PARAMETER :: my_nx=NX, my_ny=NY, my_nzp1=NZP1
   REAL, PRIVATE, DIMENSION(my_nx) :: lons
@@ -24,8 +24,8 @@ SUBROUTINE mckpp_xios_diagnostic_definition(kpp_3d_fields, kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 
   CALL xios_context_initialize("kpp", xios_comm)
-  CALL xios_get_handle("kpp", ctx_hdl_kpp)
-  CALL xios_set_current_context(ctx_hdl_kpp)
+  CALL xios_get_handle("kpp", ctx_hdl_diags)
+  CALL xios_set_current_context(ctx_hdl_diags)
 
   CALL mckpp_xios_set_dimensions(kpp_3d_fields, kpp_const_fields) 
 
@@ -75,11 +75,6 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   TYPE(xios_domaingroup) :: domaindefn_hdl
   TYPE(xios_domain) :: domain_hdl
 
-  ! Define a new context for this restart file 
-  CALL xios_context_initialize("kpp_restart", xios_comm)
-  CALL xios_get_handle("kpp_restart", ctx_hdl_restart)
-  CALL xios_set_current_context(ctx_hdl_restart)
-
   ! Define calendar and ts
   CALL xios_define_calendar(type="Gregorian") 
   CALL xios_set_timestep(timestep=dtime) 
@@ -91,7 +86,6 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
                             data_dim=1, &  
                             ni_glo=NX, nj_glo=NY, & 
                             lonvalue_1d=lons, latvalue_1d=lats)
-
   
   CALL xios_get_handle("axis_definition", axisdefn_hdl) 
 
@@ -122,28 +116,29 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   ! Define restart file
   CALL xios_get_handle("file_definition", filedefn_hdl)
   CALL xios_add_child(filedefn_hdl, file_hdl, "restart") 
-  CALL xios_set_file_attr("restart", name=filename, output_freq=xios_timestep) 
+  CALL xios_set_file_attr("restart", name=filename, output_freq=xios_timestep, & 
+                          type="one_file", par_access="collective") 
 
   ! Define variables to write to restart
-  CALL mckpp_xios_restart_define_field(file_hdl, "uvel_restart", "Zonal velocity", "m/s", "grid_kpp_3d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "vvel_restart", "Meridional velocity", "m/s", "grid_kpp_3d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "T_restart", "Temperature", "degC", "grid_kpp_3d_nomask")
-  CALL mckpp_xios_restart_define_field(file_hdl, "S_restart", "Salinity", "o/oo", "grid_kpp_3d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "CP_restart", "Specific heat capacity", "J/kg/K", "grid_kpp_3d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "rho_restart", "Density", "kg/m^3", "grid_kpp_3d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "hmix_restart", "Mixed layer depth", "m", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "kmix_restart", "Mixed layer depth", "m", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "Sref_restart", "Reference salinity", "o/oo", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "SSref_restart", "Reference surface salinity", "o/oo", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "Ssurf_restart", "Surafce salinity", "o/oo", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "Tref_restart", "Reference temperature", "degC", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "old_restart", "Integration counter", "unitless", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "new_restart", "Integration counter", "unitless", "grid_kpp_2d_nomask") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "Us_restart", "Zonal velocity in integration", "m/s", "grid_kpp_3d_nomask_intcnt") 
-  CALL mckpp_xios_restart_define_field(file_hdl, "Vs_restart", "Meridional velocity in integration", "m/s", "grid_kpp_3d_nomask_intcnt")
-  CALL mckpp_xios_restart_define_field(file_hdl, "Ts_restart", "Teemperature in integration", "degC", "grid_kpp_3d_nomask_intcnt")
-  CALL mckpp_xios_restart_define_field(file_hdl, "Ss_restart", "Salinity in integration", "o/oo", "grid_kpp_3d_nomask_intcnt")
-  CALL mckpp_xios_restart_define_field(file_hdl, "hmixd_restart", "Mixed layer depth in integration", "m", "grid_kpp_2d_nomask_intcnt")
+  CALL mckpp_xios_restart_define_field(file_hdl, "uvel", "Zonal velocity", "m/s", "grid_kpp_3d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "vvel", "Meridional velocity", "m/s", "grid_kpp_3d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "T", "Temperature", "degC", "grid_kpp_3d_nomask")
+  CALL mckpp_xios_restart_define_field(file_hdl, "S", "Salinity", "o/oo", "grid_kpp_3d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "CP", "Specific heat capacity", "J/kg/K", "grid_kpp_3d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "rho", "Density", "kg/m^3", "grid_kpp_3d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "hmix", "Mixed layer depth", "m", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "kmix", "Mixed layer depth", "m", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "Sref", "Reference salinity", "o/oo", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "SSref", "Reference surface salinity", "o/oo", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "Ssurf", "Surafce salinity", "o/oo", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "Tref", "Reference temperature", "degC", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "old", "Integration counter", "unitless", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "new", "Integration counter", "unitless", "grid_kpp_2d_nomask") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "Us", "Zonal velocity in integration", "m/s", "grid_kpp_3d_nomask_intcnt") 
+  CALL mckpp_xios_restart_define_field(file_hdl, "Vs", "Meridional velocity in integration", "m/s", "grid_kpp_3d_nomask_intcnt")
+  CALL mckpp_xios_restart_define_field(file_hdl, "Ts", "Teemperature in integration", "degC", "grid_kpp_3d_nomask_intcnt")
+  CALL mckpp_xios_restart_define_field(file_hdl, "Ss", "Salinity in integration", "o/oo", "grid_kpp_3d_nomask_intcnt")
+  CALL mckpp_xios_restart_define_field(file_hdl, "hmixd", "Mixed layer depth in integration", "m", "grid_kpp_2d_nomask_intcnt")
 
   CALL xios_close_context_definition()
 
@@ -311,25 +306,25 @@ SUBROUTINE mckpp_xios_restart_output(kpp_3d_fields, kpp_const_fields)
 
   CALL xios_update_calendar(kpp_const_fields%ntime)
 
-  CALL xios_send_field("uvel_restart", kpp_3d_fields%U(:,:,1)) 
-  CALL xios_send_field("vvel_restart", kpp_3d_fields%U(:,:,2))
-  CALL xios_send_field("T_restart", kpp_3d_fields%X(:,:,1)) 
-  CALL xios_send_field("S_restart", kpp_3d_fields%X(:,:,2))
-  CALL xios_send_field("CP_restart", kpp_3d_fields%cp(:,1:NZP1))
-  CALL xios_send_field("rho_restart", kpp_3d_fields%rho(:,1:NZP1))
-  CALL xios_send_field("hmix_restart", kpp_3d_fields%hmix)
-  CALL xios_send_field("kmix_restart", kpp_3d_fields%kmix)
-  CALL xios_send_field("Sref_restart", kpp_3d_fields%Sref)
-  CALL xios_send_field("SSref_restart", kpp_3d_fields%SSref)
-  CALL xios_send_field("Ssurf_restart", kpp_3d_fields%Ssurf)
-  CALL xios_send_field("Tref_restart", kpp_3d_fields%Tref)
-  CALL xios_send_field("old_restart", REAL(kpp_3d_fields%old))
-  CALL xios_send_field("new_restart", REAL(kpp_3d_fields%new))
-  CALL xios_send_field("Us_restart", kpp_3d_fields%Us(:,:,1,0:1))
-  CALL xios_send_field("Vs_restart", kpp_3d_fields%Us(:,:,2,0:1))
-  CALL xios_send_field("Ts_restart", kpp_3d_fields%Xs(:,:,1,0:1))
-  CALL xios_send_field("Ss_restart", kpp_3d_fields%Xs(:,:,2,0:1))
-  CALL xios_send_field("hmixd_restart", kpp_3d_fields%hmixd(:,0:1))
+  CALL xios_send_field("uvel", kpp_3d_fields%U(:,:,1)) 
+  CALL xios_send_field("vvel", kpp_3d_fields%U(:,:,2))
+  CALL xios_send_field("T", kpp_3d_fields%X(:,:,1)) 
+  CALL xios_send_field("S", kpp_3d_fields%X(:,:,2))
+  CALL xios_send_field("CP", kpp_3d_fields%cp(:,1:NZP1))
+  CALL xios_send_field("rho", kpp_3d_fields%rho(:,1:NZP1))
+  CALL xios_send_field("hmix", kpp_3d_fields%hmix)
+  CALL xios_send_field("kmix", kpp_3d_fields%kmix)
+  CALL xios_send_field("Sref", kpp_3d_fields%Sref)
+  CALL xios_send_field("SSref", kpp_3d_fields%SSref)
+  CALL xios_send_field("Ssurf", kpp_3d_fields%Ssurf)
+  CALL xios_send_field("Tref", kpp_3d_fields%Tref)
+  CALL xios_send_field("old", REAL(kpp_3d_fields%old))
+  CALL xios_send_field("new", REAL(kpp_3d_fields%new))
+  CALL xios_send_field("Us", kpp_3d_fields%Us(:,:,1,0:1))
+  CALL xios_send_field("Vs", kpp_3d_fields%Us(:,:,2,0:1))
+  CALL xios_send_field("Ts", kpp_3d_fields%Xs(:,:,1,0:1))
+  CALL xios_send_field("Ss", kpp_3d_fields%Xs(:,:,2,0:1))
+  CALL xios_send_field("hmixd", kpp_3d_fields%hmixd(:,0:1))
 
 END SUBROUTINE mckpp_xios_restart_output
 
