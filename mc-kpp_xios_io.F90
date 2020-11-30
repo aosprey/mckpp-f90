@@ -74,9 +74,14 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   TYPE(xios_grid) :: grid_hdl
   TYPE(xios_domaingroup) :: domaindefn_hdl
   TYPE(xios_domain) :: domain_hdl
+  TYPE(xios_scalargroup) :: scalardefn_hdl
+  TYPE(xios_scalar) :: scalar_hdl
+  TYPE(xios_field) :: field_hdl   
 
   ! Define calendar and ts
-  CALL xios_define_calendar(type="Gregorian") 
+  CALL xios_define_calendar(type="Gregorian", & 
+                            start_date=xios_date(2015, 11, 01, 00, 00, 00), & 
+                            time_origin=xios_date(2015, 11, 01, 00, 00, 00))
   CALL xios_set_timestep(timestep=dtime) 
 
   ! Define axes and grids - no landsea mask is applied
@@ -85,12 +90,13 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   CALL xios_set_domain_attr("domain_kpp_nomask", type="rectilinear", & 
                             data_dim=1, &  
                             ni_glo=NX, nj_glo=NY, & 
-                            lonvalue_1d=lons, latvalue_1d=lats)
+                            lonvalue_1d=lons, latvalue_1d=lats, & 
+                            lon_name="longitude", lat_name="latitude")
   
   CALL xios_get_handle("axis_definition", axisdefn_hdl) 
 
   CALL xios_add_child(axisdefn_hdl, axis_hdl, "levels_kpp") 
-  CALL xios_set_axis_attr("levels_kpp", n_glo=NZP1, value=levs) 
+  CALL xios_set_axis_attr("levels_kpp", n_glo=NZP1, value=levs, name="z") 
 
   CALL xios_add_child(axisdefn_hdl, axis_hdl, "intcnt_kpp") 
   CALL xios_set_axis_attr("intcnt_kpp", n_glo=2, value=(/1.,2./))
@@ -113,6 +119,9 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   CALL xios_add_child(grid_hdl, axis_hdl, "levels_kpp") 
   CALL xios_add_child(grid_hdl, axis_hdl, "intcnt_kpp") 
 
+  CALL xios_get_handle("scalar_definition", scalardefn_hdl) 
+  CALL xios_add_child(scalardefn_hdl, scalar_hdl, "grid_scalar") 
+
   ! Define restart file
   CALL xios_get_handle("file_definition", filedefn_hdl)
   CALL xios_add_child(filedefn_hdl, file_hdl, "restart") 
@@ -120,6 +129,10 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
                           type="one_file", par_access="collective") 
 
   ! Define variables to write to restart
+  CALL xios_add_child(file_hdl, field_hdl, "time")
+  CALL xios_set_attr(field_hdl, name="time", long_name="Time", unit="days", &  
+                     scalar_ref="grid_scalar", operation="instant") 
+
   CALL mckpp_xios_restart_define_field(file_hdl, "uvel", "Zonal velocity", "m/s", "grid_kpp_3d_nomask") 
   CALL mckpp_xios_restart_define_field(file_hdl, "vvel", "Meridional velocity", "m/s", "grid_kpp_3d_nomask") 
   CALL mckpp_xios_restart_define_field(file_hdl, "T", "Temperature", "degC", "grid_kpp_3d_nomask")
@@ -303,9 +316,13 @@ SUBROUTINE mckpp_xios_restart_output(kpp_3d_fields, kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
+  TYPE(xios_date) :: date
 
-  CALL xios_update_calendar(kpp_const_fields%ntime)
+  ! Set correct time for validity of restart fields 
+  ! (end of this timestep = start of next timestep)
+  CALL xios_update_calendar(kpp_const_fields%ntime+1)
 
+  CALL xios_send_field("time", kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd) 
   CALL xios_send_field("uvel", kpp_3d_fields%U(:,:,1)) 
   CALL xios_send_field("vvel", kpp_3d_fields%U(:,:,2))
   CALL xios_send_field("T", kpp_3d_fields%X(:,:,1)) 
