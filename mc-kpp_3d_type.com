@@ -1,10 +1,6 @@
 #include <parameter.inc>
 #include <kpp_timer.com>
  
-  INTEGER,parameter :: N_VAROUTS=23,N_SINGOUTS=12,N_ZPROFS_MAX=5
-  INTEGER,parameter :: NVEC_MEAN=N_VAROUTS,NVEC_RANGE=N_VAROUTS,&
-       NSCLR_MEAN=N_SINGOUTS,NSCLR_RANGE=N_SINGOUTS
-
   TYPE kpp_3D_type
      real :: U(NPTS,NZP1,NVEL),&
           X(NPTS,NZP1,NSCLR),&
@@ -132,24 +128,13 @@
           ocnT_file, sal_file, bottom_file, advect_file, landsea_file, vgrid_file, &
           cplwght_file, paras_file, initdata_file
      CHARACTER*17 :: restart_outfile, restart_infile
-     INTEGER :: ncid_out,mean_ncid_out,min_ncid_out,max_ncid_out,&
-          ndt_per_file,ndt_per_restart,flx_ncid,flx_timein_id,flx_varin_id(7),&
+     INTEGER :: ndt_per_restart,flx_ncid,flx_timein_id,flx_varin_id(7),&
           ndtupdsst,climsst_period,ndtupdice,climice_period,ndtupdcurr,&
           ndtupdfcorr,ndtupdsfcorr,fcorr_period,sfcorr_period,&
           ndtupdocnt,ocnt_period,ndtupdsal,sal_period,ndt_interp_sal,ndt_interp_ocnt,&
           ndtupdbottom,bottom_temp_period,&
           ifirst,ilast,jfirst,jlast,day_out
-     INTEGER,dimension(N_VAROUTS) :: &
-          ndt_varout_inst,ndt_varout_range,ndt_varout_mean,&
-          zprof_varout_inst,zprof_varout_mean,zprof_varout_range,&
-          varid_vec_inst,varid_vec_mean,varid_vec_range,&
-          ntout_vec_inst,ntout_vec_mean,ntout_vec_range
-     INTEGER,dimension(N_SINGOUTS) :: &
-          ndt_singout_inst,ndt_singout_range,ndt_singout_mean,&
-          varid_sing_inst,varid_sing_mean,varid_sing_range,&
-          ntout_sing_inst,ntout_sing_mean,ntout_sing_range
-     LOGICAL :: L_OUTPUT_MEAN,L_OUTPUT_INST,L_OUTPUT_RANGE,&
-          L_RESTARTW,L_CLIMSST,L_UPD_CLIMSST,L_PERIODIC_CLIMSST,&
+     LOGICAL :: L_RESTARTW,L_CLIMSST,L_UPD_CLIMSST,L_PERIODIC_CLIMSST,&
           L_CLIMICE,L_UPD_CLIMICE,L_PERIODIC_CLIMICE,L_CLIM_ICE_DEPTH,L_CLIM_SNOW_ON_ICE,&
           L_BAD_ICE_DEPTH,L_CLIMCURR,L_UPD_CLIMCURR,L_PERIODIC_CLIMCURR,&
           L_UPD_FCORR,L_PERIODIC_FCORR,L_UPD_SFCORR,L_PERIODIC_SFCORR,&
@@ -158,9 +143,6 @@
           L_OUTKELVIN,L_COUPLE_CURRENTS,L_FLUXDATA,L_REST,L_ADVECT,&
 	  L_REGGRID,L_LANDSEA,L_VGRID_FILE,L_STRETCHGRID,L_CPLWGHT,L_JERLOV,& 
           L_INITDATA,L_INTERPINIT,L_NO_ISOTHERM,L_NO_FREEZE,L_DAMP_CURR
-     LOGICAL,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs_mask
-     INTEGER,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs
-     INTEGER,dimension(0:N_ZPROFS_MAX) :: zprofs_nvalid   
      REAL*4 :: dtout,flx_first_timein
      
   ENDTYPE kpp_const_type

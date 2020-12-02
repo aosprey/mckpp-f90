@@ -69,8 +69,8 @@ forced : $(FORCED_MODS) $(FORCED_OBJS)
 	$(FORCED_LINK)
 
 clean : 
-	rm -rf *.o *.mod $(EXECUTABLE)
+	rm -rf *.i *.o *.mod $(EXECUTABLE)
 
 obj_clean : 
-	rm -rf *.o *.mod
+	rm -rf *.i *.o *.mod
 

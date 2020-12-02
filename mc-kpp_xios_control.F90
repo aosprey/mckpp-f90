@@ -11,8 +11,7 @@ IMPLICIT NONE
 
 CONTAINS 
 
-! Initialization of XIOS and diagnostic output 
-! - equivalent to mckpp_initialize_output.
+! Initialization for diagnostic output 
 SUBROUTINE mckpp_xios_initialize_output(kpp_3d_fields,kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
@@ -25,7 +24,6 @@ END SUBROUTINE
 
 
 ! Control of XIOS diagnostic and restart output 
-! - equivalent to mckpp_output_control.
 SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields) 
 
   TYPE(kpp_3d_type) :: kpp_3d_fields

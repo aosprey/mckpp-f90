@@ -4,7 +4,11 @@ USE xios
 
 IMPLICIT NONE 
 
+#ifdef MCKPP_CAM3
+#include <parameter.inc>
+#else
 #include <mc-kpp_3d_type.com>
+#endif
 
   INTEGER :: xios_comm
   TYPE(xios_context) :: ctx_hdl_diags
@@ -15,6 +19,7 @@ IMPLICIT NONE
   REAL, PRIVATE, DIMENSION(my_nzp1) :: levs
   LOGICAL, PRIVATE, DIMENSION(my_nx*my_ny) :: mask
   TYPE(xios_duration), PRIVATE  :: dtime
+  TYPE(xios_date) :: start_date
 
 CONTAINS 
 
@@ -27,18 +32,17 @@ SUBROUTINE mckpp_xios_diagnostic_definition(kpp_3d_fields, kpp_const_fields)
   CALL xios_get_handle("kpp", ctx_hdl_diags)
   CALL xios_set_current_context(ctx_hdl_diags)
 
+  CALL xios_define_calendar(type="Gregorian")
+
   CALL mckpp_xios_set_dimensions(kpp_3d_fields, kpp_const_fields) 
 
-  CALL xios_define_calendar(type="Gregorian", & 
-                            start_date=xios_date(2015, 11, 01, 00, 00, 00), &
-                            time_origin=xios_date(2015, 11, 01, 00, 00, 00))
+  CALL xios_set_start_date(start_date) 
+  CALL xios_set_time_origin(start_date) 
   CALL xios_set_timestep(timestep=dtime) 
-
   CALL xios_set_domain_attr("domain_kpp", type="rectilinear", & 
                             data_dim=1, mask_1d=mask, &  
                             ni_glo=NX, nj_glo=NY, & 
                             lonvalue_1d=lons, latvalue_1d=lats)
-
   CALL xios_set_axis_attr("levels_kpp", n_glo=NZP1, value=levs) 
 
   CALL xios_close_context_definition()
@@ -52,6 +56,9 @@ SUBROUTINE mckpp_xios_set_dimensions(kpp_3d_fields, kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 
   dtime%second=kpp_const_fields%dto
+  ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
+  start_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%startt+1)
+
   lons = kpp_3d_fields%dlon(1:NX)
   lats = kpp_3d_fields%dlat(1::NX)
   levs = kpp_const_fields%zm
@@ -77,11 +84,13 @@ SUBROUTINE mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, filena
   TYPE(xios_scalargroup) :: scalardefn_hdl
   TYPE(xios_scalar) :: scalar_hdl
   TYPE(xios_field) :: field_hdl   
+  TYPE(xios_date) :: restart_date 
 
   ! Define calendar and ts
-  CALL xios_define_calendar(type="Gregorian", & 
-                            start_date=xios_date(2015, 11, 01, 00, 00, 00), & 
-                            time_origin=xios_date(2015, 11, 01, 00, 00, 00))
+  CALL xios_define_calendar(type="Gregorian") 
+  restart_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%time+1)
+  CALL xios_set_start_date(restart_date) 
+  CALL xios_set_time_origin(restart_date) 
   CALL xios_set_timestep(timestep=dtime) 
 
   ! Define axes and grids - no landsea mask is applied
@@ -181,7 +190,7 @@ SUBROUTINE mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields)
   REAL, DIMENSION(my_nx*my_ny) :: temp_1d
   INTEGER :: k, ix, iy, ipt
 
-  CALL xios_update_calendar(kpp_const_fields%ntime)
+  CALL xios_update_calendar(1)
 
   !!! Depth-varying diagnostics 
 
@@ -316,7 +325,6 @@ SUBROUTINE mckpp_xios_restart_output(kpp_3d_fields, kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(xios_date) :: date
 
   ! Set correct time for validity of restart fields 
   ! (end of this timestep = start of next timestep)
