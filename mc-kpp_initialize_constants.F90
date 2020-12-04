@@ -78,21 +78,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%L_RELAX_SAL=L_RELAX_SAL
   kpp_const_fields%L_RELAX_OCNT=L_RELAX_OCNT
   
-  kpp_const_fields%L_OUTPUT_INST=L_OUTPUT_INST
-  kpp_const_fields%L_OUTPUT_MEAN=L_OUTPUT_MEAN
-  kpp_const_fields%L_OUTPUT_RANGE=L_OUTPUT_RANGE
-  kpp_const_fields%ndt_per_file=ndt_per_file
   kpp_const_fields%ndt_per_restart=ndt_per_restart
-  kpp_const_fields%ndt_varout_inst=ndt_varout_inst
-  kpp_const_fields%ndt_singout_inst=ndt_singout_inst
-  kpp_const_fields%zprof_varout_inst=zprof_varout_inst
-  kpp_const_fields%ndt_varout_mean=ndt_varout_mean
-  kpp_const_fields%ndt_singout_mean=ndt_singout_mean
-  kpp_const_fields%zprof_varout_mean=zprof_varout_mean      
-  kpp_const_fields%ndt_varout_range=ndt_varout_range
-  kpp_const_fields%ndt_singout_range=ndt_singout_range
-  kpp_const_fields%zprof_varout_range=zprof_varout_range
-  kpp_const_fields%zprofs(:,1:N_ZPROFS_MAX)=zprofs(:,1:N_ZPROFS_MAX)
   
   kpp_const_fields%sst_file=sstin_file
   kpp_const_fields%ndtupdsst=ndtupdsst

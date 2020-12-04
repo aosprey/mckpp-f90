@@ -1,10 +1,9 @@
 PROGRAM mckpp_ocean_model_3d
 
 !  USE mckpp_3d_type_mod
+USE mckpp_xios_control
 
-  IMPLICIT NONE
-
-#include <mc-kpp_3d_type.com>
+IMPLICIT NONE
 
   TYPE(kpp_timer_type) :: kpp_timer
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -53,10 +52,7 @@ PROGRAM mckpp_ocean_model_3d
   ! Finalise
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Finalisation"
 
-  ! Write restart
-  ! - This should maybe be run as part of mckpp_output_control but it's
-  !   commented out
-  CALL mckpp_restart_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
+  CALL mckpp_xios_finalize() 
 
   ! Files are opened and closed as needed
   

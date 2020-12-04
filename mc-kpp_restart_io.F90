@@ -723,7 +723,7 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
   ALL_OCEAN(:)=.TRUE.
 #endif
      
-  WRITE(netcdf_restart_infile,'(A17,A3)') kpp_const_fields%restart_infile,'.nc'
+  netcdf_restart_infile = TRIM(ADJUSTL(kpp_const_fields%restart_infile)) // '.nc'
   WRITE(6,*) netcdf_restart_infile
 
   status=NF_OPEN(netcdf_restart_infile,NF_NOWRITE,ncid)

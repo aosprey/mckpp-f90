@@ -56,16 +56,12 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
        L_STRETCHGRID,dscale,L_REGGRID,L_VGRID_FILE,vgrid_file
   NAMELIST/NAME_START/ L_INITDATA,initdata_file,L_INTERPINIT,&
        L_RESTART,restart_infile
-  NAMELIST/NAME_TIMES/ dtsec,startt,finalt,ndtocn
+  NAMELIST/NAME_TIMES/ dtsec,startt,finalt,ndtocn,nyear
   NAMELIST/NAME_ADVEC/ L_ADVECT,advect_file,L_RELAX_SST,&
        relax_sst_in,relax_sal_in,L_RELAX_CALCONLY,L_RELAX_SAL,&
        L_RELAX_OCNT,relax_ocnt_in
   NAMELIST/NAME_PARAS/ paras_file,L_JERLOV
-  NAMELIST/NAME_OUTPUT/ ndt_varout_inst,ndt_singout_inst,&
-       L_RESTARTW,restart_outfile,ndt_varout_mean,ndt_singout_mean,&
-       L_OUTPUT_MEAN,L_OUTPUT_INST,L_OUTPUT_RANGE,ndt_per_file,&
-       ndt_per_restart,ndt_varout_range,ndt_singout_range,zprof_varout_inst,&
-       zprof_varout_mean,zprof_varout_range,zprofs
+  NAMELIST/NAME_OUTPUT/ L_RESTARTW,restart_outfile,ndt_per_restart
   NAMELIST/NAME_FORCING/ L_FLUXDATA,forcing_file,L_FCORR_WITHZ,&
        fcorrin_file,ndtupdfcorr,L_VARY_BOTTOM_TEMP,ndtupdbottom,&
        bottomin_file,L_FCORR,L_UPD_FCORR,L_UPD_BOTTOM_TEMP,L_REST,&
@@ -285,38 +281,9 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
      kpp_const_fields%dt_uvdamp=dtuvdamp
   ENDIF
   
-  ! Initialize and read the output name list
-  ndt_varout_inst(:)=0
-  ndt_varout_mean(:)=0
-  ndt_varout_range(:)=0
-  zprof_varout_inst(:)=0
-  zprof_varout_mean(:)=0
-  zprof_varout_range(:)=0
-  ndt_singout_inst(:)=0
-  ndt_singout_mean(:)=0
-  ndt_singout_range(:)=0     
-  zprofs(:,:)=0
-  
-  L_OUTPUT_MEAN=.FALSE.
-  L_OUTPUT_INST=.TRUE.
   L_RESTARTW=.TRUE.      
   kpp_const_fields%ndt_per_restart=kpp_const_fields%nend*kpp_const_fields%ndtocn    
-  
-  ! Set up defaults for ndt_per_file (timesteps between creating
-  ! new output files) depending on whether and how KPP is coupled.
-  ! GFS defaults to one day because the "coupler" operates via
-  ! GRIB files that need to be written/read at each coupling timestep.
-  ! NPK June 2009 - R2
-#ifdef MCKPP_COUPLE
-#ifdef CFS
-  ndt_per_file=INT(kpp_const_fields%spd/(kpp_const_fields%dtsec/kpp_const_fields%ndtocn))
-#else
-  ndt_per_file=5*INT(kpp_const_fields%spd/(kpp_const_fields%dtsec/kpp_const_fields%ndtocn))
-#endif /*CFS*/
-#else
-  ndt_per_file=5*INT(kpp_const_fields%spd/(kpp_const_fields%dtsec/kpp_const_fields%ndtocn))
-#endif /*COUPLE*/
-  READ(75,NAME_OUTPUT)
+    READ(75,NAME_OUTPUT)
   write(nuout,*) 'Read Namelist OUTPUT'    
   
   ! Call routine to copy constants and logicals needed for ocean
@@ -354,6 +321,16 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   INTEGER nuout,nuerr
   PARAMETER(nuout=6,nuerr=0)  
   INTEGER :: iy,ix,ipt
+
+  ! Set initial values for flags in kpp_3d_fields, which otherwise
+  ! might never be set if points are not coupled.
+  kpp_3d_fields%dampu_flag(:)=0.
+  kpp_3d_fields%dampv_flag(:)=0.
+  kpp_3d_fields%freeze_flag(:)=0.
+  kpp_3d_fields%reset_flag(:)=0.
+   
+  ! Initialize cplwght. 
+  kpp_3d_fields%cplwght(:)=0.
   
   ! Initialize latitude and longitude areas and the land/sea mask
 #ifdef MCKPP_CAM3
@@ -653,142 +630,16 @@ SUBROUTINE MCKPP_INITIALIZE_OUTPUT
 SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
 #endif
 
+  USE mckpp_xios_control
+
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
-  INTEGER :: i,j,flen,l
-  CHARACTER*50 :: output_file,mean_output_file,min_output_file,max_output_file
-  
-  kpp_const_fields%ntout_vec_inst(:)=1
-  kpp_const_fields%ntout_sing_inst(:)=1
-  kpp_const_fields%ntout_vec_mean(:)=1
-  kpp_const_fields%ntout_sing_mean(:)=1
-  kpp_const_fields%ntout_vec_range(:)=1
-  kpp_const_fields%ntout_sing_range(:)=1
 
-  kpp_const_fields%zprofs_mask(:,0)=.TRUE.
-  kpp_const_fields%zprofs_mask(:,1:N_ZPROFS_MAX)=.FALSE.
-  kpp_const_fields%zprofs_nvalid(0)=NZP1
-  DO i=1,N_ZPROFS_MAX
-     j=1
-     DO WHILE (kpp_const_fields%zprofs(j,i) .ne. 0 .and. j .le. NZP1)
-        kpp_const_fields%zprofs_mask(kpp_const_fields%zprofs(j,i),i)=.TRUE.
-        j=j+1
-     END DO
-     kpp_const_fields%zprofs_nvalid(i)=j-1
-  END DO
-
-  
-  kpp_const_fields%day_out=int(kpp_const_fields%startt+(kpp_const_fields%dtsec/kpp_const_fields%ndtocn)*&
-       kpp_const_fields%ndt_per_file/kpp_const_fields%spd)
-
-#ifdef MCKPP_CAM3
-  IF (masterproc) THEN
-#endif
-  output_file='KPPocean'
-  mean_output_file='KPPocean'
-  min_output_file='KPPocean'
-  max_output_file='KPPocean'
-
-  
-  ! Set up the first output files 
-  flen=INDEX(output_file,' ')-1
-
-  IF (kpp_const_fields%L_OUTPUT_INST) THEN
-     write(output_file(flen+1:flen+1),'(a)') '_'
-     write(output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
-     write(output_file(flen+7:flen+9),'(3A)') '.nc'
-     
-     kpp_const_fields%dtout=kpp_const_fields%dto/kpp_const_fields%spd  
-
-#ifdef MCKPP_CAM3
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Calling MCKPP_OUTPUT_INITIALIZE for instantaneous fields'
-     CALL MCKPP_OUTPUT_INITIALIZE(output_file,'inst')
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Returned from MCKPP_OUTPUT_INITIALIZE for instantaneous fields'
-#else
-     CALL MCKPP_OUTPUT_INITIALIZE(output_file,kpp_3d_fields,kpp_const_fields,'inst')
-#endif
-     CALL MCKPP_OUTPUT_OPEN(output_file,kpp_const_fields%ncid_out)
-  ENDIF
-  
-  IF (kpp_const_fields%L_OUTPUT_MEAN) THEN
-     allocate(kpp_3d_fields%VEC_mean(NPTS,NZP1,NVEC_MEAN))
-     allocate(kpp_3d_fields%SCLR_mean(NPTS,NSCLR_MEAN))
-     flen=INDEX(mean_output_file,' ')-1
-     write(mean_output_file(flen+1:flen+1),'(a)') '_'
-     write(mean_output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
-     write(mean_output_file(flen+7:flen+15),'(9A)') '_means.nc'             
-#ifdef MCKPP_CAM3
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Calling MCKPP_OUTPUT_INITIALIZE for means'
-     CALL MCKPP_OUTPUT_INITIALIZE(mean_output_file,'mean')
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Returned from MCKPP_OUTPUT_INITIALIZE for means'
-#else
-     CALL mckpp_OUTPUT_INITIALIZE(mean_output_file,kpp_3d_fields,kpp_const_fields,'mean')
-#endif
-     CALL MCKPP_OUTPUT_OPEN(mean_output_file,kpp_const_fields%mean_ncid_out)
-     kpp_3d_fields%VEC_mean(:,:,:) = 0.
-     kpp_3d_fields%SCLR_mean(:,:) = 0.
-  ENDIF
-  
-  IF (kpp_const_fields%L_OUTPUT_RANGE) THEN       
-     allocate(kpp_3d_fields%VEC_range(NPTS,NZP1,NVEC_RANGE,2))
-     allocate(kpp_3d_fields%SCLR_range(NPTS,NSCLR_RANGE,2))
-     flen=INDEX(min_output_file,' ')-1
-     write(min_output_file(flen+1:flen+1),'(a)') '_'
-     write(min_output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
-     write(min_output_file(flen+7:flen+13),'(7A)') '_min.nc'    
-     write(max_output_file(flen+1:flen+1),'(a)') '_'
-     write(max_output_file(flen+2:flen+6),'(i5.5)') kpp_const_fields%day_out
-     write(max_output_file(flen+7:flen+13),'(7A)') '_max.nc'         
-#ifdef MCKPP_CAM3
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Calling MCKPP_OUTPUT_INITIALIZE for ranges'
-     CALL MCKPP_OUTPUT_INITIALIZE(min_output_file,'minx')
-     CALL MCKPP_OUTPUT_OPEN(min_output_file,kpp_const_fields%min_ncid_out)
-     CALL MCKPP_OUTPUT_INITIALIZE(max_output_file,'maxx')
-     CALL MCKPP_OUTPUT_OPEN(max_output_file,kpp_const_fields%max_ncid_out)
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OUTPUT: Returned from MCKPP_OUTPUT_INITIALIZE for ranges'
-#else
-     CALL MCKPP_OUTPUT_INITIALIZE(min_output_file,kpp_3d_fields,kpp_const_fields,'minx')
-     CALL MCKPP_OUTPUT_OPEN(min_output_file,kpp_const_fields%min_ncid_out)
-     CALL MCKPP_OUTPUT_INITIALIZE(max_output_file,kpp_3d_fields,kpp_const_fields,'maxx')
-     CALL MCKPP_OUTPUT_OPEN(max_output_file,kpp_const_fields%max_ncid_out)
-#endif
-     kpp_3d_fields%VEC_range(:,:,:,1)=2E20
-     kpp_3d_fields%SCLR_range(:,:,1)=2E20
-     kpp_3d_fields%VEC_range(:,:,:,2)=-2E20
-     kpp_3d_fields%SCLR_range(:,:,2)=-2E20
-  ENDIF 
-  
-#ifdef MCKPP_CAM3
-  ENDIF ! End of masterproc section
-#endif
-  
-  ! Write out the data from the initial condition
-  IF ( .NOT. kpp_const_fields%L_RESTART .AND. kpp_const_fields%L_OUTPUT_INST) THEN
-     WRITE(6,*) "MCKPP_INITIALIZE_OUTPUT: output initial conditions"
-     DO l=1,N_VAROUTS
-        IF (kpp_const_fields%ndt_varout_inst(l) .gt. 0) &
-#ifdef MCKPP_CAM3
-             CALL MCKPP_OUTPUT_INST(l)
-#else
-             CALL MCKPP_OUTPUT_INST(kpp_3d_fields,kpp_const_fields,l)
-#endif             
-     ENDDO
-     DO l=1,N_SINGOUTS
-        IF (kpp_const_fields%ndt_singout_inst(l) .gt. 0) &
-#ifdef MCKPP_CAM3
-             CALL MCKPP_OUTPUT_INST(l+N_VAROUTS)
-#else
-             CALL MCKPP_OUTPUT_INST(kpp_3d_fields,kpp_const_fields,l+N_VAROUTS)
-#endif
-     ENDDO
-  ENDIF  
+  CALL mckpp_xios_initialize_output(kpp_3d_fields,kpp_const_fields)
   
   RETURN
 END SUBROUTINE MCKPP_INITIALIZE_OUTPUT
