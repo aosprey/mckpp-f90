@@ -6,7 +6,7 @@ SUBROUTINE mckpp_physics_driver
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
-SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
+SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   IMPLICIT NONE
 #endif
 
@@ -18,7 +18,6 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
 #endif
   
   ! Local
@@ -49,7 +48,7 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields) &
-!$OMP SHARED(kpp_timer) & 
+!!$OMP SHARED(kpp_timer) & 
 !$OMP PRIVATE(trans_timer_name,phys_timer_name,tid)
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid

@@ -1,29 +1,34 @@
 PROGRAM mckpp_ocean_model_3d
 
-!  USE mckpp_3d_type_mod
+USE mckpp_timer
 USE mckpp_xios_control
 
 IMPLICIT NONE
 
-  TYPE(kpp_timer_type) :: kpp_timer
   TYPE(kpp_const_type) :: kpp_const_fields
   TYPE(kpp_3d_type), ALLOCATABLE :: kpp_3d_fields
 
   INTEGER :: ntime
   
-  !CALL KPP_TIMER_INIT(kpp_timer)
-
   ! Initialise
   ! - could have a routine to call all of these
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Initialisation"
   ALLOCATE(kpp_3d_fields)
+
+  CALL mckpp_initialize_timers()
+  CALL mckpp_start_timer('Initialization')
+
   CALL mckpp_initialize_namelist(kpp_const_fields)
   CALL mckpp_initialize_fields(kpp_3d_fields,kpp_const_fields)
   CALL mckpp_initialize_output(kpp_3d_fields,kpp_const_fields)
 
+  CALL mckpp_stop_timer('Initialization')
+
   ! Main time-stepping loop
   ! - again this could go in a timestep routine
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Timestepping loop"
+  CALL mckpp_start_timer('Timestepping loop')
+
   DO ntime=1,kpp_const_fields%nend*kpp_const_fields%ndtocn
      kpp_const_fields%ntime=ntime
      kpp_const_fields%time=kpp_const_fields%startt+(kpp_const_fields%ntime-1)*&
@@ -33,29 +38,26 @@ IMPLICIT NONE
 
      ! Fluxes
      IF (MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtocn) .EQ. 0) THEN
-       CALL mckpp_fluxes(kpp_3d_fields,kpp_const_fields,kpp_timer)
+       CALL mckpp_fluxes(kpp_3d_fields,kpp_const_fields)
      ENDIF
 
      ! Update boundary conditions
      IF (kpp_const_fields%ntime .ne. 1) THEN 
-       CALL mckpp_boundary_update(kpp_3d_fields,kpp_const_fields,kpp_timer)
+       CALL mckpp_boundary_update(kpp_3d_fields,kpp_const_fields)
      ENDIF 
        
      ! Physics
-     CALL mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
+     CALL mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
 
      ! Output
-     CALL mckpp_output_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
+     CALL mckpp_output_control(kpp_3d_fields,kpp_const_fields)
      
   END DO
+  CALL mckpp_stop_timer('Timestepping loop')
 
   ! Finalise
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Finalisation"
-
   CALL mckpp_xios_finalize() 
-
-  ! Files are opened and closed as needed
-  
-  !CALL KPP_TIMER_PRINT(kpp_timer)
+  CALL mckpp_print_timers()
 
 END PROGRAM mckpp_ocean_model_3d

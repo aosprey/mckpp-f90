@@ -10,7 +10,6 @@ MODULE mckpp_types
   IMPLICIT NONE
   
 #include <parameter.inc>
-#include <kpp_timer.com>
   
   PUBLIC
 
@@ -18,7 +17,6 @@ MODULE mckpp_types
   PUBLIC kpp_global_type
   PUBLIC kpp_3d_type
   PUBLIC kpp_1d_type
-  PUBLIC kpp_timer_type
   PUBLIC kpp_const_type
 
   TYPE kpp_global_type
@@ -194,26 +192,11 @@ MODULE mckpp_types
 #endif
      REAL*4 :: dtout,flx_first_timein     
   ENDTYPE kpp_const_type
-  
-  TYPE kpp_timer_type
-#ifdef OPENMP
-     REAL,dimension(timer_max_timers) ::& 
-          timer_elapsed_time,timer_start_time
-#else
-     REAL,dimension(timer_max_timers) :: timer_elapsed_time,&
-          timer_start_time
-#endif
-     LOGICAL,dimension(timer_max_timers) :: timer_running
-     CHARACTER(LEN=30),dimension(timer_max_timers) :: timer_all_names
-     
-     INTEGER :: timer_number_allocated
-  ENDTYPE kpp_timer_type
 
   TYPE(kpp_global_type) :: kpp_global_fields
   TYPE(kpp_3d_type),allocatable :: kpp_3d_fields(:)
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
 
 CONTAINS
   

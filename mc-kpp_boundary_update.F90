@@ -2,7 +2,7 @@
 SUBROUTINE MCKPP_BOUNDARY_UPDATE
   USE mckpp_types, only: kpp_const_fields
 #else
-SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields,kpp_timer)
+SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields)
 #endif
 
   ! Update all boundary conditions that are read from netCDF files,
@@ -16,7 +16,6 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
 #endif
 
   INTEGER,parameter :: nuout=6,nuerr=0

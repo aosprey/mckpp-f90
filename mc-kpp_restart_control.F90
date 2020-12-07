@@ -5,7 +5,7 @@ SUBROUTINE mckpp_restart_control
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
 #else
-SUBROUTINE mckpp_restart_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
+SUBROUTINE mckpp_restart_control(kpp_3d_fields,kpp_const_fields)
 #endif
   IMPLICIT NONE
 
@@ -19,7 +19,6 @@ SUBROUTINE mckpp_restart_control(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #include <mc-kpp_3d_type.com>  
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
   REAL :: restart_time
 #endif
 
