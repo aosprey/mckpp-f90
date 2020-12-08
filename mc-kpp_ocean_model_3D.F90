@@ -25,13 +25,11 @@ IMPLICIT NONE
 
   ! Main time-stepping loop
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Timestepping loop"
-  CALL mckpp_start_timer('Timestepping loop')
 
   DO ntime=1,kpp_const_fields%nend*kpp_const_fields%ndtocn
      kpp_const_fields%ntime=ntime
      kpp_const_fields%time=kpp_const_fields%startt+(kpp_const_fields%ntime-1)*&
        kpp_const_fields%dto/kpp_const_fields%spd
-
      WRITE(6,*) "ntime, time = ", kpp_const_fields%ntime, kpp_const_fields%time
 
      ! Fluxes
@@ -51,11 +49,17 @@ IMPLICIT NONE
      ! Physics
      CALL mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
 
-     ! Output 
+     ! Diagnostic output 
+     CALL mckpp_start_timer("Diagnostic output") 
      CALL mckpp_output_control(kpp_3d_fields,kpp_const_fields)
+     CALL mckpp_stop_timer("Diagnostic output")
+
+     ! Restart output
+     CALL mckpp_start_timer("Restart output")     
+     CALL mckpp_restart_control(kpp_3d_fields,kpp_const_fields)
+     CALL mckpp_stop_timer("Restart output")
      
   END DO
-  CALL mckpp_stop_timer('Timestepping loop')
 
   ! Finalise
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Finalisation"
