@@ -77,9 +77,8 @@ CONTAINS
       END IF 
     END IF 
 
-    time = get_current_time()
     timers(index_timer)%elapsed_time = timers(index_timer)%elapsed_time + & 
-                                      (time - timers(index_timer)%start_time) 
+                                      (get_current_time() - time) 
 
   END SUBROUTINE mckpp_start_timer
 
@@ -101,6 +100,9 @@ CONTAINS
                                    (time - timers(index)%start_time) 
       timers(index)%running = .FALSE.
     END IF 
+
+    timers(index_timer)%elapsed_time = timers(index_timer)%elapsed_time + & 
+                                      (get_current_time() - time) 
 
   END SUBROUTINE mckpp_stop_timer
 
