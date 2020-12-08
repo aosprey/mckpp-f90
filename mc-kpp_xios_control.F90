@@ -4,6 +4,7 @@ MODULE mckpp_xios_control
 
 USE mpi 
 USE xios 
+USE mckpp_timer
 USE mckpp_xios_io
 
 IMPLICIT NONE 
@@ -32,10 +33,13 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
   REAL :: restart_time
  
   ! Send diags to XIOS at every ts 
+  CALL mckpp_start_timer("Write diagnostic output") 
   CALL mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields) 
+  CALL mckpp_stop_timer("Write diagnostic output") 
 
   ! Check if restart timestep 
   ! - always write restart at end of run 
+  CALL mckpp_start_timer("Write restart output") 
   IF (MOD(kpp_const_fields%ntime,kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
     kpp_const_fields%ntime .EQ. kpp_const_fields%nend*kpp_const_fields%ndtocn) THEN
 
@@ -45,6 +49,7 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
     WRITE(6,*) "Writing restart at time ", restart_time    
     CALL mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
   END IF 
+  CALL mckpp_stop_timer("Write restart output") 
 
 END SUBROUTINE mckpp_xios_output_control
 

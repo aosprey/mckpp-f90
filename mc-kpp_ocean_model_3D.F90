@@ -11,7 +11,6 @@ IMPLICIT NONE
   INTEGER :: ntime
   
   ! Initialise
-  ! - could have a routine to call all of these
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Initialisation"
   ALLOCATE(kpp_3d_fields)
 
@@ -25,7 +24,6 @@ IMPLICIT NONE
   CALL mckpp_stop_timer('Initialization')
 
   ! Main time-stepping loop
-  ! - again this could go in a timestep routine
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Timestepping loop"
   CALL mckpp_start_timer('Timestepping loop')
 
@@ -38,18 +36,22 @@ IMPLICIT NONE
 
      ! Fluxes
      IF (MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtocn) .EQ. 0) THEN
+       CALL mckpp_start_timer("Update surface fluxes")
        CALL mckpp_fluxes(kpp_3d_fields,kpp_const_fields)
+       CALL mckpp_stop_timer("Update surface fluxes")
      ENDIF
 
      ! Update boundary conditions
      IF (kpp_const_fields%ntime .ne. 1) THEN 
+       CALL mckpp_start_timer("Update ancillaries")
        CALL mckpp_boundary_update(kpp_3d_fields,kpp_const_fields)
+       CALL mckpp_stop_timer("Update ancillaries")
      ENDIF 
        
      ! Physics
      CALL mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
 
-     ! Output
+     ! Output 
      CALL mckpp_output_control(kpp_3d_fields,kpp_const_fields)
      
   END DO
