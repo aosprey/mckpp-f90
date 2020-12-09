@@ -146,18 +146,4 @@
      REAL*4 :: dtout,flx_first_timein
      
   ENDTYPE kpp_const_type
-  
-  TYPE kpp_timer_type
-#ifdef OPENMP
-     REAL,dimension(timer_max_timers) ::& 
-          timer_elapsed_time,timer_start_time
-#else
-     REAL,dimension(timer_max_timers) :: timer_elapsed_time,&
-          timer_start_time
-#endif
-     LOGICAL,dimension(timer_max_timers) :: timer_running
-     CHARACTER(LEN=30),dimension(timer_max_timers) :: timer_all_names
-     
-     INTEGER :: timer_number_allocated
-  ENDTYPE kpp_timer_type
-  
+

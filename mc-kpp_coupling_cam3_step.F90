@@ -195,7 +195,7 @@ SUBROUTINE MCKPP_COUPLING_CAM3_STEP(srf_state,srfflx)
   !IF (masterproc) WRITE(6,*) 'MCKPP_COUPLING_CAM3_STEP: Returned from MCKPP_OUTPUT_CONTROL'
 
   ! Write MC-KPP checkpoint files if necessary
-  !IF (kpp_const_fields%ntime .gt. 1) CALL MCKPP_RESTART_CONTROL
+  CALL MCKPP_RESTART_CONTROL
 
   ! Output SST and ice back to CAM
   !IF (masterproc) WRITE(6,*) 'MCKPP_COUPLING_CAM3_STEP: Sending SST and ice back to CAM atmosphere'

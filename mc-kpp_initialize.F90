@@ -619,27 +619,3 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
 
   RETURN
 END SUBROUTINE MCKPP_INITIALIZE_FIELDS
-
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_OUTPUT
-  USE mckpp_types, only: kpp_const_fields,kpp_3d_fields
-  USE pmgrid, only: masterproc
-#else
-SUBROUTINE MCKPP_INITIALIZE_OUTPUT(kpp_3d_fields,kpp_const_fields)
-#endif
-
-  USE mckpp_xios_control
-
-  IMPLICIT NONE
-
-#ifndef MCKPP_CAM3
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
-#endif
-
-  CALL mckpp_xios_initialize_output(kpp_3d_fields,kpp_const_fields)
-  
-  RETURN
-END SUBROUTINE MCKPP_INITIALIZE_OUTPUT

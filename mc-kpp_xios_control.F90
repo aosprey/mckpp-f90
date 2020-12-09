@@ -4,6 +4,7 @@ MODULE mckpp_xios_control
 
 USE mpi 
 USE xios 
+USE mckpp_timer
 USE mckpp_xios_io
 
 IMPLICIT NONE 
@@ -12,7 +13,7 @@ IMPLICIT NONE
 CONTAINS 
 
 ! Initialization for diagnostic output 
-SUBROUTINE mckpp_xios_initialize_output(kpp_3d_fields,kpp_const_fields)
+SUBROUTINE mckpp_initialize_output(kpp_3d_fields,kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -20,11 +21,11 @@ SUBROUTINE mckpp_xios_initialize_output(kpp_3d_fields,kpp_const_fields)
   CALL mckpp_xios_initialize()
   CALL mckpp_xios_diagnostic_definition(kpp_3d_fields, kpp_const_fields)
 
-END SUBROUTINE 
+END SUBROUTINE mckpp_initialize_output
 
 
-! Control of XIOS diagnostic and restart output 
-SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields) 
+! Diagnostic output
+SUBROUTINE mckpp_output_control(kpp_3d_fields, kpp_const_fields) 
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -34,8 +35,20 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
   ! Send diags to XIOS at every ts 
   CALL mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields) 
 
+END SUBROUTINE mckpp_output_control
+
+
+! Restart output
+SUBROUTINE mckpp_restart_control(kpp_3d_fields, kpp_const_fields) 
+
+  TYPE(kpp_3d_type) :: kpp_3d_fields
+  TYPE(kpp_const_type) :: kpp_const_fields
+
+  REAL :: restart_time
+ 
   ! Check if restart timestep 
   ! - always write restart at end of run 
+  CALL mckpp_start_timer("Write restart output") 
   IF (MOD(kpp_const_fields%ntime,kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
     kpp_const_fields%ntime .EQ. kpp_const_fields%nend*kpp_const_fields%ndtocn) THEN
 
@@ -45,8 +58,9 @@ SUBROUTINE mckpp_xios_output_control(kpp_3d_fields, kpp_const_fields)
     WRITE(6,*) "Writing restart at time ", restart_time    
     CALL mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
   END IF 
+  CALL mckpp_stop_timer("Write restart output") 
 
-END SUBROUTINE mckpp_xios_output_control
+END SUBROUTINE mckpp_restart_control
 
 
 SUBROUTINE mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 

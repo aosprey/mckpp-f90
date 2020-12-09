@@ -6,9 +6,10 @@ SUBROUTINE mckpp_physics_driver
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
-SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
-  IMPLICIT NONE
+SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_timer
 #endif
+  IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
 #include <parameter.inc>
@@ -18,7 +19,6 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
 #endif
   
   ! Local
@@ -49,7 +49,7 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields) &
-!$OMP SHARED(kpp_timer) & 
+!!$OMP SHARED(kpp_timer) & 
 !$OMP PRIVATE(trans_timer_name,phys_timer_name,tid)
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid
@@ -61,16 +61,18 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #endif /*OPENMP*/
   DO ipt=1,npts
      IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
-        !CALL KPP_TIMER_TIME(kpp_timer,trans_timer_name,1)
+        CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
-        !CALL KPP_TIMER_TIME(kpp_timer,trans_timer_name,0)
-        !CALL KPP_TIMER_TIME(kpp_timer,phys_timer_name,1)                
+        CALL mckpp_stop_timer(trans_timer_name) 
+
+        CALL mckpp_start_timer(phys_timer_name)
         CALL mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)       
         CALL mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)        
-        !CALL KPP_TIMER_TIME(kpp_timer,phys_timer_name,0)
-        !CALL KPP_TIMER_TIME(kpp_timer,trans_timer_name,1)
+        CALL mckpp_stop_timer(phys_timer_name)
+
+        CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
-        !CALL KPP_TIMER_TIME(kpp_timer,trans_timer_name,0)
+        CALL mckpp_stop_timer(trans_timer_name) 
      ENDIF
   ENDDO
 #ifdef OPENMP
@@ -80,15 +82,13 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields,kpp_timer)
 #endif /*MCKPP_CAM3*/
   
   IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN
-     !CALL KPP_TIMER_TIME(kpp_timer,'Top level',0)
-     !CALL KPP_TIMER_TIME(kpp_timer,'Update ancillaries',1)
+     CALL mckpp_start_timer("Update ancillaries")
 #ifdef MCKPP_CAM3
      CALL MCKPP_PHYSICS_OVERRIDES_BOTTOMTEMP
 #else
      CALL MCKPP_PHYSICS_OVERRIDES_BOTTOMTEMP(kpp_3d_fields,kpp_const_fields)
 #endif
-     !CALL KPP_TIMER_TIME(kpp_timer,'Update ancillaries',0)
-     !CALL KPP_TIMER_TIME(kpp_timer,'Top level',1)
+     CALL mckpp_stop_timer("Update ancillaries")
   ENDIF
 
   RETURN

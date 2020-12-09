@@ -1,4 +1,4 @@
-SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields,kpp_timer)
+SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
 
   IMPLICIT NONE
 
@@ -6,7 +6,6 @@ SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields,kpp_timer)
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_timer_type) :: kpp_timer
 
   REAL(8), DIMENSION(NPTS) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   INTEGER :: ipt

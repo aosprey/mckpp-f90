@@ -1,5 +1,4 @@
 #include <parameter.inc>
-#include <kpp_timer.com>
 	TYPE kpp_3D_type
 
 	real :: U(NPTS,NZP1,NVEL),
@@ -117,17 +116,3 @@ c      real wst(0:891,0:49)      ! lookup table for ws
      +     L_SFCORR,L_SFCORR_WITHZ,
      +     L_RELAX_SAL,L_RELAX_OCNT
       ENDTYPE kpp_const_type
-
-      TYPE kpp_timer_type
-#ifdef OPENMP
-      REAL,dimension(timer_max_timers) :: 
-     +     timer_elapsed_time,timer_start_time
-#else
-      REAL,dimension(timer_max_timers) :: timer_elapsed_time,
-     +     timer_start_time
-#endif
-      LOGICAL,dimension(timer_max_timers) :: timer_running
-      CHARACTER(LEN=30),dimension(timer_max_timers) :: timer_all_names
-      
-      INTEGER :: timer_number_allocated
-      ENDTYPE
