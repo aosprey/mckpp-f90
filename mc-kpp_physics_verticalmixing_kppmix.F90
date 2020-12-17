@@ -1,7 +1,10 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(dVsq,ustar,Bo,Bosol,alphaDT,betaDS,&
      Ritop, hbl , kbl, kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
 
@@ -17,13 +20,6 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(dVsq,ustar,Bo,Bosol,alphaDT,betaD
 !
 !.......................................................................
 !     
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-! Automatically includes parameter.inc
-#include <mc-kpp_3d_type.com>
-#endif
 
   integer km,kmp1,mdiff,ki
   

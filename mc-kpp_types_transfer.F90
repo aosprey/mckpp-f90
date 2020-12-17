@@ -1,18 +1,15 @@
 SUBROUTINE mckpp_fields_3dto1d(kpp_fields_3d,point,kpp_fields_1d)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_type,kpp_1d_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
 
 !     Accepts a 3D variable of the KPP derived type.
 !     Returns a 1D variable of the KPP derived type, extraced from the 3D variable
 !     at a specified point.
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   TYPE(kpp_3d_type),intent(in)  :: kpp_fields_3d
   TYPE(kpp_1d_type),intent(out) :: kpp_fields_1d
@@ -189,19 +186,16 @@ END SUBROUTINE mckpp_fields_3dto1d
 
 SUBROUTINE mckpp_fields_1dto3d(kpp_fields_1d,point,kpp_fields_3d)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_3d_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
   
   ! Accepts a 1D and a 3D variable of the KPP derived type.
   ! Returns the 3D variable, updated at a specified point with the 
   ! values from the 1D variable.
-  
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   TYPE(kpp_3d_type),intent(inout)  :: kpp_fields_3d
   TYPE(kpp_1d_type),intent(in) :: kpp_fields_1d

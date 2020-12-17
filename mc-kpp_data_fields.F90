@@ -1,8 +1,11 @@
-#include <parameter.inc>
-#include <kpp_timer.com>
- 
+MODULE mckpp_data_fields
+
+  USE mckpp_parameters
+
+  IMPLICIT NONE 
+
   TYPE kpp_3D_type
-     real :: U(NPTS,NZP1,NVEL),&
+     REAL :: U(NPTS,NZP1,NVEL),&
           X(NPTS,NZP1,NSCLR),&
           Rig(NPTS,NZP1),&
           dbloc(NPTS,NZ),&
@@ -57,10 +60,8 @@
      integer :: old(NPTS),old_pt,new(NPTS),new_pt,&
           jerlov(NPTS),jerlov_pt,nmodeadv(NPTS,2),&
           modeadv(NPTS,maxmodeadv,2)     
-     real,allocatable :: VEC_mean(:,:,:),VEC_range(:,:,:,:),&
-          SCLR_mean(:,:),SCLR_range(:,:,:)
   ENDTYPE kpp_3D_type
-  
+ 
   TYPE kpp_1D_type
      real :: U(NZP1,NVEL),U_init(NZP1,NVEL),&
           X(NZP1,NSCLR),&
@@ -103,7 +104,7 @@
           nmodeadv(2),modeadv(maxmodeadv,2),point
      logical :: l_ocean,l_initflag,comp_flag
   ENDTYPE kpp_1D_type
-  
+
   TYPE kpp_const_type
      real :: zm(nzp1),&
           hm(nzp1),&
@@ -141,9 +142,11 @@
           L_UPD_OCNT,L_PERIODIC_OCNT,L_INTERP_OCNT,L_UPD_SAL,L_PERIODIC_SAL,L_INTERP_SAL,&
           L_VARY_BOTTOM_TEMP,L_UPD_BOTTOM_TEMP,L_PERIODIC_BOTTOM_TEMP,&
           L_OUTKELVIN,L_COUPLE_CURRENTS,L_FLUXDATA,L_REST,L_ADVECT,&
-	  L_REGGRID,L_LANDSEA,L_VGRID_FILE,L_STRETCHGRID,L_CPLWGHT,L_JERLOV,& 
+          L_REGGRID,L_LANDSEA,L_VGRID_FILE,L_STRETCHGRID,L_CPLWGHT,L_JERLOV,& 
           L_INITDATA,L_INTERPINIT,L_NO_ISOTHERM,L_NO_FREEZE,L_DAMP_CURR
      REAL*4 :: dtout,flx_first_timein
      
   ENDTYPE kpp_const_type
 
+
+END MODULE mckpp_data_fields

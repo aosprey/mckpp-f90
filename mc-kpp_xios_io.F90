@@ -1,14 +1,13 @@
 MODULE mckpp_xios_io
 
+#ifndef MCKPP_CAM3
+USE mckpp_data_fields
+#endif
+USE mckpp_parameters
+
 USE xios 
 
 IMPLICIT NONE 
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   INTEGER :: xios_comm
   TYPE(xios_context) :: ctx_hdl_diags

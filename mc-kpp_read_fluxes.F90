@@ -1,10 +1,11 @@
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
      kpp_3d_fields, kpp_const_fields)
 
+  USE mckpp_data_fields
+
   IMPLICIT NONE
 
 #include <netcdf.inc>
-#include <mc-kpp_3d_type.com>
 
   TYPE(kpp_3d_type), INTENT(INOUT) :: kpp_3d_fields
   TYPE(kpp_const_type), INTENT(INOUT) :: kpp_const_fields

@@ -3,12 +3,14 @@
 #include <params.h>
 SUBROUTINE mckpp_read_ice  
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif  
 
   ! Read in ice concentrations from a user-provided netCDF file.
@@ -23,12 +25,9 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: ice_temp(PLON,PLAT), ice_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,ico
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

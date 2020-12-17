@@ -1,7 +1,10 @@
 SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stable, caseA, kbl, &
      gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else
+  USE mckpp_data_fields
 #endif
 
   ! mixing coefficients within boundary layer depend on surface
@@ -12,13 +15,6 @@ SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stab
 
   ! CAUTION if mixing bottoms out at hbl = -zgrid(km) THEN
   ! fictious layer kmp1 is needed with small but finite width (eg. 1.e-10)
-  
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-  ! Automatically includes parameter.inc!
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

@@ -5,6 +5,7 @@ SUBROUTINE mckpp_reformat_mask_output_chunk(threed_in,nz_in,missval,threed_out)
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields
   
   IMPLICIT NONE
@@ -33,8 +34,10 @@ END SUBROUTINE mckpp_reformat_mask_output_chunk
 #else
 
 SUBROUTINE mckpp_reformat_mask_input_2d(threed_in,nz_in,mask,missval,twod_out)
+
+  USE mckpp_parameters
+
   IMPLICIT NONE
-#include <parameter.inc>
 
   INTEGER, intent(in) :: nz_in
   REAL*4,intent(in) :: threed_in(NX,NY,nz_in),missval
@@ -57,8 +60,10 @@ SUBROUTINE mckpp_reformat_mask_input_2d(threed_in,nz_in,mask,missval,twod_out)
 END SUBROUTINE mckpp_reformat_mask_input_2d
 
 SUBROUTINE mckpp_reformat_mask_input_1d(twod_in,mask,missval,oned_out)
+
+  USE mckpp_parameters
+
   IMPLICIT NONE
-#include <parameter.inc>
 
   REAL*4,intent(in) :: twod_in(NX,NY),missval
   REAL*4,intent(out) :: oned_out(NPTS)
@@ -80,8 +85,10 @@ SUBROUTINE mckpp_reformat_mask_input_1d(twod_in,mask,missval,oned_out)
 END SUBROUTINE mckpp_reformat_mask_input_1d
 
 SUBROUTINE mckpp_reformat_mask_output_1d(oned_in,mask,missval,twod_out)
+
+  USE mckpp_parameters
+
   IMPLICIT NONE
-#include <parameter.inc>
 
   REAL*4,intent(in) :: oned_in(NPTS),missval
   REAL*4,intent(out) :: twod_out(NX,NY)
@@ -102,9 +109,10 @@ SUBROUTINE mckpp_reformat_mask_output_1d(oned_in,mask,missval,twod_out)
 END SUBROUTINE mckpp_reformat_mask_output_1d
 
 SUBROUTINE mckpp_reformat_mask_output_2d(twod_in,nz_in,mask,missval,threed_out)
+
+  USE mckpp_parameters
   
   IMPLICIT NONE
-#include <parameter.inc>
   
   INTEGER,intent(in) :: nz_in
   REAL*4,intent(in) :: twod_in(NPTS,nz_in),missval

@@ -1,18 +1,14 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA, blmc,&
      kpp_1d_fields, kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
 
   ! enhance the diffusivity at the kbl-.5 interface
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   !     Necessary for IMPLICIT NONE (NPK 11/2/13)
   real dkmp5,dstar

@@ -1,19 +1,15 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
   
   ! compute turbulent velocity scales.
   ! use a 2D-lookup table for wm and ws as functions of ustar and
   ! zetahat (=vonk*sigma*hbl*bfsfc).
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else  
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif  
 
   ! Necessary for IMPLICIT NONE (NPK 11/2/13)
   INTEGER ni,nj,i,iz,izp1,j,ju,jup1

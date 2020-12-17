@@ -1,25 +1,21 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
   !  Interface between 1-d model and vertical mixing
   IMPLICIT NONE
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else  
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
-
-! inputs including those from common.inc and parameter.inc
+! inputs 
   type(kpp_1d_type) :: kpp_1d_fields
   type(kpp_const_type) :: kpp_const_fields
   real B0,B0sol,ustar
 
-! outputs including those to common.inc
+! outputs 
   real hmixn                ! boundary layer depth (m)
   integer kmixn       
   real rhob

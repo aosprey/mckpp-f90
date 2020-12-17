@@ -1,6 +1,9 @@
 SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
   IMPLICIT NONE
 
@@ -14,13 +17,6 @@ SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo
 
   INTEGER,parameter :: nuout=6,nuerr=0
   
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
-
   ! Input
   integer intri             ! index for tri.diag. coeff
   REAL Uo(NZP1,NVEL),Xo(NZP1,NSCLR)

@@ -5,16 +5,13 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   ! only once.
 
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
   
   IMPLICIT NONE
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Include all the common blocks containing constants (boo, hiss, common blocks)
 #include <constants.com>

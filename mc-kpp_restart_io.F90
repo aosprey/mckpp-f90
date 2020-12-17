@@ -1,11 +1,11 @@
 #ifndef MCKPP_CAM3
 SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
 
+  USE mckpp_data_fields
+
   IMPLICIT NONE
   INTEGER,parameter :: nuout=6, nuerr=0
 
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   ! Inputs 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -41,12 +41,11 @@ SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
 END SUBROUTINE MCKPP_RESTART_IO_READ
 
 SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
-      
+ 
+  USE mckpp_data_fields
+     
   IMPLICIT NONE
   INTEGER, parameter :: nuout=6,nuerr=0
-  
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
 
   ! Inputs
   TYPE(kpp_3d_type) :: kpp_3d_fields
@@ -86,6 +85,7 @@ END SUBROUTINE MCKPP_RESTART_IO_WRITE
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE ppgrid, only: pcols,begchunk,endchunk
@@ -93,6 +93,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
   USE pmgrid, only: masterproc
 #else
 SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
   IMPLICIT NONE
@@ -100,13 +101,11 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER,parameter :: my_nx=PLON,my_ny=PLAT
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type),intent(in) :: kpp_3d_fields
   TYPE(kpp_const_type),intent(in) :: kpp_const_fields
   INTEGER,parameter :: my_nx=NX,my_ny=NY
@@ -675,6 +674,7 @@ END SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF  
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
@@ -685,6 +685,7 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF
 #endif
 #else
 SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
   IMPLICIT NONE
@@ -692,13 +693,11 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER,parameter :: my_nx=PLON,my_ny=PLAT
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1),double_time
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type),intent(inout) :: kpp_3d_fields
   TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
   INTEGER,parameter :: my_nx=NX,my_ny=NY

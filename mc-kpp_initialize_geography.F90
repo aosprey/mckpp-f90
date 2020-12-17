@@ -1,21 +1,20 @@
 #ifdef MCKPP_CAM3
 SUBROUTINE mckpp_initialize_geography
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields,kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: ichnk,icol,ncol
 #else  
-  ! Automatically includes parameter.inc
-#include <mc-kpp_3d_type.com>  
   TYPE(kpp_3d_type)    :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif  

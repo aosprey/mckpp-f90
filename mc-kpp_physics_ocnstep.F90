@@ -1,6 +1,9 @@
 SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else
+  USE mckpp_data_fields
 #endif
   
   !-----------------------------------------------------------------------
@@ -36,13 +39,6 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   IMPLICIT NONE
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
-  
-  ! Automatically includes parameter.inc!
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
   
 #include <ocn_energy.com>
   

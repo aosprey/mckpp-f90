@@ -2,21 +2,20 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE mckpp_physics_driver
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_1d_type,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
   USE mckpp_timer
 #endif
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol,ichnk
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

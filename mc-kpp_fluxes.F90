@@ -1,8 +1,9 @@
 SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
 
+  USE mckpp_data_fields
+
   IMPLICIT NONE
 
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

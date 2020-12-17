@@ -6,10 +6,9 @@ MODULE mckpp_types
   USE shr_kind_mod,only: r8 => shr_kind_r8, r4=>shr_kind_r4
   USE ppgrid,      only: pcols,begchunk,endchunk
   USE phys_grid,   only: get_ncols_p
+  USE mckpp_parameters
   
   IMPLICIT NONE
-  
-#include <parameter.inc>
   
   PUBLIC
 

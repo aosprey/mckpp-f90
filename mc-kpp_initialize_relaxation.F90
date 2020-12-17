@@ -3,12 +3,14 @@
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_RELAXATION
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
 ! Re-write logic to allow for relaxing either SST or
@@ -19,12 +21,9 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
   PARAMETER (nuout=6,nuerr=0)
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>  
   REAL(r8) :: relax_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

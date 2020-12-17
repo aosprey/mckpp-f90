@@ -2,6 +2,7 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE mckpp_initialize_ocean_profiles
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8
   USE pmgrid, only: masterproc
@@ -9,6 +10,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles
   USE phys_grid, only: get_ncols_p, scatter_field_to_chunk
 #else
 SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
   IMPLICIT NONE
@@ -16,13 +18,10 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>  
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol
   INTEGER, parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>  
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
   INTEGER, parameter :: my_nx=NX,my_ny=NY
@@ -309,10 +308,10 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only : r8=>shr_kind_r8, r4=>shr_kind_r4
 #endif  
+  USE mckpp_parameters
   IMPLICIT NONE
   
   INTEGER,parameter :: nuout=6,nuerr=0
-#include <parameter.inc>
   INTEGER, intent(in) :: nz_in
 
 #ifdef MCKPP_CAM3
@@ -370,11 +369,13 @@ END SUBROUTINE mckpp_initialize_ocean_profiles_vinterp
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields,kpp_1d_type
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p  
 #else
 SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
   ! Initialize ocean model:
@@ -386,11 +387,8 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
   INTEGER, parameter :: nuout=6,nuerr=0
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol,ichnk
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields  
   ! Output

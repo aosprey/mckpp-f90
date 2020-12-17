@@ -2,18 +2,15 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
+  USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 #include <landsea.com>
 #include <constants.com>
 #include <times.com>
@@ -299,22 +296,22 @@ END SUBROUTINE MCKPP_INITIALIZE_NAMELIST
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_FIELDS
   USE shr_kind_mod, only : r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only : kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE phys_grid, only : get_ncols_p,get_rlat_all_p,get_rlon_all_p
   USE ppgrid, only : pcols,begchunk,endchunk
   USE pmgrid, only : masterproc
 #else
 SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: clat1(pcols),clon1(pcols)
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

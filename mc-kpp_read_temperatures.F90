@@ -3,12 +3,14 @@
 #include <params.h>
 SUBROUTINE MCKPP_READ_TEMPERATURES_3D  
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)  
+  USE mckpp_data_fields
 #endif
 
   IMPLICIT NONE
@@ -16,12 +18,10 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: ocnT_temp(PLON,PLAT,NZP1), ocnT_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
   INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
   INTEGER,parameter :: my_nx=NX,my_ny=NY
@@ -152,12 +152,14 @@ END SUBROUTINE MCKPP_READ_TEMPERATURES_3D
 #include <params.h>
 SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
 
   IMPLICIT NONE
@@ -166,13 +168,10 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: bottom_temp(PLON,PLAT), bottom_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
   INTEGER, parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
   INTEGER, parameter :: my_nx=NX, my_ny=NY

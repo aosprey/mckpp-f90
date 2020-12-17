@@ -4,7 +4,10 @@
 #endif
 SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
 
   ! Compute coefficients for tridiagonal matrix (dimension=nzi).
@@ -13,13 +16,6 @@ SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
   IMPLICIT NONE
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -56,7 +52,10 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
      dto,nzi,ind,rhs,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_fields
 #endif
 
   ! Compute right hand side of tridiagonal matrix for scalar fields:
@@ -70,13 +69,6 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
   
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
-      
   !  Input
   TYPE(kpp_const_type) :: kpp_const_fields
   real dto            ! timestep interval (seconds)
@@ -133,13 +125,13 @@ END SUBROUTINE mckpp_physics_solvers_tridrhs
 
 SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
 
+  USE mckpp_parameters
+
   ! Solve tridiagonal matrix for new vector yn, given right hand side
   ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
   IMPLICIT NONE
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
-
-#include <parameter.inc>
 
   ! Input
   integer nzi               ! dimension of matrix
@@ -188,7 +180,10 @@ END SUBROUTINE mckpp_physics_solvers_tridmat
 subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fields,kpp_const_fields)
   
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else
+  USE mckpp_data_fields
 #endif
 
 !     Modify rhs to correct scalar, jsclr, 
@@ -206,13 +201,6 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
   IMPLICIT NONE
   INTEGER nuout,nuerr
   PARAMETER (nuout=6,nuerr=0)
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Input
   integer nzi,&              ! vertical dimension of field

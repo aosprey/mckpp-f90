@@ -3,12 +3,14 @@
 #include <params.h>
 SUBROUTINE mckpp_initialize_landsea
   USE shr_kind_mod, only : r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_fields
 #endif
  
   IMPLICIT NONE
@@ -17,14 +19,11 @@ SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
  
 #include <netcdf.inc>
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: landsea(PLON,PLAT)
   REAL(r8) :: ocdepth(PLON,PLAT)
   REAL(r8) :: landsea_chunk(PCOLS,begchunk:endchunk),ocdepth_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk, icol, ncol
 #else
-! Automatically includes parameter.inc
-#include <mc-kpp_3d_type.com>
   TYPE (kpp_3d_type) :: kpp_3d_fields
   TYPE (kpp_const_type) :: kpp_const_fields
   REAL :: landsea(npts)
