@@ -2,12 +2,12 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
+  USE mckpp_parameters
 
   IMPLICIT NONE
 
@@ -42,7 +42,10 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   ! Local variables    
   REAL :: alat,alon,delta_lat,delta_lon,dscale
   INTEGER :: i,j,k,l,ipt,ix,iy
-  
+
+  NAMELIST/NAME_PARAMETERS/nz, ndim, nx, ny, nvel, nsclr, nsb, itermax, hmixtolfrac, & 
+       ngrid, nzl, nzu, nzdivmax, nztmax, igridmax, & 
+       nsflxs, njdt, ndharm, maxmodeadv, mr, nx_globe, ny_globe
   NAMELIST/NAME_CONSTANTS/grav,vonk,sbc,twopi,onepi,TK0,spd,dpy,&
        epsw,albocn,EL,SL,FL,FLSN
   NAMELIST/NAME_PROCSWIT/LKPP,LRI,LDD,LICE,&
@@ -81,15 +84,31 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   CALL SETRTEOPTS("namelist=old")
 #endif
   
+  ! Open the namelist
+  OPEN(75,FILE='3D_ocn.nml')  
+
+  ! Read parameters namelist first
+  READ(75,NAME_CONSTANTS) 
+  WRITE(nuout,*) 'KPP : Read Namelist PARAMETERS'
+  nzm1 = nz -1 
+  nzp1 = nz+1
+  npts = nx * ny 
+  nvp1 = nvel + 1 
+  nsp1 = nsclr + 1 
+  nzp1tmax = nztmax + 1 
+  nsflxsm1 = nsflxs - 1
+  nsflxsp2 = nsflxs + 2
+  mrp1 = mr + 1 
+  npts_globe = nx_globe + ny_globe 
+
+  WRITE(nuout,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe
+
 #ifndef MCKPP_CAM3
   CALL mckpp_allocate_const_fields(kpp_const_fields) 
 #endif 
   allocate(kpp_const_fields%wmt(0:891,0:49))
   allocate(kpp_const_fields%wst(0:891,0:49))
   allocate(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
-
-  ! Open the namelist
-  OPEN(75,FILE='3D_ocn.nml')  
 
   ! Initialse and read the constants name list
   spd=86400.                ! secs/day

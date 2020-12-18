@@ -12,11 +12,10 @@ IMPLICIT NONE
   INTEGER :: xios_comm
   TYPE(xios_context) :: ctx_hdl_diags
 
-  INTEGER, PRIVATE, PARAMETER :: my_nx=NX, my_ny=NY, my_nzp1=NZP1
-  REAL, PRIVATE, DIMENSION(my_nx) :: lons
-  REAL, PRIVATE, DIMENSION(my_ny) :: lats
-  REAL, PRIVATE, DIMENSION(my_nzp1) :: levs
-  LOGICAL, PRIVATE, DIMENSION(my_nx*my_ny) :: mask
+  REAL, PRIVATE, ALLOCATABLE, DIMENSION(:) :: lons
+  REAL, PRIVATE, ALLOCATABLE, DIMENSION(:) :: lats
+  REAL, PRIVATE, ALLOCATABLE, DIMENSION(:) :: levs
+  LOGICAL, PRIVATE, ALLOCATABLE, DIMENSION(:) :: mask
   TYPE(xios_duration), PRIVATE  :: dtime
   TYPE(xios_date) :: start_date
 
@@ -58,6 +57,7 @@ SUBROUTINE mckpp_xios_set_dimensions(kpp_3d_fields, kpp_const_fields)
   ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
   start_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%startt+1)
 
+  ALLOCATE( lons(nx), lats(ny), levs(nzp1), mask(npts) ) 
   lons = kpp_3d_fields%dlon(1:NX)
   lats = kpp_3d_fields%dlat(1::NX)
   levs = kpp_const_fields%zm
@@ -185,13 +185,14 @@ SUBROUTINE mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  REAL, DIMENSION(my_nx*my_ny,nzp1) :: temp_2d
-  REAL, DIMENSION(my_nx*my_ny) :: temp_1d
+  REAL, ALLOCATABLE, DIMENSION(:,:) :: temp_2d
+  REAL, ALLOCATABLE, DIMENSION(:) :: temp_1d
   INTEGER :: k, ix, iy, ipt
 
   CALL xios_update_calendar(1)
 
   !!! Depth-varying diagnostics 
+  ALLOCATE( temp_2d(npts, nzp1) ) 
 
   ! Zonal current
   CALL xios_send_field("u", kpp_3d_fields%U(:,:,1))
@@ -274,6 +275,7 @@ SUBROUTINE mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields)
   CALL xios_send_field("sinc_fcorr", kpp_3d_fields%Sinc_fcorr)
 
   !!! Single-level diagnostics 
+  ALLOCATE( temp_1d(npts) ) 
 
   ! Mixed layer depth  
   CALL xios_send_field("hmix", kpp_3d_fields%hmix) 
