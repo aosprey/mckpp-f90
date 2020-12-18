@@ -37,8 +37,6 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   !              16 Nov 1994 - wgl : new KPP codes no temporary grid
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <ocn_energy.com>
   

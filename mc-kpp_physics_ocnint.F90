@@ -15,8 +15,6 @@ SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo
 
   ! Written  19 March 1991 - jan
 
-  INTEGER,parameter :: nuout=6,nuerr=0
-  
   ! Input
   integer intri             ! index for tri.diag. coeff
   REAL Uo(NZP1,NVEL),Xo(NZP1,NSCLR)

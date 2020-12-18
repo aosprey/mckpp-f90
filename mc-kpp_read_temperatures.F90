@@ -14,7 +14,6 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
@@ -163,7 +162,6 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
   
 #include <netcdf.inc>
 

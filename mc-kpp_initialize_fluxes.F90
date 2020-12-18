@@ -12,8 +12,6 @@ SUBROUTINE mckpp_initialize_fluxes_variables(kpp_3d_fields)
 ! Set up parameters for calculating fluxes and initialize fluxes.
 ! intermediate values computed every ndtld
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol
@@ -52,8 +50,6 @@ end SUBROUTINE mckpp_initialize_fluxes_variables
 SUBROUTINE mckpp_initialize_fluxes_file(kpp_const_fields)
   USE mckpp_data_fields
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 #include <flx_in.com>

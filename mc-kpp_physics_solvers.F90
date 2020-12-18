@@ -14,8 +14,6 @@ SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
   !     Note: cu(1) = 0. and cl(nzi) = 0. are necessary conditions.
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -66,8 +64,6 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
   ! bottom  ..... ..... +dto/h(nzi)*diff(nzi)/dzb(nzi)*yo(nzi+1)
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
   !  Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -130,8 +126,6 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
   ! Solve tridiagonal matrix for new vector yn, given right hand side
   ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
   ! Input
   integer nzi               ! dimension of matrix
@@ -199,8 +193,6 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        6 : Seasonal mixed layer horizontal advection to dm
 !        7 : Seasonal thermocline horizontal advection to 1.5 dm
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
   ! Input
   integer nzi,&              ! vertical dimension of field

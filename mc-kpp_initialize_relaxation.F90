@@ -17,8 +17,6 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
 ! salinity - NPK 24/08/11
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
 #ifdef MCKPP_CAM3
   REAL(r8) :: relax_chunk(PCOLS,begchunk:endchunk)

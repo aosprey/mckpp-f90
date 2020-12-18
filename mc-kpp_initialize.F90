@@ -40,8 +40,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
 #endif
   
   ! Local variables    
-  INTEGER nuout,nuerr
-  PARAMETER(nuout=6,nuerr=0)  
   REAL :: alat,alon,delta_lat,delta_lon,dscale
   INTEGER :: i,j,k,l,ipt,ix,iy
   
@@ -83,10 +81,13 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   CALL SETRTEOPTS("namelist=old")
 #endif
   
+#ifndef MCKPP_CAM3
+  CALL mckpp_allocate_const_fields(kpp_const_fields) 
+#endif 
   allocate(kpp_const_fields%wmt(0:891,0:49))
   allocate(kpp_const_fields%wst(0:891,0:49))
   allocate(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
-  
+
   ! Open the namelist
   OPEN(75,FILE='3D_ocn.nml')  
 
@@ -315,9 +316,11 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
-  INTEGER nuout,nuerr
-  PARAMETER(nuout=6,nuerr=0)  
   INTEGER :: iy,ix,ipt
+
+#ifndef MCKPP_CAM3
+  CALL mckpp_allocate_3d_fields(kpp_3d_fields)
+#endif
 
   ! Set initial values for flags in kpp_3d_fields, which otherwise
   ! might never be set if points are not coupled.

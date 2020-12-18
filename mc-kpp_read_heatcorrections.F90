@@ -14,10 +14,9 @@ SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr,start(3),count(3)
+  INTEGER start(3),count(3)
   INTEGER ix,iy,ipoint,fcorr_varid,status,lat_varid,lon_varid,time_varid,&
        lat_dimid,lon_dimid,time_dimid,fcorr_ncid,k,nlat_file,nlon_file,ntime_file
-  PARAMETER (nuout=6,nuerr=0)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
@@ -136,7 +135,6 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
 #endif
   
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3

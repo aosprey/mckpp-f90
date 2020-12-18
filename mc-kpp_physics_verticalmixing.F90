@@ -7,8 +7,6 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
 #endif
   !  Interface between 1-d model and vertical mixing
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
 ! inputs 
   type(kpp_1d_type) :: kpp_1d_fields

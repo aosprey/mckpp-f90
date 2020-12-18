@@ -24,10 +24,9 @@ SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
-  INTEGER nuout,nuerr,start(2),count(2)
+  INTEGER start(2),count(2)
   INTEGER ix,jy,ipoint,cplwght_varid,status,ncid_cplwght
   INTEGER ipoint_globe
-  PARAMETER (nuout=6,nuerr=0)
 
 #include <netcdf.inc>
 !#include <couple.com>

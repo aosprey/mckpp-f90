@@ -7,8 +7,6 @@ SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
 #endif 
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
   INTEGER k
   REAL MCKPP_FLUXES_SWDK

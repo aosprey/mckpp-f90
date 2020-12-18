@@ -17,8 +17,6 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
-  INTEGER,parameter :: nuout=6,nuerr=0
-
   ! Update SST
   IF (kpp_const_fields%L_UPD_CLIMSST .AND. &
        MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdsst) .EQ. 0) THEN

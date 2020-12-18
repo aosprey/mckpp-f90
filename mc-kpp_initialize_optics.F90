@@ -14,8 +14,6 @@ SUBROUTINE mckpp_initialize_optics(kpp_3d_fields,kpp_const_fields)
 #endif  
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3

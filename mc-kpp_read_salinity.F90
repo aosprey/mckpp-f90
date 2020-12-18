@@ -14,7 +14,6 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
   INTEGER ix,iy,iz,ipoint,sal_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
        sal_ncid,k,lat_dimid,lon_dimid,time_dimid,nlon_file,nlat_file,ntime_file,nz_file,start(4),count(4)
 

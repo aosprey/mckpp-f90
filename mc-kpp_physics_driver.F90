@@ -22,7 +22,6 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   
   ! Local
   TYPE(kpp_1d_type) :: kpp_1d_fields
-  INTEGER, parameter :: nuout=6, nuerr=0
   INTEGER :: ipt
 #ifdef OPENMP
   INTEGER :: tid,OMP_GET_THREAD_NUM
@@ -65,8 +64,8 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
         CALL mckpp_stop_timer(trans_timer_name) 
 
         CALL mckpp_start_timer(phys_timer_name)
-        CALL mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)       
-        CALL mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)        
+        CALL mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
+        CALL mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
         CALL mckpp_stop_timer(phys_timer_name)
 
         CALL mckpp_start_timer(trans_timer_name)

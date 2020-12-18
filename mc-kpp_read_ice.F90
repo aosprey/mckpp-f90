@@ -20,8 +20,6 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
   ! Written by Nick Klingaman, 11/01/08.
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3

@@ -18,6 +18,8 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_fields_3d,point,kpp_fields_1d)
   REAL :: temp
   LOGICAL :: logical_temp
 
+  CALL mckpp_allocate_1d_fields(kpp_fields_1d)
+
   DO i=1,NZP1         
      DO j=1,NVEL
         temp=kpp_fields_3d%U(point,i,j)

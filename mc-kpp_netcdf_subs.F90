@@ -1,8 +1,6 @@
 SUBROUTINE MCKPP_NCDF_DEF_DIM (ncid,dimid,dimlen,varid,name,units,delta,long_name)
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
       
@@ -32,8 +30,6 @@ END SUBROUTINE MCKPP_NCDF_DEF_DIM
 SUBROUTINE MCKPP_NCDF_DEF_VAR (ncid,varid,ndims,dims,name,units,long_name)
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   include 'netcdf.inc'
   
   REAL*4 valid_min,valid_max,miss_val,fill_val
@@ -67,10 +63,10 @@ SUBROUTINE MCKPP_NCDF_DEF_VAR (ncid,varid,ndims,dims,name,units,long_name)
 END SUBROUTINE MCKPP_NCDF_DEF_VAR
 
 SUBROUTINE MCKPP_HANDLE_ERR(status)
-  
+ 
+  USE mckpp_parameters
+ 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   include 'netcdf.inc'
   
   integer status
@@ -95,8 +91,6 @@ SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 
@@ -219,8 +213,6 @@ SUBROUTINE MCKPP_READ_IPAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 
@@ -320,9 +312,6 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   USE mckpp_parameters
 
   IMPLICIT NONE
-  
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 

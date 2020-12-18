@@ -17,8 +17,6 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
@@ -68,8 +66,6 @@ SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol

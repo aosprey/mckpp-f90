@@ -18,8 +18,6 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_3d_type)    :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif  
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
   

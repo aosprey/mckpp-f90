@@ -12,8 +12,6 @@ subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
   ! paulson (1977)
       
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
   integer nwtype
   parameter(nwtype=5) ! max number of different water types 
@@ -52,8 +50,6 @@ subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
 ! reference : two band solar absorption model of simpson and paulson (1977)
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
   integer nwtype
   parameter(nwtype=5) ! max number of different water types 

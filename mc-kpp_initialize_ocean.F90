@@ -14,7 +14,6 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>  
 
 #ifdef MCKPP_CAM3
@@ -311,7 +310,6 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
   USE mckpp_parameters
   IMPLICIT NONE
   
-  INTEGER,parameter :: nuout=6,nuerr=0
   INTEGER, intent(in) :: nz_in
 
 #ifdef MCKPP_CAM3
@@ -384,7 +382,6 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
   ! Prepare for first time step.
   
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk

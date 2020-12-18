@@ -4,7 +4,6 @@ SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
   USE mckpp_data_fields
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6, nuerr=0
 
   ! Inputs 
   TYPE(kpp_3d_type) :: kpp_3d_fields
@@ -45,7 +44,6 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
   USE mckpp_data_fields
      
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
 
   ! Inputs
   TYPE(kpp_3d_type) :: kpp_3d_fields
@@ -97,7 +95,6 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
@@ -689,7 +686,6 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3

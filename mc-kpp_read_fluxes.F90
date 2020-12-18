@@ -13,7 +13,6 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
   
   REAL*4, DIMENSION(nx,ny) :: var_in
   REAL*4 :: first_timein, last_timein, time, time_in
-  INTEGER, parameter :: nuout=6,nuerr=0
   INTEGER :: ipt, ix, iy
   INTEGER :: status, flx_ncid, time_varid
   INTEGER, DIMENSION(3) :: count, start
