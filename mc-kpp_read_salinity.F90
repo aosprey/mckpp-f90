@@ -22,13 +22,12 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: sal_temp(PLON,PLAT,NZP1), sal_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
-  INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=nx,my_ny=ny
 #endif
 
+  INTEGER :: my_nx, my_ny
   REAL :: sal_time
   REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_sal,last_timein
   CHARACTER(LEN=30) tmp_name
@@ -43,6 +42,14 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
   IF (masterproc) THEN
 #endif
 
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+  
   allocate(sal_in(my_nx,my_ny,NZP1,1))
   allocate(longitudes(NX_GLOBE))
   allocate(latitudes(NY_GLOBE))

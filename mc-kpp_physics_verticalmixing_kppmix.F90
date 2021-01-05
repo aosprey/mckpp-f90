@@ -22,18 +22,17 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(dVsq,ustar,Bo,Bosol,alphaDT,betaD
 !     
 
   integer km,kmp1,mdiff,ki
-  
-  parameter (km = NZ, kmp1 = nzp1)!, imt = 1) !NX*NY)
   parameter (mdiff = 3)  ! number of diffusivities for local arrays
 
   ! input
-  real dVsq(kmp1)           ! (velocity shear re sfc)^2      (m/s)^2
   real ustar                ! surface friction velocity       (m/s)
   real Bo                   ! surface turbulent buoy. forcing (m^2/s^3)
   real Bosol                ! radiative buoyancy forcing      (m^2/s^3)
-  real alphaDT(kmp1)        ! alpha * DT  across interfaces
-  real betaDS(kmp1)         ! beta  * DS  across interfaces
-  real Ritop(km)            ! numerator of bulk Richardson Number (m/s)^2
+  real, allocatable :: & 
+       dVsq(:), &           ! (velocity shear re sfc)^2      (m/s)^2
+       alphaDT(:), &        ! alpha * DT  across interfaces
+       betaDS(:), &         ! beta  * DS  across interfaces
+       Ritop(:)             ! numerator of bulk Richardson Number (m/s)^2
   type(kpp_1d_type) :: kpp_1d_fields
   type(kpp_const_type) :: kpp_const_fields
 
@@ -51,9 +50,19 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(dVsq,ustar,Bo,Bosol,alphaDT,betaD
   real dkm1(mdiff)          ! boundary layer difs at kbl-1 level
   real gat1(mdiff)          ! shape function at sigma=1
   real dat1(mdiff)          ! derivative of shape function at sigma=1
-  real blmc(km,mdiff)       ! boundary layer mixing coefficients
+  real, allocatable :: & 
+       blmc(:,:)            ! boundary layer mixing coefficients
   real sigma                ! normalized depth (d / hbl)
   real Rib(2)               ! bulk Richardson number
+
+  
+  km = NZ
+  kmp1 = nzp1
+  ALLOCATE( dVsq(kmp1) )
+  ALLOCATE( alphaDT(kmp1) ) 
+  ALLOCATE( betaDS(kmp1) )
+  ALLOCATE( Ritop(km) )
+  ALLOCATE( blmc(km,mdiff) )
       
   ! zero the mixing coefficients 
   DO ki=0,km

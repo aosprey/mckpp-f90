@@ -5,6 +5,7 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #else
   USE mckpp_data_fields
 #endif
+  USE mckpp_namelists
   
   !-----------------------------------------------------------------------
   ! Note in this version:
@@ -37,8 +38,6 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   !              16 Nov 1994 - wgl : new KPP codes no temporary grid
   
   IMPLICIT NONE
-  
-#include <ocn_energy.com>
   
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

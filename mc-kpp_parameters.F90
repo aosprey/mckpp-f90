@@ -6,7 +6,7 @@ MODULE mckpp_parameters
 
   INTEGER, PARAMETER :: & 
        nuout = 6, & 
-       nuerr = 5
+       nuerr = 0
 
   ! These are read in from parameters namelist
   INTEGER :: & 
@@ -24,11 +24,13 @@ MODULE mckpp_parameters
        nvp1, &         ! = nvel + 1
        nsp1, &         ! = nsclr + 1 
        nsb, &          ! number of biological scalars, used in "biocommon.inc"
-       itermax, &      ! maximum number of hmix iterations 
+       itermax         ! maximum number of hmix iterations 
                        !  (on main or temporary grids).
-       hmixtolfrac, &  ! convergence tolerance for hmix(new)-hmix(old) 
+   REAL :: &
+       hmixtolfrac     ! convergence tolerance for hmix(new)-hmix(old) 
                        !  iteration in ocnstep: fraction of layer thickness
                        !  hm(kmix)
+   INTEGER :: & 
 
        ! Temporary grid 
        ngrid, &        ! number of grids = permanent grid + temporary grids,

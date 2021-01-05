@@ -10,32 +10,9 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
 #else 
   USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
+  USE mckpp_namelists
   
   IMPLICIT NONE
-
-  ! Include all the common blocks containing constants (boo, hiss, common blocks)
-#include <constants.com>
-#include <flx_paras.com>
-#include <ocn_state.com>
-#include <ocn_paras.com>
-#include <ice_paras.com>
-#include <proc_pars.com>
-#include <proc_swit.com>
-#include <timocn.com>
-#include <fcorr_in.com>
-#include <sfcorr_in.com>
-#include <initialcon.com>
-#include <ocn_advec.com>
-#include <relax_3d.com>
-#include <output.com>
-#include <sstclim.com>
-#include <currclim.com>
-#include <couple.com>
-#include <bottomclim.com>
-#include <flx_in.com>
-#include <landsea.com>
-#include <location.com>
-#include <vert_pgrid.com>
 
   TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
   

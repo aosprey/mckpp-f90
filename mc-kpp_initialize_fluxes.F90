@@ -49,10 +49,10 @@ end SUBROUTINE mckpp_initialize_fluxes_variables
 #ifndef MCKPP_CAM3 
 SUBROUTINE mckpp_initialize_fluxes_file(kpp_const_fields)
   USE mckpp_data_fields
+  USE mckpp_namelists
   IMPLICIT NONE
   
 #include <netcdf.inc>
-#include <flx_in.com>
   
   TYPE(kpp_const_type) :: kpp_const_fields
   INTEGER status,index(3)

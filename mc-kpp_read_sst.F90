@@ -24,15 +24,11 @@ SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
-#ifdef MCKPP_COUPLE
-  integer,parameter :: sst_nx=NX_GLOBE,sst_ny=NY_GLOBE
-#else
-  integer,parameter :: sst_nx=NX,sst_ny=NY
-#endif
+  INTEGER :: sst_nx, sst_ny
   REAL :: offset_sst
   INTEGER :: status,ncid
-  REAL*4 :: var_in(sst_nx,sst_ny,1),time_in,first_timein,last_timein,sstclim_time,&
-       longitudes(NX_GLOBE),latitudes(NY_GLOBE)
+  REAL*4 :: time_in,first_timein,last_timein,sstclim_time
+  REAL*4, ALLOCATABLE :: var_in(:,:,:), longitudes(:),latitudes(:)
   INTEGER :: varid, time_varid,lat_varid,lon_varid,lon_dimid,lat_dimid,time_dimid
   INTEGER count(3),start(3)
   INTEGER ix,iy,nlat_file,nlon_file,ntime_file
@@ -41,6 +37,18 @@ SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
+
+#ifdef MCKPP_COUPLE
+  sst_nx = nx_globe 
+  sst_ny = ny_globe 
+#else
+  sst_nx = nx
+  sst_ny = ny 
+#endif
+
+  ALLOCATE( var_in(sst_nx,sst_ny,1) ) 
+  ALLOCATE( longitudes(NX_GLOBE) ) 
+  ALLOCATE( latitudes(NY_GLOBE) )
 
   status=NF_OPEN(kpp_const_fields%sst_file,0,ncid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)

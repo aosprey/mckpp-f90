@@ -98,35 +98,45 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-  INTEGER,parameter :: my_nx=PLON,my_ny=PLAT
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
   TYPE(kpp_3d_type),intent(in) :: kpp_3d_fields
   TYPE(kpp_const_type),intent(in) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=NX,my_ny=NY
-  LOGICAL :: ALL_OCEAN(NPTS)
+  LOGICAL, ALLOCATABLE :: ALL_OCEAN(:)
 #endif
   
+  INTEGER :: my_nx, my_ny
   CHARACTER(LEN=20) :: netcdf_restart_outfile
   INTEGER, parameter :: nvars=20, ndims=6
   INTEGER, dimension(nvars) :: varids
   INTEGER, dimension(ndims) :: dim_dimids,dim_varids
   INTEGER :: ncid,ivar,status,i
-  REAL*4,dimension(my_nx,my_ny,1:NZP1,2) :: temp_output
+  REAL*4, allocatable, dimension(:,:,:,:) :: temp_output
   !REAL*4,dimension(my_nx,my_ny,1:NZP1tmax+1,2) :: temp_output_large
-  REAL*4,dimension(NPTS,1:NZP1) :: temp_twod
+  REAL*4, allocatable, dimension(:,:) :: temp_twod
   !REAL*4,dimension(NPTS,1:NZP1tmax+1) :: temp_twod_large
-  REAL*4 :: lon_out(my_nx),lat_out(my_ny),z_out(1:NZP1tmax+1)
+  REAL*4, allocatable :: lon_out(:),lat_out(:),z_out(:)
   REAL*4 :: delta
 
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
+
+  my_nx = PLON
+  my_ny = PLAT
 #else
+  my_nx = nx
+  my_ny = ny
+  ALLOCATE( ALL_OCEAN(NPTS) ) 
   ! Make a fake land/sea mask that is all ocean, to avoid land points being masked out in the restart file
   ALL_OCEAN(1:NPTS) = .TRUE.
 #endif
+  ALLOCATE( temp_output(my_nx,my_ny,1:NZP1,2) ) 
+  ALLOCATE( temp_twod(NPTS,1:NZP1) ) 
+  ALLOCATE( lon_out(my_nx) ) 
+  ALLOCATE( lat_out(my_ny) ) 
+  ALLOCATE( z_out(1:NZP1tmax+1) ) 
 
   WRITE(netcdf_restart_outfile,'(A17,A3)') kpp_const_fields%restart_outfile,'.nc'
   WRITE(6,*) netcdf_restart_outfile
@@ -689,23 +699,22 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-  INTEGER,parameter :: my_nx=PLON,my_ny=PLAT
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1),double_time
 #else
   TYPE(kpp_3d_type),intent(inout) :: kpp_3d_fields
   TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=NX,my_ny=NY
-  LOGICAL :: ALL_OCEAN(NPTS)  
+  LOGICAL, ALLOCATABLE :: ALL_OCEAN(:)  
 #endif
 
+  INTEGER :: my_nx, my_ny
   CHARACTER(LEN=20) :: netcdf_restart_infile
   INTEGER, parameter :: nvars=20, ndims=6
   INTEGER, dimension(nvars) :: varids
   INTEGER, dimension(ndims) :: dimids
-  REAL*4,dimension(my_nx,my_ny,1:NZP1,2) :: temp_input
-  REAL*4,dimension(my_nx*my_ny,1:NZP1) :: temp_twod
+  REAL*4, allocatable, dimension(:,:,:,:) :: temp_input
+  REAL*4, allocatable, dimension(:,:) :: temp_twod
   INTEGER :: status,ncid,ivar,file_nlon,file_nlat,file_nz
   CHARACTER(LEN=5) :: varnames(nvars) = &
        (/'time ','uvel ','vvel ','T    ','S    ','CP   ',&
@@ -714,9 +723,17 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
+
+  my_nx=PLON
+  my_ny=PLAT
 #else
+  my_nx=nx
+  my_ny=ny
+  ALLOCATE( all_ocean(npts) ) 
   ALL_OCEAN(:)=.TRUE.
-#endif
+#endif  
+  ALLOCATE( temp_input(my_nx,my_ny,1:NZP1,2) ) 
+  ALLOCATE( temp_twod(my_nx*my_ny,1:NZP1) )
      
   netcdf_restart_infile = TRIM(ADJUSTL(kpp_const_fields%restart_infile)) // '.nc'
   WRITE(6,*) netcdf_restart_infile

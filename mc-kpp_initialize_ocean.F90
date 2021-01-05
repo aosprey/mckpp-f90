@@ -18,15 +18,14 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol
-  INTEGER, parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER, parameter :: my_nx=NX,my_ny=NY
 #endif
 
 ! local
+  INTEGER :: my_nx, my_ny
   INTEGER n,i,ipt,ichnk
   INTEGER status,ncid
   REAL*4, allocatable :: var_in(:,:,:),z_in(:),x_in(:),y_in(:)
@@ -37,7 +36,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
   INTEGER ix,iy,count(3),start(3)
   INTEGER kin,k
   REAL deltaz,deltavar,offset_sst
-  
+
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+
   IF ( kpp_const_fields%L_INITDATA ) THEN
 #ifdef MCKPP_CAM3
      IF (masterproc) THEN
@@ -315,17 +322,24 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
 #ifdef MCKPP_CAM3
   REAL(r4),dimension(PLON,PLAT,NZ_IN), intent(in) :: var_in
   REAL(r8),dimension(PLON,PLAT,NZP1), intent(out) :: var_out
-  INTEGER, parameter :: my_nx=PLON,my_ny=PLAT
 #else
   REAL*4,dimension(NX,NY,NZ_IN),intent(in) :: var_in
   REAL,dimension(NPTS,NZP1),intent(out) :: var_out
-  INTEGER, parameter :: my_nx=NX,my_ny=NY
 #endif
-
+ 
+  INTEGER :: my_nx, my_ny
   REAL*4,dimension(NZ_IN), intent(in) :: var_z
   REAL,dimension(NZP1), intent(in) :: model_z
   REAL :: deltaz,deltavar
   INTEGER :: ix,iy,iz,ipt,kin
+
+#ifdef MCKPP_CAM3
+  my_nx=PLON
+  my_ny=PLAT
+#else
+  my_nx=NX
+  my_ny=NY
+#endif
 
   DO iy=1,my_ny
      DO ix=1,my_nx

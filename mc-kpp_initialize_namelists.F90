@@ -7,75 +7,18 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   USE mckpp_data_fields
 #endif /*MCKPP_CAM3*/
+  USE mckpp_namelists
   USE mckpp_parameters
 
   IMPLICIT NONE
-
-#include <landsea.com>
-#include <constants.com>
-#include <times.com>
-#include <timocn.com>
-#include <location.com>
-#include <vert_pgrid.com>
-#include <proc_swit.com>
-#include <proc_pars.com>
-#include <initialcon.com>
-#include <ocn_advec.com>
-#include <ocn_state.com>
-#include <ocn_paras.com>
-#include <ice_paras.com>
-#include <flx_paras.com>
-#include <flx_in.com>
-#include <output.com>
-#include <couple.com>
-#include <sstclim.com>
-#include <fcorr_in.com>
-#include <sfcorr_in.com>
-#include <relax_3d.com>
-#include <bottomclim.com>
-#include <currclim.com>
 
 #ifndef MCKPP_CAM3
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
   
   ! Local variables    
-  REAL :: alat,alon,delta_lat,delta_lon,dscale
   INTEGER :: i,j,k,l,ipt,ix,iy
-
-  NAMELIST/NAME_PARAMETERS/nz, ndim, nx, ny, nvel, nsclr, nsb, itermax, hmixtolfrac, & 
-       ngrid, nzl, nzu, nzdivmax, nztmax, igridmax, & 
-       nsflxs, njdt, ndharm, maxmodeadv, mr, nx_globe, ny_globe
-  NAMELIST/NAME_CONSTANTS/grav,vonk,sbc,twopi,onepi,TK0,spd,dpy,&
-       epsw,albocn,EL,SL,FL,FLSN
-  NAMELIST/NAME_PROCSWIT/LKPP,LRI,LDD,LICE,&
-       LBIO,LNBFLX,LTGRID,LRHS,L_SSref
-  NAMELIST/NAME_DOMAIN/DMAX,alon,alat,delta_lat,delta_lon,&
-       L_STRETCHGRID,dscale,L_REGGRID,L_VGRID_FILE,vgrid_file
-  NAMELIST/NAME_START/ L_INITDATA,initdata_file,L_INTERPINIT,&
-       L_RESTART,restart_infile
-  NAMELIST/NAME_TIMES/ dtsec,startt,finalt,ndtocn,nyear
-  NAMELIST/NAME_ADVEC/ L_ADVECT,advect_file,L_RELAX_SST,&
-       relax_sst_in,relax_sal_in,L_RELAX_CALCONLY,L_RELAX_SAL,&
-       L_RELAX_OCNT,relax_ocnt_in
-  NAMELIST/NAME_PARAS/ paras_file,L_JERLOV
-  NAMELIST/NAME_OUTPUT/ L_RESTARTW,restart_outfile,ndt_per_restart
-  NAMELIST/NAME_FORCING/ L_FLUXDATA,forcing_file,L_FCORR_WITHZ,&
-       fcorrin_file,ndtupdfcorr,L_VARY_BOTTOM_TEMP,ndtupdbottom,&
-       bottomin_file,L_FCORR,L_UPD_FCORR,L_UPD_BOTTOM_TEMP,L_REST,&
-       L_PERIODIC_FCORR,L_PERIODIC_BOTTOM_TEMP,fcorr_period,L_SFCORR_WITHZ,&
-       sfcorrin_file,ndtupdsfcorr,L_SFCORR,L_UPD_SFCORR,L_PERIODIC_SFCORR,&
-       sfcorr_period,bottom_temp_period,sal_file,L_UPD_SAL,L_PERIODIC_SAL,&
-       sal_period,ndtupdsal,ocnt_file,L_UPD_OCNT,L_PERIODIC_OCNT,ocnt_period,&
-       ndtupdocnt,L_NO_FREEZE,L_NO_ISOTHERM,isotherm_bottom,isotherm_threshold,&
-       L_DAMP_CURR,dtuvdamp,L_INTERP_OCNT,ndt_interp_ocnt,L_INTERP_SAL,ndt_interp_sal
-  NAMELIST/NAME_COUPLE/ L_COUPLE,ifirst,ilast,jfirst,jlast,L_CLIMSST,sstin_file,&
-       L_UPD_CLIMSST,ndtupdsst,L_CPLWGHT,cplwght_file,icein_file,L_CLIMICE,L_UPD_CLIMICE,&
-       ndtupdice,L_CLIM_ICE_DEPTH,L_CLIM_SNOW_ON_ICE,L_OUTKELVIN,L_COUPLE_CURRENTS,&
-       currin_file,L_CLIMCURR,L_UPD_CLIMCURR,ndtupdcurr,L_PERIODIC_CLIMICE,L_PERIODIC_CLIMSST,&
-       climsst_period,climice_period
-  NAMELIST/NAME_LANDSEA/ L_LANDSEA,landsea_file
-  
+ 
   ! This is a bug fix for the IBM XLF compiler, which otherwise complains
   ! about "incorrect characters" in the namelist.  If you are using the
   ! IBM compiler, you need to pass -WF,-DXLF_OLDNAME when you compile MC-KPP.
@@ -88,8 +31,51 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   OPEN(75,FILE='3D_ocn.nml')  
 
   ! Read parameters namelist first
-  READ(75,NAME_CONSTANTS) 
+
+  ! Set some defaults
+  ndim = 1 
+  nvel = 2
+  nsclr = 2
+  nsb = 1
+  itermax = 200
+  hmixtolfrac = 0.1
+  nzl = 1 
+  nzu = 2 
+  nzdivmax = 8
+  igridmax = 5
+  nsflxs = 9
+  njdt = 1
+  ndharm = 5
+  maxmodeadv = 6
+  mr = 100
+
+  ! These need to be defined in namelist 
+  nx = 0.0 
+  ny = 0.0 
+  nz = 0.0 
+  ngrid = 0.0
+  nx_globe = 0.0
+  ny_globe = 0.0
+  
+  READ(75,NAME_PARAMETERS) 
   WRITE(nuout,*) 'KPP : Read Namelist PARAMETERS'
+  IF ( (nx .LE. 0) .OR. (ny .LE. 0) .OR. (nz .LE. 0) ) THEN 
+    WRITE(nuerr,*) 'KPP : You must specify values of nx, ny and nz in the namelist'
+    CALL MCKPP_ABORT
+  END IF 
+  IF (ngrid .LE. 0) THEN 
+    WRITE(nuerr,*) 'KPP : You must specify a value of ngrid in the namelist'
+    CALL MCKPP_ABORT
+  END IF 
+  IF (nztmax .LE. 0) THEN 
+    WRITE(nuerr,*) 'KPP : You must specify a value of nztmax in the namelist'
+    CALL MCKPP_ABORT
+  END IF 
+  IF ( (nx_globe .LE. 0) .OR. (ny_globe .LE. 0) ) THEN 
+    WRITE(nuerr,*) 'KPP : You must specify a value of nx_globe and ny_globe in the namelist'
+    CALL MCKPP_ABORT
+  END IF 
+
   nzm1 = nz -1 
   nzp1 = nz+1
   npts = nx * ny 
@@ -101,7 +87,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   mrp1 = mr + 1 
   npts_globe = nx_globe + ny_globe 
 
-  WRITE(nuout,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe
+  WRITE(nuout,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
 
 #ifndef MCKPP_CAM3
   CALL mckpp_allocate_const_fields(kpp_const_fields) 
@@ -109,6 +95,9 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   allocate(kpp_const_fields%wmt(0:891,0:49))
   allocate(kpp_const_fields%wst(0:891,0:49))
   allocate(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
+
+  ! This should maybe go elsewhere 
+  ALLOCATE( rmke(nzp1) )
 
   ! Initialse and read the constants name list
   spd=86400.                ! secs/day
@@ -238,6 +227,15 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   L_ADVECT=.FALSE.
   L_RELAX_SST=.FALSE.
   L_RELAX_CALCONLY=.FALSE.
+#ifdef MCKPP_CAM3
+  ALLOCATE( relax_sst_in(ny_globe) )
+  ALLOCATE( relax_sal_in(ny_globe) )
+  ALLOCATE( relax_ocnt_in(ny_globe) )
+#else
+  ALLOCATE( relax_sst_in(ny) )
+  ALLOCATE( relax_sal_in(ny) )
+  ALLOCATE( relax_ocnt_in(ny) )
+#endif
   DO iy=1,ny
      relax_sst_in(iy)=0.0
      relax_sal_in(iy)=0.0

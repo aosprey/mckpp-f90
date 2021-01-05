@@ -22,16 +22,16 @@ SUBROUTINE MCKPP_READ_SFCORR_2D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: sfcorr_temp(PLON,PLAT), sfcorr_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
-  INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=NX,my_ny=NY_GLOBE
 #endif
 
+  INTEGER :: my_nx, my_ny
   REAL :: sfcorr_time
-  REAL*4 ixx,jyy,sfcorr_twod_in(my_nx,my_ny,1),latitudes(my_ny),longitudes(my_nx),z(NZP1),&
-       first_timein,time_in,ndays_upd_sfcorr,last_timein
+  REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_sfcorr,last_timein
+  REAL*4, ALLOCATABLE :: sfcorr_twod_in(:,:,:),latitudes(:),longitudes(:),z(:)
+
   CHARACTER(LEN=30) tmp_name
   
   ! Read in a NetCDF file containing a time-varying salinity correction
@@ -43,6 +43,19 @@ SUBROUTINE MCKPP_READ_SFCORR_2D(kpp_3d_fields,kpp_const_fields)
   IF (masterproc) THEN     
 #endif
 
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+
+  ALLOCATE( sfcorr_twod_in(my_nx,my_ny,1) ) 
+  ALLOCATE( latitudes(my_ny) ) 
+  ALLOCATE( longitudes(my_nx) ) 
+  ALLOCATE( z(NZP1) )
+  
   status = NF_OPEN(kpp_const_fields%sfcorr_file,0,sfcorr_ncid)
   IF (status.NE.0) CALL MCKPP_HANDLE_ERR(status)
 
@@ -139,13 +152,12 @@ SUBROUTINE MCKPP_READ_SFCORR_3D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: sfcorr_temp(PLON,PLAT,NZP1), sfcorr_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: icol,ncol,ichnk
-  INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=NX,my_ny=NY_GLOBE
 #endif
 
+  INTEGER :: my_nx, my_ny
   INTEGER ix,iy,iz,ipoint,sfcorr_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
        sfcorr_ncid,k,lat_dimid,lon_dimid,time_dimid,nlon_file,nlat_file,ntime_file,nz_file,&
        start(4),count(4)
@@ -161,6 +173,14 @@ SUBROUTINE MCKPP_READ_SFCORR_3D(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
+#endif
+
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
 #endif
 
   count=(/my_nx,my_ny,NZP1,1/)
