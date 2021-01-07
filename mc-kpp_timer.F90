@@ -1,5 +1,6 @@
 MODULE mckpp_timer
 
+  USE mckpp_parameters
   IMPLICIT NONE 
 
   PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, mckpp_print_timers 
@@ -70,7 +71,7 @@ CONTAINS
 
     IF (index .NE. -1) THEN     
       IF (timers(index)%running .EQV. .TRUE.) THEN       
-        WRITE(0,*) 'KPP TIMER : Trying to start timer ', name, ' when it is already running.'
+        WRITE(nuerr,*) 'KPP TIMER : Trying to start timer ', name, ' when it is already running.'
       ELSE 
         timers(index)%start_time = get_current_time()
         timers(index)%running = .TRUE.
@@ -89,12 +90,16 @@ CONTAINS
   
     REAL(kind=8) time
     INTEGER :: index 
+    CHARACTER(LEN=max_error_msg_len) :: error_msg
 
     time = get_current_time()
 
     index = lookup_timer_index(name) 
-    IF (index .EQ. -1 .OR. timers(index)%running .EQV. .FALSE.) THEN 
-      WRITE(0,*) 'KPP TIMER : Trying to stop timer ', name, ' when it is not running.'
+    error_msg = 'KPP TIMER : Trying to stop timer '//name//' when it is not running.'
+    IF (index .EQ. -1) THEN  
+      WRITE(nuerr,*) error_msg
+    ELSE IF (timers(index)%running .EQV. .FALSE.) THEN 
+      WRITE(nuerr,*) error_msg
     ELSE 
       timers(index)%elapsed_time = timers(index)%elapsed_time + & 
                                    (time - timers(index)%start_time) 
@@ -117,10 +122,10 @@ CONTAINS
     timers(index_total)%elapsed_time = time - timers(index_total)%start_time
 
     ! Print statistics 
-    WRITE(6,*) '**** KPP TIMER STATISTICS ****'
-    WRITE(6,'(A10,20X,2X,A22)') 'Timer name', 'Elapsed_time(s)' 
+    WRITE(nuout,*) '**** KPP TIMER STATISTICS ****'
+    WRITE(nuout,'(A10,20X,2X,A22)') 'Timer name', 'Elapsed_time(s)' 
     DO i = 1, timers_allocated
-      WRITE(6,'(A30,2X,F11.3)') timers(i)%name, timers(i)%elapsed_time
+      WRITE(nuout,'(A30,2X,F11.3)') timers(i)%name, timers(i)%elapsed_time
     END DO 
 
   END SUBROUTINE mckpp_print_timers 
@@ -133,7 +138,7 @@ CONTAINS
 
     index = -1 
     IF (timers_allocated .GE. max_timers) THEN 
-      WRITE(0,*) 'KPP TIMER : Reached maximum number of timers'
+      WRITE(nuerr,*) 'KPP TIMER : Reached maximum number of timers'
       RETURN
     END IF 
 
@@ -153,7 +158,7 @@ CONTAINS
 
     ! Check length of timer name
     IF (LEN(name) .GT. max_name_length) THEN 
-      WRITE(0,*) 'KPP TIMER : Name of timer must not exceed ', max_name_length, ' characters: ', name
+      WRITE(nuerr,*) 'KPP TIMER : Name of timer must not exceed ', max_name_length, ' characters: ', name
       RETURN
     ENDIF
    
