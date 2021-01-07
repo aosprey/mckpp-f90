@@ -46,9 +46,11 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   !WRITE(6,*) 'After ocnstep, U = ',kpp_3d_fields(begchunk)%U(1:ncol,1,1)
 #else
 #ifdef OPENMP
-!$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields) &
-!!$OMP SHARED(kpp_timer) & 
-!$OMP PRIVATE(trans_timer_name,phys_timer_name,tid)
+!$OMP PARALLEL DEFAULT(NONE) &
+!$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
+!$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, kpp_1d_fields)
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid
   WRITE(phys_timer_name,'(A19,I2)') 'KPP Physics thread ',tid
