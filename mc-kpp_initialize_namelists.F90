@@ -85,7 +85,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   nsflxsm1 = nsflxs - 1
   nsflxsp2 = nsflxs + 2
   mrp1 = mr + 1 
-  npts_globe = nx_globe + ny_globe 
+  npts_globe = nx_globe * ny_globe 
 
   WRITE(nuout,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
 
