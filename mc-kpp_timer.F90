@@ -175,7 +175,7 @@ CONTAINS
 #ifdef OPENMP
     get_current_time = omp_get_wtime()
 #else
-    CALL system_clock(get_current_time)
+    CALL cpu_time(get_current_time)
 #endif         
 
   END FUNCTION get_current_time
