@@ -3,12 +3,12 @@ MODULE mckpp_timer
   USE mckpp_parameters
   IMPLICIT NONE 
 
-  PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, mckpp_print_timers 
+  PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, mckpp_print_timers, mckpp_define_new_timer
 
   PRIVATE
 
   INTEGER, PARAMETER :: & 
-      max_timers=100, & 
+      max_timers=300, & 
       max_name_length=30
 
   TYPE timer_type 
@@ -40,11 +40,11 @@ CONTAINS
     END DO 
 
     ! Built in timers 
-    CALL define_new_timer('Timer', index_timer) 
+    CALL mckpp_define_new_timer('Timer', index_timer) 
     timers(index_timer)%running = .TRUE. 
     timers(index_timer)%start_time = time
 
-    CALL define_new_timer('Total', index_total) 
+    CALL mckpp_define_new_timer('Total', index_total) 
     timers(index_total)%running = .TRUE. 
     timers(index_total)%start_time = time
 
@@ -66,7 +66,7 @@ CONTAINS
 
     index = lookup_timer_index(name) 
     IF (index .EQ. -1) THEN 
-      CALL define_new_timer(name, index) 
+      CALL mckpp_define_new_timer(name, index) 
     END IF 
 
     IF (index .NE. -1) THEN     
@@ -131,7 +131,7 @@ CONTAINS
   END SUBROUTINE mckpp_print_timers 
 
 
-  SUBROUTINE define_new_timer(name, index)
+  SUBROUTINE mckpp_define_new_timer(name, index)
 
     CHARACTER(LEN=*), INTENT(IN) :: name  
     INTEGER, INTENT(OUT) :: index 
@@ -146,7 +146,7 @@ CONTAINS
     timers_allocated = index
     timers(index)%name=name
 
-  END SUBROUTINE define_new_timer 
+  END SUBROUTINE mckpp_define_new_timer 
 
 
   INTEGER FUNCTION lookup_timer_index(name)

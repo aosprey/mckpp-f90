@@ -22,7 +22,7 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   
   ! Local
   TYPE(kpp_1d_type) :: kpp_1d_fields
-  INTEGER :: ipt
+  INTEGER :: ipt, index
 #ifdef OPENMP
   INTEGER :: tid,OMP_GET_THREAD_NUM
 #endif
@@ -50,10 +50,14 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
 !$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
 !$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
-!$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, kpp_1d_fields)
+!$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, index, kpp_1d_fields)
+!$OMP CRITICAL
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid
+  CALL mckpp_define_new_timer(trans_timer_name, index)
   WRITE(phys_timer_name,'(A19,I2)') 'KPP Physics thread ',tid
+  CALL mckpp_define_new_timer(phys_timer_name, index)
+!$OMP END CRITICAL
 !$OMP DO SCHEDULE(dynamic)
 #else
   WRITE(trans_timer_name,'(A19)') 'KPP 3D/1D thread 01'

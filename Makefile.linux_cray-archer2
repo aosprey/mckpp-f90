@@ -21,6 +21,7 @@ CPP=cpp
 
 # Flags for the Fortran compiler
 F90_FLAGS=-I. -eZ -s real64 -homp
+#F90_FLAGS=-I. -eZ -s real64 -homp -g -Rb
 LINK_FLAGS=-homp
 
 # Extra flag required to pass CPP macros through the Fortran compiler - currently required for only XLF.
@@ -48,7 +49,7 @@ EXECUTABLE=KPP_ocean
 
 FORCED_FILES = $(wildcard *.F90)
 FORCED_OBJS = $(FORCED_FILES:.F90=.o)
-FORCED_MODS = MCKPP_TIMER.mod MCKPP_XIOS_CONTROL.mod MCKPP_XIOS_IO.mod 
+FORCED_MODS = PARAMETERS.mod MCKPP_TIMER.mod MCKPP_DATA_FIELDS.mod MCKPP_NAMELISTS.mod MCKPP_XIOS_CONTROL.mod MCKPP_XIOS_IO.mod 
 
 FORCED_COMPILE = $(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(NCDF_INC) $(MPI_INC) $(XIOS_INC)
 FORCED_LINK = $(F90) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${NCDF_INC} ${NCDF_LIB} ${XIOS_INC} ${XIOS_LIB}
@@ -58,14 +59,23 @@ FORCED_LINK = $(F90) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${NCDF_INC} $
 
 .F90.o : $(FORCED_MODS)
 	$(FORCED_COMPILE) -c $<
-
-MCKPP_TIMER.mod : mc-kpp_timer.F90
+	
+PARAMETERS.mod : mc-kpp_parameters.F90
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_XIOS_IO.mod : mc-kpp_xios_io.F90 MCKPP_TIMER.mod
+MCKPP_TIMER.mod : mc-kpp_timer.F90 PARAMETERS.mod
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_XIOS_CONTROL.mod : mc-kpp_xios_control.F90 MCKPP_TIMER.mod MCKPP_XIOS_IO.mod 
+MCKPP_DATA_FIELDS.mod : mc-kpp_data_fields.F90 PARAMETERS.mod
+	$(FORCED_COMPILE) -c $<
+
+MCKPP_NAMELISTS.mod : mc-kpp_namelists.F90 PARAMETERS.mod
+	$(FORCED_COMPILE) -c $<
+
+MCKPP_XIOS_IO.mod : mc-kpp_xios_io.F90 MCKPP_TIMER.mod PARAMETERS.mod MCKPP_DATA_FIELDS.mod
+	$(FORCED_COMPILE) -c $<
+
+MCKPP_XIOS_CONTROL.mod : mc-kpp_xios_control.F90 MCKPP_TIMER.mod MCKPP_XIOS_IO.mod MCKPP_DATA_FIELDS.mod
 	$(FORCED_COMPILE) -c $<
 
 forced : CPP_FLAGS=$(F90_CPP_FLAG)-DOPENMP
