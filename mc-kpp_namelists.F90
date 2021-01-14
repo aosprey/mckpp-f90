@@ -6,7 +6,7 @@ MODULE mckpp_namelists
 
   ! Variables read in from namelists. These used to be held in common blocks. 
   ! This module is just used for the initialization, as the useful   
-  ! variables are copied into kpp_const_type derived type. 
+  ! variables are copied into kpp_const_type derived type.
 
   ! * name_advec
 
@@ -55,13 +55,16 @@ MODULE mckpp_namelists
   LOGICAL :: L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR, L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM, & 
        L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL, L_INTERP_SAL, & 
        L_UPD_OCNT, L_PERIODIC_OCNT, L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR, L_UPD_SFCORR, L_PERIODIC_SFCORR, & 
-       L_UPDCLIM, L_CLIMSST, L_UPD_CLIMSST, L_PERIODIC_CLIMSST
+       L_UPDCLIM, L_CLIMSST, L_UPD_CLIMSST, L_PERIODIC_CLIMSST, & 
+       L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP
   INTEGER :: ndtupdfcorr, fcorr_period, isotherm_bottom, ncid_flx, timein_id, varin_id(7), & 
        ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt, ocnt_period, ndt_interp_ocnt, & 
-       ndtupdsfcorr, sfcorr_period, ndtupdsst, ifirst_sst, jfirst_sst, climsst_period
+       ndtupdsfcorr, sfcorr_period, ndtupdsst, ifirst_sst, jfirst_sst, climsst_period, & 
+       ndtupdbottom, bottom_temp_period
   REAL :: isotherm_threshold
   REAL*4 :: first_timein
-  CHARACTER (LEN=max_nc_filename_len) :: fcorrin_file, forcing_file, sal_file, ocnT_file, sfcorrin_file
+  CHARACTER (LEN=max_nc_filename_len) :: fcorrin_file, forcing_file, sal_file, ocnT_file, sfcorrin_file, & 
+        bottomin_file
 
   NAMELIST/name_forcing/ L_FLUXDATA, forcing_file, L_FCORR_WITHZ, &
        fcorrin_file, ndtupdfcorr, L_VARY_BOTTOM_TEMP, ndtupdbottom,  &
@@ -89,12 +92,8 @@ MODULE mckpp_namelists
 
   NAMELIST/name_output/ L_RESTARTW, restart_outfile, ndt_per_restart
 
-  LOGICAL :: L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP
-  INTEGER :: ndtupdbottom, bottom_temp_period
-  CHARACTER(LEN=max_nc_filename_len) :: bottomin_file
-
   ! * name_parameters
-  ! These variables are defined in mckpp_parameters as they are used throughout the code. 
+  !   These variables are defined in mckpp_parameters as they are used throughout the code. 
 
   NAMELIST/name_parameters/ nz, ndim, nx, ny, nvel, nsclr, nsb, itermax, hmixtolfrac, & 
        ngrid, nzl, nzu, nzdivmax, nztmax, igridmax, & 
@@ -119,6 +118,7 @@ MODULE mckpp_namelists
        LBIO, LNBFLX, LTGRID, LRHS, L_SSref
 
   ! * name_start
+
   LOGICAL :: L_INITDATA, L_INTERPINIT, L_RESTART
   CHARACTER(max_nc_filename_len) :: initdata_file
   CHARACTER(max_restart_filename_len) :: restart_infile
@@ -127,24 +127,15 @@ MODULE mckpp_namelists
        L_RESTART, restart_infile
 
   ! * name_times
+
   REAL :: dtsec, time, startt, finalt, dto 
   INTEGER ntime, nstart, nend, nyear, ndtocn
 
   NAMELIST/name_times/ dtsec, startt, finalt, ndtocn, nyear
 
-  ! * iceparas 
+  ! * These aren't actually in a namelist. 
 
-  ! These aren't in any namelist -- so need to go into another module 
-  REAL :: dsice, sice, rhoice, tfscl, SWFACS, tmlt, tfrz, epsi  
-
-  ! * oce_energy
-
-  REAL :: eflx, esnk, Tmke, Ptke    
-  REAL, ALLOCATABLE, DIMENSION(:) :: rmke(:)
-
-  ! * ocn_paras  
-
-  REAL :: rhob
+  REAL :: sice
   LOGICAL :: L_SSRef
 
 END MODULE mckpp_namelists

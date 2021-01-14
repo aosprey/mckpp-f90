@@ -5,7 +5,6 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #else
   USE mckpp_data_types
 #endif
-  USE mckpp_namelists
   
   !-----------------------------------------------------------------------
   ! Note in this version:
@@ -54,6 +53,10 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   ! More Local Variables (to make implicit none)
   real deltaz,rhonot,a,b
   integer k,l,n
+
+  ! These aren't used elsewhere in the code but maybe they should go in kpp_fields
+  REAL :: eflx, esnk, Tmke, Ptke    
+  REAL, ALLOCATABLE, DIMENSION(:) :: rmke(:)  
   
   ! Number of iterations for computational instability
   integer comp_iter_max

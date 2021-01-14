@@ -1,7 +1,7 @@
 SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
 
   ! This should be called after *ALL* constants have been read in
-  ! in steves_3d_ocn.f (subroutine initialize).  It should be called
+  ! in mckkp_initialize_namelists.  It should be called
   ! only once.
 
 #ifdef MCKPP_CAM3
