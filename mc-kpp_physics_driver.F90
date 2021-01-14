@@ -64,7 +64,11 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   WRITE(phys_timer_name,'(A21)') 'KPP Physics thread 01'
 #endif /*OPENMP*/
   DO ipt=1,npts
-     IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#ifdef MCKPP_COUPLE
+        IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
+#else       
+        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#endif
         CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
         CALL mckpp_stop_timer(trans_timer_name) 

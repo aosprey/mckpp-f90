@@ -1,3 +1,4 @@
+
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
@@ -444,7 +445,11 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
 !$OMP DO SCHEDULE(dynamic)
 #endif
      DO ipt=1,npts
+#ifdef MCKPP_COUPLE
         IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
+#else       
+        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#endif
            CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
 #endif
            kpp_1d_fields%L_INITFLAG=.TRUE.
