@@ -12,10 +12,10 @@ SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
   INTEGER :: ipt
 
   IF (.NOT. kpp_const_fields%L_FLUXDATA) THEN
-#ifdef OPENMP
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt)
-!$OMP DO SCHEDULE(static)
-#endif
+!#ifdef OPENMP
+!!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt)
+!!$OMP DO SCHEDULE(static)
+!#endif
     DO ipt=1,npts
       taux(ipt)=0.01
       tauy(ipt)=0.0
@@ -26,19 +26,19 @@ SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
       rain(ipt)=6e-5
       snow(ipt)=0.0
     ENDDO   
-#ifdef OPENMP
-!$OMP END DO
-!$OMP END PARALLEL
-#endif
+!#ifdef OPENMP
+!!$OMP END DO
+!!$OMP END PARALLEL
+!#endif
   ELSE
     CALL mckpp_read_fluxes(taux,tauy,swf,lwf,lhf,shf,rain,snow,&
              kpp_3d_fields,kpp_const_fields)
   ENDIF
       
-#ifdef OPENMP
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt,kpp_1d_fields)
-!$OMP DO SCHEDULE(dynamic)
-#endif
+!#ifdef OPENMP
+!!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt,kpp_1d_fields)
+!!$OMP DO SCHEDULE(dynamic)
+!#endif
   DO ipt=1,npts         
     IF (kpp_3d_fields%L_OCEAN(ipt)) THEN 
       IF ((taux(ipt) .EQ. 0.0) .AND. (tauy(ipt) .EQ. 0.0)) THEN
@@ -64,9 +64,9 @@ SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
       CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
     ENDIF
   ENDDO
-#ifdef OPENMP
-!$OMP END DO
-!$OMP END PARALLEL
-#endif
+!#ifdef OPENMP
+!!$OMP END DO
+!!$OMP END PARALLEL
+!#endif
   
 END SUBROUTINE MCKPP_FLUXES

@@ -441,7 +441,11 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
               CALL mckpp_fields_3dto1d(kpp_3d_fields(ichnk),icol,kpp_1d_fields)
 #else
 #ifdef OPENMP
-!$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields)
+!$OMP PARALLEL DEFAULT(none) &
+!$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
+!$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields)
 !$OMP DO SCHEDULE(dynamic)
 #endif
      DO ipt=1,npts
