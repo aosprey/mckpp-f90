@@ -184,9 +184,9 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   kpp_1d_fields%point=point
   
   RETURN
-END SUBROUTINE mckpp_3d_fieldsto1d
+END SUBROUTINE mckpp_fields_3dto1d
 
-SUBROUTINE mckpp_1d_fieldsto3d(kpp_1d_fields,point,kpp_3d_fields)
+SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
 #ifdef MCKPP_CAM3
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_3d_type
