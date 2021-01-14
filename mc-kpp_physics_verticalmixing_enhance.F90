@@ -4,7 +4,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA,
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 

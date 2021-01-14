@@ -1,7 +1,7 @@
 #ifndef MCKPP_CAM3
 SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 
   IMPLICIT NONE
 
@@ -41,7 +41,7 @@ END SUBROUTINE MCKPP_RESTART_IO_READ
 
 SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
  
-  USE mckpp_data_fields
+  USE mckpp_data_types
      
   IMPLICIT NONE
 
@@ -91,7 +91,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
   USE pmgrid, only: masterproc
 #else
 SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
@@ -692,7 +692,7 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF
 #endif
 #else
 SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE

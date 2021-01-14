@@ -7,7 +7,7 @@ SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
   USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   ! Compute coefficients for tridiagonal matrix (dimension=nzi).
@@ -53,7 +53,7 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
   USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   ! Compute right hand side of tridiagonal matrix for scalar fields:
@@ -177,7 +177,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
 !     Modify rhs to correct scalar, jsclr, 

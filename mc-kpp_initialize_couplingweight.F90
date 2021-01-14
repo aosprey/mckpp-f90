@@ -10,7 +10,7 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
 #else
 SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif  
 
   IMPLICIT NONE

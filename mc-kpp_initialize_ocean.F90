@@ -11,7 +11,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles
   USE phys_grid, only: get_ncols_p, scatter_field_to_chunk
 #else
 SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
@@ -388,7 +388,7 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL
   USE phys_grid, only: get_ncols_p  
 #else
 SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   ! Initialize ocean model:

@@ -1,6 +1,6 @@
 SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 
   IMPLICIT NONE
 

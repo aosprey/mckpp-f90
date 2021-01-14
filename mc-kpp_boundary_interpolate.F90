@@ -8,7 +8,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP(kpp_3d_fields,kpp_const_fields)      
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
@@ -95,7 +95,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE

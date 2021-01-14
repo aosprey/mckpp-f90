@@ -3,7 +3,7 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_type,kpp_1d_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 
@@ -191,7 +191,7 @@ SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_3d_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
   

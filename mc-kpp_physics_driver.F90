@@ -8,7 +8,7 @@ SUBROUTINE mckpp_physics_driver
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
   USE mckpp_timer
 #endif
   IMPLICIT NONE

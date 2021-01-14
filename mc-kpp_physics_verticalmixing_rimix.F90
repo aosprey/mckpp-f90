@@ -3,7 +3,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fi
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   
   IMPLICIT NONE     

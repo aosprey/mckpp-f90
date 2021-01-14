@@ -4,7 +4,7 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   ! Update all boundary conditions that are read from netCDF files,

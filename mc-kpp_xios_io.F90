@@ -1,7 +1,7 @@
 MODULE mckpp_xios_io
 
 #ifndef MCKPP_CAM3
-USE mckpp_data_fields
+USE mckpp_data_types
 #endif
 USE mckpp_parameters
 

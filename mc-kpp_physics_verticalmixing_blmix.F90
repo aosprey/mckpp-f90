@@ -4,7 +4,7 @@ SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stab
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   ! mixing coefficients within boundary layer depend on surface

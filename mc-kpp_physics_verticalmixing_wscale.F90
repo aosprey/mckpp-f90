@@ -3,7 +3,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws,
   USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
   

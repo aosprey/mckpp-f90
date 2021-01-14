@@ -10,7 +10,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS
   USE pmgrid, only : masterproc
 #else
 SUBROUTINE MCKPP_INITIALIZE_FIELDS(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE

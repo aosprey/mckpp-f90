@@ -4,7 +4,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(km,kmp1,dVsq,ustar,Bo,Bosol,alpha
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 

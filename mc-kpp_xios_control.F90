@@ -2,7 +2,7 @@ MODULE mckpp_xios_control
 
 ! Control routines to be called from main KPP code. 
 
-USE mckpp_data_fields
+USE mckpp_data_types
 USE mckpp_timer
 USE mckpp_xios_io
 

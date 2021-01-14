@@ -3,7 +3,7 @@ SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
   USE mckpp_parameters
   USE mckpp_types, only : kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 

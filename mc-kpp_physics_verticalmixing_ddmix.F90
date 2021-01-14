@@ -3,7 +3,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fi
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
   

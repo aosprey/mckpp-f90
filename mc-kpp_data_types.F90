@@ -1,4 +1,4 @@
-MODULE mckpp_data_fields
+MODULE mckpp_data_types
 
   USE mckpp_parameters
 
@@ -346,4 +346,4 @@ MODULE mckpp_data_fields
   
   ENDTYPE kpp_const_type
 
-END MODULE mckpp_data_fields
+END MODULE mckpp_data_types

@@ -1,6 +1,6 @@
 PROGRAM mckpp_ocean_model_3d
 
-USE mckpp_data_fields
+USE mckpp_data_types
 USE mckpp_timer
 USE mckpp_xios_control
 

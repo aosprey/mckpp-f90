@@ -4,7 +4,7 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_Type,kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
  
   IMPLICIT NONE

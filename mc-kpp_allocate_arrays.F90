@@ -1,6 +1,6 @@
 SUBROUTINE mckpp_allocate_3d_fields(kpp_3d_fields)
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
   USE mckpp_parameters 
 
   IMPLICIT NONE 
@@ -101,7 +101,7 @@ END SUBROUTINE mckpp_allocate_3d_fields
 
 SUBROUTINE mckpp_allocate_1d_fields(kpp_1d_fields) 
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
   USE mckpp_parameters 
 
   IMPLICIT NONE 
@@ -149,7 +149,7 @@ END SUBROUTINE mckpp_allocate_1d_fields
 SUBROUTINE mckpp_allocate_const_fields(kpp_const_fields) 
 
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
   USE mckpp_parameters 
 
   IMPLICIT NONE 

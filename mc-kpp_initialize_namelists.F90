@@ -5,7 +5,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
   USE mckpp_namelists
   USE mckpp_parameters

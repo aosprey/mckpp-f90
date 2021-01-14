@@ -10,7 +10,7 @@ SUBROUTINE mckpp_read_ice
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif  
 
   ! Read in ice concentrations from a user-provided netCDF file.

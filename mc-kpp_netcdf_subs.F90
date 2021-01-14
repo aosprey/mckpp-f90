@@ -87,7 +87,7 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
@@ -209,7 +209,7 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_READ_IPAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE

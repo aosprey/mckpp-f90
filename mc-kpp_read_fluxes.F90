@@ -1,7 +1,7 @@
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
      kpp_3d_fields, kpp_const_fields)
 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 
   IMPLICIT NONE
 

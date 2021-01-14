@@ -8,7 +8,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
   USE mckpp_namelists
   

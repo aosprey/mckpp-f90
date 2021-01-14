@@ -3,7 +3,7 @@ SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo
   USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 

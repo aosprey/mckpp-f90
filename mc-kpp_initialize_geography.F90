@@ -7,7 +7,7 @@ SUBROUTINE mckpp_initialize_geography
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE

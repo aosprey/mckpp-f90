@@ -10,7 +10,7 @@ SUBROUTINE MCKPP_READ_FCORR_2D
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
@@ -143,7 +143,7 @@ SUBROUTINE MCKPP_READ_FCORR_3D
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
   
   IMPLICIT NONE

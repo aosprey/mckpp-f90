@@ -6,7 +6,7 @@ SUBROUTINE mckpp_initialize_fluxes_variables
   USE phys_grid,only : get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_fluxes_variables(kpp_3d_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif  
 
 ! Set up parameters for calculating fluxes and initialize fluxes.
@@ -48,7 +48,7 @@ end SUBROUTINE mckpp_initialize_fluxes_variables
 ! No support for data atmosphere when coupled to CAM3
 #ifndef MCKPP_CAM3 
 SUBROUTINE mckpp_initialize_fluxes_file(kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
   USE mckpp_namelists
   IMPLICIT NONE
   

@@ -10,7 +10,7 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_fields
+  USE mckpp_data_types
 #endif
 
 ! Re-write logic to allow for relaxing either SST or
