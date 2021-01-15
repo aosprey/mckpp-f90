@@ -36,9 +36,8 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(km,kmp1,dVsq,ustar,Bo,Bosol,alpha
 
   ! output
   ! visc replaced by kpp_1d_fields%difm (NPK 8/2/2013)
-  real, intent(out) :: &
-       hbl, &               ! boundary layer depth (m)
-       kbl                  ! index of first grid level below hbl     
+  real, intent(out) :: hbl     ! boundary layer depth (m)
+  integer, intent(out) :: kbl  ! index of first grid level below hbl     
   
   ! local
   integer mdiff,ki
