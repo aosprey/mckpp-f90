@@ -31,8 +31,6 @@ SUBROUTINE mckpp_output_control(kpp_3d_fields, kpp_const_fields)
 
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-
-  REAL :: restart_time
  
   ! Send diags to XIOS at every ts 
   CALL mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields) 

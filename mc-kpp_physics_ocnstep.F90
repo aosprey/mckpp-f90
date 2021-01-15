@@ -1,10 +1,10 @@
 SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
   USE mckpp_data_types
 #endif
+  USE mckpp_parameters
   
   !-----------------------------------------------------------------------
   ! Note in this version:
@@ -69,6 +69,8 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   data rmsd_threshold /1,1,1,1/
   
   data lambda /0.5/
+
+  ALLOCATE( rmke(nzp1) )
   
   Uo=kpp_1d_fields%U(:,:)
   Xo=kpp_1d_fields%X(:,:)

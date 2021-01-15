@@ -96,9 +96,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   allocate(kpp_const_fields%wst(0:891,0:49))
   allocate(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
 
-  ! This should maybe go elsewhere 
-  ALLOCATE( rmke(nzp1) )
-
   ! Initialse and read the constants name list
   spd=86400.                ! secs/day
   dpy=360.                  ! days/year
