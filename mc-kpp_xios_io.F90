@@ -189,7 +189,7 @@ SUBROUTINE mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields)
   REAL, ALLOCATABLE, DIMENSION(:) :: temp_1d
   INTEGER :: k, ix, iy, ipt
 
-  CALL xios_update_calendar(1)
+  CALL xios_update_calendar(kpp_const_fields%ntime)
 
   !!! Depth-varying diagnostics 
   ALLOCATE( temp_2d(npts, nzp1) ) 
