@@ -218,7 +218,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   ifirst=1
   ilast=nx
   jfirst=1
-  jfirst=ny
+  jlast=ny
   READ(75,NAME_COUPLE)
   write(nuout,*) 'KPP : Read Namelist COUPLE'
   
