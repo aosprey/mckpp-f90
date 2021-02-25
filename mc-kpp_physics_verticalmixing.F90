@@ -132,7 +132,8 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
           (kpp_1d_fields%U(n,2)-kpp_1d_fields%U(n+1,2))**2         
   ENDDO
      
-  CALL MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(nz,nzp1,dVsq,ustar,B0,B0sol,alphaDT,betaDS,Ritop,hmixn,kmixn,kpp_1d_fields,kpp_const_fields)
+  CALL MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(nz,nzp1,dVsq,ustar,B0,B0sol,alphaDT,betaDS,&
+       Ritop,hmixn,kmixn,kpp_1d_fields,kpp_const_fields)
         
   ! limit the bottom diffusity and viscosity
   ! zero diffusivities for no bottom flux option

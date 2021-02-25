@@ -445,7 +445,7 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
 !$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
 !$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
-!$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields)
+!$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields, hmix0, kmix0)
 !$OMP DO SCHEDULE(dynamic)
 #endif
      DO ipt=1,npts
