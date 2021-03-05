@@ -144,13 +144,13 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
   CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields,kpp_const_fields)
 
 ! Do we need these initialization statements?
-!  DO iy=1,ny
-!     DO ix=1,nx
-!        ipoint=(iy-1)*nx+ix
-!        kpp_3d_fields%fcorr(ipoint)=0.0
-!        kpp_3d_fields%scorr(ipoint,:)=0.0
-!     ENDDO
-!  ENDDO
+  DO iy=1,ny
+     DO ix=1,nx
+        ipoint=(iy-1)*nx+ix
+        kpp_3d_fields%fcorr(ipoint)=0.0
+        kpp_3d_fields%scorr(ipoint,:)=0.0
+     ENDDO
+  ENDDO
   
   write(6,*) 'MCKPP_INITIALIZE_RELAXATION: Calculated SST0, fcorr and scorr'
   RETURN

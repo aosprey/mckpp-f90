@@ -64,7 +64,6 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
         
      ! layer thickness h, layer grids zgrid, interface depths d
      hsum = 0.0
-     kpp_const_fields%dm(0) = 0.0
      DO i=1,NZ
         if(kpp_const_fields%L_STRETCHGRID) then
            kpp_const_fields%hm(i) = kpp_const_fields%hm(i) * kpp_const_fields%DMAX / sumh 
@@ -76,6 +75,7 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
         kpp_const_fields%dm(i) = hsum
      ENDDO
   ENDIF
+  kpp_const_fields%dm(0) = 0.0
   kpp_const_fields%hm(nzp1) = 1.e-10 
   kpp_const_fields%zm(nzp1) = -kpp_const_fields%DMAX
   
