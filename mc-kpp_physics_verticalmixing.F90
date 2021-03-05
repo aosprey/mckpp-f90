@@ -34,7 +34,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
   real dlimit,vlimit
   integer jerl(12)
   ! month  1   2   3   4   5   6   7   8   9   10  11  12
-  data jerl / 2 , 2 , 2 , 3 , 3 , 3 , 4 , 4 , 4 , 4 , 3 , 2 /
+  jerl = (/ 2 , 2 , 2 , 3 , 3 , 3 , 4 , 4 , 4 , 4 , 3 , 2 /)
   
   epsilon = 0.1
   epsln   = 1.e-20
