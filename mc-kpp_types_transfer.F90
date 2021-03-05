@@ -1,3 +1,4 @@
+
 SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
 #ifdef MCKPP_CAM3
   USE mckpp_parameters
@@ -51,6 +52,8 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
      kpp_1d_fields%sinc_fcorr(i)=temp
      temp=kpp_3d_fields%fcorr_withz(point,i)
      kpp_1d_fields%fcorr_withz(i)=temp      
+     temp=kpp_3d_fields%scorr(point,i)
+     kpp_1d_fields%scorr(i)=temp
      temp=kpp_3d_fields%sfcorr_withz(point,i)
      kpp_1d_fields%sfcorr_withz(i)=temp
      temp=kpp_3d_fields%sal_clim(point,i) !Not updated within physics
@@ -136,6 +139,8 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   kpp_1d_fields%L_INITFLAG=logical_temp
   temp=kpp_3d_fields%f(point) !Not updated within physics
   kpp_1d_fields%f=temp
+  temp=kpp_3d_fields%freeze_flag(point)
+  kpp_1d_fields%freeze_flag=temp
   
   temp=kpp_3d_fields%relax_sst(point) !Not updated within physics
   kpp_1d_fields%relax_sst=temp
@@ -178,7 +183,7 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   kpp_1d_fields%dlat=temp          
   temp=kpp_3d_fields%dlon(point) !Not updated within physics
   kpp_1d_fields%dlon=temp
-  temp=kpp_3d_fields%cplwght(point)
+  temp=kpp_3d_fields%cplwght(point) !Not updated within physics
   kpp_1d_fields%cplwght=temp
   
   kpp_1d_fields%point=point
