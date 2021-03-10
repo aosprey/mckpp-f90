@@ -76,6 +76,8 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   Xo=kpp_1d_fields%X(:,:)
   kpp_1d_fields%comp_flag=.TRUE.
   kpp_1d_fields%reset_flag=0
+  kpp_1d_fields%dampu_flag=0
+  kpp_1d_fields%dampv_flag=0
   
   DO WHILE (kpp_1d_fields%comp_flag .and. kpp_1d_fields%reset_flag .le. comp_iter_max)
      ! Estimate new profiles by  extrapolation
