@@ -14,23 +14,23 @@
 # NOTE: The CFS/GFS targets do not work on HECToR as the CFS/GFS libraries are not installed here.
 
 # Fortran compiler
-F90=ftn
+F90=mpif90
 
 # C Preprocessor
 CPP=cpp
 
 # Flags for the Fortran compiler
-F90_FLAGS=-I. -eZ -s real64 -homp
-#F90_FLAGS=-I. -eZ -s real64 -homp -g -Rbcps
-LINK_FLAGS=-homp
+#F90_FLAGS=-fopenmp -g -fcheck=all -cpp -O3 -fdefault-real-8 -fPIC -mcmodel=medium -I.
+F90_FLAGS=-fopenmp -g -fcheck=all -cpp -O3 -fdefault-real-8 -I.
+LINK_FLAGS=
 
 # Extra flag required to pass CPP macros through the Fortran compiler - currently required for only XLF.
 F90_CPP_FLAG=
 
-# NetCDF dynamic libraries (not required on ARCHER; use `module load netcdf` instead)
-#NCDF_LIB=-L/opt/lib/netcdf-gfortran/lib -L/opt/lib -lnetcdf -lnetcdff
-# NetCDF include files (not required on HECToR ; use `module load netcdf` instead)
-#NCDF_INC=-I/opt/lib/netcdf-gfortran/include
+# NetCDF 
+NCDF_DIR=/home/annette/Software/netcdf
+NCDF_LIB=-L$(NCDF_DIR)/lib -lnetcdf -lnetcdff
+NCDF_INC=-I$(NCDF_DIR)/include
 
 # MPI (or OpenMPI) include files (not required on ARCHER; compiler locates these automatically)
 #MPI_INC=-I/opt/include
@@ -38,7 +38,7 @@ F90_CPP_FLAG=
 #MPI_LIB=-L/opt/lib/openmpi -lmpi_f90 -lmpi_f77
 
 # XIOS parallel I/O library 
-XIOS_DIR=/work/n02/n02/jwc/XIOS/extract/xios_trunk_r1964
+XIOS_DIR=/home/annette/Software/xios/xios_trunk_r1964
 XIOS_INC=-I$(XIOS_DIR)/inc
 XIOS_LIB=-L$(XIOS_DIR)/lib -lxios -lstdc++
 
@@ -49,17 +49,17 @@ EXECUTABLE=KPP_ocean
 
 FORCED_FILES = $(wildcard *.F90)
 FORCED_OBJS = $(FORCED_FILES:.F90=.o)
-FORCED_MODS = PARAMETERS.mod MCKPP_TIMER.mod MCKPP_DATA_TYPES.mod MCKPP_NAMELISTS.mod MCKPP_XIOS_CONTROL.mod MCKPP_XIOS_IO.mod 
+FORCED_MODS = PARAMETERS.mod MCKPP_TIMER.mod MCKPP_DATA_TYPES.mod MCKPP_NAMELISTS.mod MCKPP_XIOS_CONTROL.mod MCKPP_XIOS_IO.mod
 
-FORCED_COMPILE = $(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(NCDF_INC) $(MPI_INC) $(XIOS_INC)
-FORCED_LINK = $(F90) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${NCDF_INC} ${NCDF_LIB} ${XIOS_INC} ${XIOS_LIB}
+FORCED_COMPILE = $(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(XIOS_INC) $(NCDF_INC) 
+FORCED_LINK = $(F90)  $(F90_FLAGS) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${XIOS_LIB} ${NCDF_LIB}
 
 .SUFFIXES:
 .SUFFIXES: .F90 .o
 
 .F90.o : $(FORCED_MODS)
 	$(FORCED_COMPILE) -c $<
-	
+
 PARAMETERS.mod : mc-kpp_parameters.F90
 	$(FORCED_COMPILE) -c $<
 

@@ -1,7 +1,9 @@
+
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
 SUBROUTINE mckpp_initialize_ocean_profiles
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8
   USE pmgrid, only: masterproc
@@ -9,26 +11,22 @@ SUBROUTINE mckpp_initialize_ocean_profiles
   USE phys_grid, only: get_ncols_p, scatter_field_to_chunk
 #else
 SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>  
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol
-  INTEGER, parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>  
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER, parameter :: my_nx=NX,my_ny=NY
 #endif
 
 ! local
+  INTEGER :: my_nx, my_ny
   INTEGER n,i,ipt,ichnk
   INTEGER status,ncid
   REAL*4, allocatable :: var_in(:,:,:),z_in(:),x_in(:),y_in(:)
@@ -39,7 +37,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
   INTEGER ix,iy,count(3),start(3)
   INTEGER kin,k
   REAL deltaz,deltavar,offset_sst
-  
+
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+
   IF ( kpp_const_fields%L_INITDATA ) THEN
 #ifdef MCKPP_CAM3
      IF (masterproc) THEN
@@ -309,26 +315,32 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only : r8=>shr_kind_r8, r4=>shr_kind_r4
 #endif  
+  USE mckpp_parameters
   IMPLICIT NONE
   
-  INTEGER,parameter :: nuout=6,nuerr=0
-#include <parameter.inc>
   INTEGER, intent(in) :: nz_in
 
 #ifdef MCKPP_CAM3
   REAL(r4),dimension(PLON,PLAT,NZ_IN), intent(in) :: var_in
   REAL(r8),dimension(PLON,PLAT,NZP1), intent(out) :: var_out
-  INTEGER, parameter :: my_nx=PLON,my_ny=PLAT
 #else
   REAL*4,dimension(NX,NY,NZ_IN),intent(in) :: var_in
   REAL,dimension(NPTS,NZP1),intent(out) :: var_out
-  INTEGER, parameter :: my_nx=NX,my_ny=NY
 #endif
-
+ 
+  INTEGER :: my_nx, my_ny
   REAL*4,dimension(NZ_IN), intent(in) :: var_z
   REAL,dimension(NZP1), intent(in) :: model_z
   REAL :: deltaz,deltavar
   INTEGER :: ix,iy,iz,ipt,kin
+
+#ifdef MCKPP_CAM3
+  my_nx=PLON
+  my_ny=PLAT
+#else
+  my_nx=NX
+  my_ny=NY
+#endif
 
   DO iy=1,my_ny
      DO ix=1,my_nx
@@ -370,11 +382,13 @@ END SUBROUTINE mckpp_initialize_ocean_profiles_vinterp
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields,kpp_1d_type
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p  
 #else
 SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   ! Initialize ocean model:
@@ -383,14 +397,10 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
   ! Prepare for first time step.
   
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol,ichnk
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields  
   ! Output
@@ -431,11 +441,19 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
               CALL mckpp_fields_3dto1d(kpp_3d_fields(ichnk),icol,kpp_1d_fields)
 #else
 #ifdef OPENMP
-!$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields)
+!$OMP PARALLEL DEFAULT(none) &
+!$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
+!$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields, hmix0, kmix0)
 !$OMP DO SCHEDULE(dynamic)
 #endif
      DO ipt=1,npts
+#ifdef MCKPP_COUPLE
         IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
+#else       
+        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#endif
            CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
 #endif
            kpp_1d_fields%L_INITFLAG=.TRUE.

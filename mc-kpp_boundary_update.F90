@@ -1,8 +1,10 @@
 #ifdef MCKPP_CAM3
 SUBROUTINE MCKPP_BOUNDARY_UPDATE
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   ! Update all boundary conditions that are read from netCDF files,
@@ -10,15 +12,10 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE(kpp_3d_fields,kpp_const_fields)
 
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
-
-  INTEGER,parameter :: nuout=6,nuerr=0
 
   ! Update SST
   IF (kpp_const_fields%L_UPD_CLIMSST .AND. &

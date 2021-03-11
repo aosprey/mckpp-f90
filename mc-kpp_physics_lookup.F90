@@ -1,14 +1,12 @@
 SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only : kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else 
-#include <mc-kpp_3d_type.com>
-#endif
   TYPE(kpp_const_type) :: kpp_const_fields
   
   real zmin,zmax,umin,umax,usta,zeta,zehat,epsln,&

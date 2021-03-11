@@ -3,34 +3,31 @@
 #include <params.h>
 SUBROUTINE MCKPP_READ_SALINITY_3D  
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER, parameter :: nuout=6,nuerr=0
   INTEGER ix,iy,iz,ipoint,sal_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
        sal_ncid,k,lat_dimid,lon_dimid,time_dimid,nlon_file,nlat_file,ntime_file,nz_file,start(4),count(4)
 
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: sal_temp(PLON,PLAT,NZP1), sal_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
-  INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>      
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=nx,my_ny=ny
 #endif
 
+  INTEGER :: my_nx, my_ny
   REAL :: sal_time
   REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_sal,last_timein
   CHARACTER(LEN=30) tmp_name
@@ -45,6 +42,14 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
   IF (masterproc) THEN
 #endif
 
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+  
   allocate(sal_in(my_nx,my_ny,NZP1,1))
   allocate(longitudes(NX_GLOBE))
   allocate(latitudes(NY_GLOBE))

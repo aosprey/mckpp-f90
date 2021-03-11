@@ -1,10 +1,11 @@
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
      kpp_3d_fields, kpp_const_fields)
 
+  USE mckpp_data_types
+
   IMPLICIT NONE
 
 #include <netcdf.inc>
-#include <mc-kpp_3d_type.com>
 
   TYPE(kpp_3d_type), INTENT(INOUT) :: kpp_3d_fields
   TYPE(kpp_const_type), INTENT(INOUT) :: kpp_const_fields
@@ -12,7 +13,6 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
   
   REAL*4, DIMENSION(nx,ny) :: var_in
   REAL*4 :: first_timein, last_timein, time, time_in
-  INTEGER, parameter :: nuout=6,nuerr=0
   INTEGER :: ipt, ix, iy
   INTEGER :: status, flx_ncid, time_varid
   INTEGER, DIMENSION(3) :: count, start

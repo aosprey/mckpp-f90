@@ -1,19 +1,15 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
   
   IMPLICIT NONE     
   ! compute interior viscosity diffusivity coefficients due to
   ! shear instability (dependent on a local richardson number)
   ! and due to background internal wave activity.
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else  
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif  
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

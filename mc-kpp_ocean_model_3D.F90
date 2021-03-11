@@ -1,18 +1,18 @@
 PROGRAM mckpp_ocean_model_3d
 
+USE mckpp_data_types
 USE mckpp_timer
 USE mckpp_xios_control
 
 IMPLICIT NONE
 
   TYPE(kpp_const_type) :: kpp_const_fields
-  TYPE(kpp_3d_type), ALLOCATABLE :: kpp_3d_fields
+  TYPE(kpp_3d_type) :: kpp_3d_fields
 
   INTEGER :: ntime
   
   ! Initialise
   WRITE(6,*) "MCKPP_OCEAN_MODEL_3D: Initialisation"
-  ALLOCATE(kpp_3d_fields)
 
   CALL mckpp_initialize_timers()
   CALL mckpp_start_timer('Initialization')

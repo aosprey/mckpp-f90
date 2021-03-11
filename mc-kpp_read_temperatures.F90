@@ -3,30 +3,28 @@
 #include <params.h>
 SUBROUTINE MCKPP_READ_TEMPERATURES_3D  
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)  
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: ocnT_temp(PLON,PLAT,NZP1), ocnT_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
-  INTEGER,parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER,parameter :: my_nx=NX,my_ny=NY
 #endif
 
+  INTEGER :: my_nx, my_ny
   INTEGER ix,iy,iz,ipoint,ocnT_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
        ocnT_ncid,k,lat_dimid,lon_dimid,time_dimid,nlon_file,nlat_file,ntime_file,nz_file,prev_start,&
        start(4),count(4)
@@ -37,6 +35,14 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
+#endif
+
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
 #endif
 
   count=(/my_nx,my_ny,NZP1,1/)
@@ -152,36 +158,33 @@ END SUBROUTINE MCKPP_READ_TEMPERATURES_3D
 #include <params.h>
 SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER,parameter :: nuout=6,nuerr=0
   
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: bottom_temp(PLON,PLAT), bottom_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
-  INTEGER, parameter :: my_nx=NX_GLOBE,my_ny=NY_GLOBE
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
-  INTEGER, parameter :: my_nx=NX, my_ny=NY
 #endif
 
+  INTEGER :: my_nx, my_ny
   INTEGER status,ncid
   REAL :: bottomclim_time
-  REAL*4 var_in(my_nx,my_ny,1),time_in,first_timein,latitudes(NY_GLOBE),&
-       longitudes(NX_GLOBE), last_timein, offset_temp
+  REAL*4 time_in,first_timein,last_timein, offset_temp
+  REAL*4, ALLOCATABLE :: var_in(:,:,:), latitudes(:), longitudes(:)
   INTEGER varid,time_varid,lat_varid,lon_varid,time_dimid,lat_dimid,lon_dimid,&
        nlat_file,nlon_file,ntime_file,count(3),start(3),ix,iy,ipoint
   CHARACTER(LEN=30) tmp_name
@@ -189,6 +192,18 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
+
+#ifdef MCKPP_CAM3
+  my_nx = nx_globe 
+  my_ny = ny_globe 
+#else
+  my_nx = nx
+  my_ny = ny 
+#endif
+
+  ALLOCATE( var_in(my_nx,my_ny,1) ) 
+  ALLOCATE( latitudes(NY_GLOBE) ) 
+  ALLOCATE( longitudes(NX_GLOBE) ) 
 
   count(:)=(/my_nx,my_ny,1/)
   start(:)=(/1,1,1/)

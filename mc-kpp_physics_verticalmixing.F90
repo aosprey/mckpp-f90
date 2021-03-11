@@ -1,25 +1,19 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
   !  Interface between 1-d model and vertical mixing
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else  
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
-
-! inputs including those from common.inc and parameter.inc
+! inputs 
   type(kpp_1d_type) :: kpp_1d_fields
   type(kpp_const_type) :: kpp_const_fields
   real B0,B0sol,ustar
 
-! outputs including those to common.inc
+! outputs 
   real hmixn                ! boundary layer depth (m)
   integer kmixn       
   real rhob
@@ -40,7 +34,7 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
   real dlimit,vlimit
   integer jerl(12)
   ! month  1   2   3   4   5   6   7   8   9   10  11  12
-  data jerl / 2 , 2 , 2 , 3 , 3 , 3 , 4 , 4 , 4 , 4 , 3 , 2 /
+  jerl = (/ 2 , 2 , 2 , 3 , 3 , 3 , 4 , 4 , 4 , 4 , 3 , 2 /)
   
   epsilon = 0.1
   epsln   = 1.e-20
@@ -138,7 +132,8 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
           (kpp_1d_fields%U(n,2)-kpp_1d_fields%U(n+1,2))**2         
   ENDDO
      
-  CALL MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(dVsq,ustar,B0,B0sol,alphaDT,betaDS,Ritop,hmixn,kmixn,kpp_1d_fields,kpp_const_fields)
+  CALL MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(nz,nzp1,dVsq,ustar,B0,B0sol,alphaDT,betaDS,&
+       Ritop,hmixn,kmixn,kpp_1d_fields,kpp_const_fields)
         
   ! limit the bottom diffusity and viscosity
   ! zero diffusivities for no bottom flux option

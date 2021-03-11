@@ -3,12 +3,14 @@
 #include <params.h>
 SUBROUTINE mckpp_read_ice  
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif  
 
   ! Read in ice concentrations from a user-provided netCDF file.
@@ -18,29 +20,20 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
   ! Written by Nick Klingaman, 11/01/08.
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: ice_temp(PLON,PLAT), ice_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,ico
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
-#ifdef MCKPP_COUPLE
-  integer,parameter :: ice_nx=NX_GLOBE,ice_ny=NY_GLOBE
-#else
-  integer,parameter :: ice_nx=NX,ice_ny=NY
-#endif     
+  integer :: ice_nx,ice_ny
   REAL :: max_ice,min_ice
-  REAL*4 :: var_in(ice_nx,ice_ny,1),iceclim_time,first_timein,last_timein,&
-       time_in,latitudes(NY_GLOBE),longitudes(NX_GLOBE)
+  REAL*4 :: iceclim_time,first_timein,last_timein,time_in
+  REAL*4, ALLOCATABLE :: var_in(:,:,:), latitudes(:), longitudes(:)
   INTEGER count(3),start(3)
   INTEGER ix,iy,status,ncid,varid,time_varid,lon_varid,lat_varid,time_dimid,&
        lon_dimid,lat_dimid,ntime_file,nlon_file,nlat_file
@@ -49,6 +42,18 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
+
+#ifdef MCKPP_COUPLE
+  ice_nx=NX_GLOBE
+  ice_ny=NY_GLOBE
+#else
+  ice_nx=NX
+  ice_ny=NY
+#endif     
+
+  ALLOCATE( var_in(ice_nx,ice_ny,1) ) 
+  ALLOCATE( latitudes(NY_GLOBE) ) 
+  ALLOCATE( longitudes(NX_GLOBE) )
   
   count=(/ice_nx,ice_ny,1/)
   start=(/1,1,1/)

@@ -8,20 +8,19 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
+#else 
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: ichnk,ncol,icol
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif  
@@ -58,21 +57,19 @@ SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
+#else
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: ichnk,ncol,icol
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
@@ -102,16 +99,13 @@ END SUBROUTINE mckpp_physics_overrides_sst0
 SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

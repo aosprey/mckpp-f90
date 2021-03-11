@@ -1,24 +1,21 @@
 #ifdef MCKPP_CAM3
 SUBROUTINE mckpp_initialize_fluxes_variables
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only : get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_fluxes_variables(kpp_3d_fields)
+  USE mckpp_data_types
 #endif  
 
 ! Set up parameters for calculating fluxes and initialize fluxes.
 ! intermediate values computed every ndtld
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: ichnk,ncol
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
 #endif
   integer i,ipt
@@ -51,13 +48,11 @@ end SUBROUTINE mckpp_initialize_fluxes_variables
 ! No support for data atmosphere when coupled to CAM3
 #ifndef MCKPP_CAM3 
 SUBROUTINE mckpp_initialize_fluxes_file(kpp_const_fields)
+  USE mckpp_data_types
+  USE mckpp_namelists
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
-#include <mc-kpp_3d_type.com>
-#include <flx_in.com>
   
   TYPE(kpp_const_type) :: kpp_const_fields
   INTEGER status,index(3)

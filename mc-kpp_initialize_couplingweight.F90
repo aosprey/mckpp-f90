@@ -6,28 +6,27 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: scatter_field_to_chunk,get_ncols_p
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
 #else
 SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif  
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: cplwght(PLON,PLAT),cplwght_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: icol,ncol,ichnk,lat_varid,lon_varid
   REAL(r4) :: latitude_in(PLAT),longitude_in(PLON)
 #else
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
-  INTEGER nuout,nuerr,start(2),count(2)
+  INTEGER start(2),count(2)
   INTEGER ix,jy,ipoint,cplwght_varid,status,ncid_cplwght
   INTEGER ipoint_globe
-  PARAMETER (nuout=6,nuerr=0)
 
 #include <netcdf.inc>
 !#include <couple.com>

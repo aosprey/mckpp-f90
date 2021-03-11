@@ -1,44 +1,18 @@
 SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
 
   ! This should be called after *ALL* constants have been read in
-  ! in steves_3d_ocn.f (subroutine initialize).  It should be called
+  ! in mckkp_initialize_namelists.  It should be called
   ! only once.
 
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
+  USE mckpp_namelists
   
   IMPLICIT NONE
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
-
-  ! Include all the common blocks containing constants (boo, hiss, common blocks)
-#include <constants.com>
-#include <flx_paras.com>
-#include <ocn_state.com>
-#include <ocn_paras.com>
-#include <ice_paras.com>
-#include <proc_pars.com>
-#include <proc_swit.com>
-#include <timocn.com>
-#include <fcorr_in.com>
-#include <sfcorr_in.com>
-#include <initialcon.com>
-#include <ocn_advec.com>
-#include <relax_3d.com>
-#include <output.com>
-#include <sstclim.com>
-#include <currclim.com>
-#include <couple.com>
-#include <bottomclim.com>
-#include <flx_in.com>
-#include <landsea.com>
-#include <location.com>
-#include <vert_pgrid.com>
 
   TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
   

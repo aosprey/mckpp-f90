@@ -2,29 +2,27 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE mckpp_physics_driver
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_1d_type,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
   USE mckpp_timer
 #endif
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: icol,ncol,ichnk
 #else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
   
   ! Local
   TYPE(kpp_1d_type) :: kpp_1d_fields
-  INTEGER, parameter :: nuout=6, nuerr=0
-  INTEGER :: ipt
+  INTEGER :: ipt, index
 #ifdef OPENMP
   INTEGER :: tid,OMP_GET_THREAD_NUM
 #endif
@@ -48,26 +46,38 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   !WRITE(6,*) 'After ocnstep, U = ',kpp_3d_fields(begchunk)%U(1:ncol,1,1)
 #else
 #ifdef OPENMP
-!$OMP PARALLEL DEFAULT(PRIVATE) SHARED(kpp_3d_fields,kpp_const_fields) &
-!!$OMP SHARED(kpp_timer) & 
-!$OMP PRIVATE(trans_timer_name,phys_timer_name,tid)
+!$OMP PARALLEL DEFAULT(NONE) &
+!$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
+!$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, index, kpp_1d_fields)
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid
   WRITE(phys_timer_name,'(A19,I2)') 'KPP Physics thread ',tid
+  IF (kpp_const_fields%ntime .EQ. 1) THEN
+!$OMP CRITICAL
+    CALL mckpp_define_new_timer(trans_timer_name, index)
+    CALL mckpp_define_new_timer(phys_timer_name, index)
+!$OMP END CRITICAL
+  END IF 
 !$OMP DO SCHEDULE(dynamic)
 #else
   WRITE(trans_timer_name,'(A19)') 'KPP 3D/1D thread 01'
   WRITE(phys_timer_name,'(A21)') 'KPP Physics thread 01'
 #endif /*OPENMP*/
   DO ipt=1,npts
-     IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#ifdef MCKPP_COUPLE
+        IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
+#else       
+        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
+#endif
         CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
         CALL mckpp_stop_timer(trans_timer_name) 
 
         CALL mckpp_start_timer(phys_timer_name)
-        CALL mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)       
-        CALL mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)        
+        CALL mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
+        CALL mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
         CALL mckpp_stop_timer(phys_timer_name)
 
         CALL mckpp_start_timer(trans_timer_name)

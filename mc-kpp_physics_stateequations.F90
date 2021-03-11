@@ -1,4 +1,8 @@
 REAL FUNCTION MCKPP_CPSW(S,T1,P0)
+  IMPLICIT NONE
+
+  REAL :: s, t1, p0
+  REAL :: t, p, sr, a, b, c, cp0, cp1, cp2
   !
   ! ******************************************************************
   ! UNITS:      
@@ -116,7 +120,11 @@ END FUNCTION MCKPP_CPSW
 !                           of state.  Jour. Atm. Ocean. Tech., in press.
 !
 ! John L. Lillibridge @ URI/GSO: 25 March 1987 
-! 
+!
+! Modified to remove common blocks, and pass variables between subroutines
+! as arguments. This restricts scope of data, avoiding issues with OpenMP.
+! Annette Osprey 2021
+!
 Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig) 
   !    *,Exp. Coeff. of SeaWater 1980 <870330.1557> 
   ! 
@@ -126,13 +134,6 @@ Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig)
   Real A1,B1,C,D,E,K
   Real Rho,Rho0,ABFac 
   Logical KapFlg,ABFlg
-  
-  Common /EOS/R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg 
-#ifdef MCKPP_OPENMP
-!$OMP THREADPRIVATE(/EOS/)
-  INTEGER tid,omp_get_thread_num
-  tid=OMP_GET_THREAD_NUM()
-#endif
   
   ! Check that temperature is above freezing
   T = T1
@@ -149,17 +150,21 @@ Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig)
   ! of Intermediate sums used between Sig80 and Beta
   If(Beta.ne.0)Then      
      !Main Program wants Beta 
-     Call MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig) 
-     Call MCKPP_Bet80(S,T,P,Beta)
+     Call MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
+     Call MCKPP_Bet80(S,T,P,Beta,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)
   EndIf
 
   ! Compute Alpha next overwriting many common variables used by Sig80  
   If(Alpha.ne.0)Then     
      !Main Program wants Alpha
      If(KapFlg)Then        
-        Call MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig) 
+        Call MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
+             R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
      EndIf
-     Call MCKPP_Alf80(S,T,P,Alpha) 
+     Call MCKPP_Alf80(S,T,P,Alpha,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
   EndIf
  
 ! If we haven't called Sig80 yet, zero out Sig,Sig0 to be safe.  
@@ -172,7 +177,8 @@ Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig)
 ! possible, otherwise go to entry point BlkMod in Sig80 from
 ! within Kap80 
   If(Kappa.ne.0)Then
-     Call MCKPP_Kap80(S,T,P,KapFlg,Kappa)
+     Call MCKPP_Kap80(S,T,P,KapFlg,Kappa,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)
   EndIf
   
 ! All Done, Return with appropriate desired values calculated  
@@ -193,7 +199,8 @@ End Subroutine MCKPP_ABK80
 ! 
 ! John L. Lillibridge at URI/GSO: 12/22/86  
 
-Subroutine MCKPP_Bet80(S,T,P,Beta)   
+Subroutine MCKPP_Bet80(S,T,P,Beta,&
+     R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)   
   Implicit None 
   
   Real P,P0,T,S,SR,R1,R2,R3,R4 
@@ -203,11 +210,6 @@ Subroutine MCKPP_Bet80(S,T,P,Beta)
   Real DRho,DK,DK0,DA,DB
   Real ABFac
   Logical ABFlg 
-  Common /EOS/R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg
-
-#ifdef MCKPP_OPENMP
-!$OMP THREADPRIVATE(/EOS/)
-#endif
  
 ! Compute the Sigma-t derivative term 
 ! Note that SR is the Sq.Root of Salinity from Sig80 
@@ -236,7 +238,8 @@ End Subroutine MCKPP_Bet80
  
 ! Thermal Expansion Coefficient for Sea Water  
 !*******************************************************************
-Subroutine MCKPP_Alf80(S,T,P,Alpha) 
+Subroutine MCKPP_Alf80(S,T,P,Alpha,&
+  R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
   !    *,1980 Thermal Exp. Coeff. <870330.1549> 
   !*******************************************************************
   ! 
@@ -272,17 +275,8 @@ Subroutine MCKPP_Alf80(S,T,P,Alpha)
   Real ABFac                               
   !Common to Alpha/Beta
   Logical ABFlg                            
- 
-! Common Block for the Equation Of State subroutines Alf80,Bet80,Kap80
-! Which can utilize Intermediate sums to minimize overhead once density 
-! computed by subroutine Sig80.  
-  COMMON /EOS/R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg 
-#ifdef MCKPP_OPENMP
-!$OMP THREADPRIVATE(/EOS/)
-#endif
-! 
-! COMPUTE Alpha PURE WATER AT ATM PRESS 
-! 
+
+! COMPUTE Alpha PURE WATER AT ATM PRESS
   R1=(((.3268166E-7*T-.4480332e-5)*T+.3005055e-3)*T-.1819058E-1)*T+6.793952E-2 
 
 ! SEAWATER Alpha AT ATM PRESS  
@@ -337,7 +331,8 @@ END Subroutine MCKPP_Alf80
 ! 
 ! John L. Lillibridge @ URI/GSO: 25 March 1987 
 ! 
-Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa)  
+Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa,&
+     R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)  
   !    *,Compressibility of Sea Water <870330.1553> 
   Implicit None
  
@@ -347,17 +342,12 @@ Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa)
   Real Rho,Rho0,ABFac
   Logical KapFlg, ABFlg                    
   ! Signals we need entry to BlkMod 
-
-  Common /EOS/R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg 
-
-#ifdef MCKPP_OPENMP
-!$OMP THREADPRIVATE(/EOS/)
-#endif
  
   ! If P=0 must go to Sig80 Subroutine at Entry BlkMod
   If(P.eq.0) Then 
      KapFlg=.True. 
-     Call MCKPP_BlkMod(S,T,P,KapFlg) 
+     Call MCKPP_BlkMod(S,T,P,KapFlg,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
      Kappa=1.0/K                   
      ! K in Common (Bars), Kappa in bar-1 
      Return
@@ -365,7 +355,8 @@ Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa)
    
 ! If Density hasn't been computed must also go to BlkMod 
   If(KapFlg) Then 
-     Call MCKPP_BlkMod(S,T,P,KapFlg) 
+     Call MCKPP_BlkMod(S,T,P,KapFlg,&
+          R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
   EndIf
    
 ! Full nonzero pressure formula for Kappa given A,B,K  
@@ -376,7 +367,8 @@ End Subroutine MCKPP_Kap80
  
 ! EQUATION OF STATE FOR SEA WATER  
 !*******************************************************************
-Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig) 
+Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
+     R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg) 
 !    *,1980 EQ. OF STATE <870330.1544>  
 !*******************************************************************
 ! 
@@ -410,14 +402,6 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig)
   Logical KapFlg, ABFlg                           
   !True when Entry at BlkMod 
 
-! Common Block for the Equation Of State subroutines Alf80,Bet80,Kap80
-! Which can utilize Intermediate sums to minimize overhead once density 
-! computed by this routine.  
-  Common /EOS/R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg 
-#ifdef MCKPP_OPENMP
-  !$OMP THREADPRIVATE(/EOS/)
-#endif
- 
 ! CONVERT PRESSURE TO BARS AND SQ ROOT SALINITY 
 ! And Set the Logical Flag used to control Entry Point Below for Kappa 
   P0=P/10.0 
@@ -447,7 +431,8 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig)
   ! This is the entry point when the Bulk Modulus K is desired, which 
   ! doesn't require knowledge of density. Entry from Kappa will have
   ! KapFlg set .True. so that we exit before computing Sig.  
-  Entry MCKPP_BlkMod(S,T,P,KapFlg)           
+  Entry MCKPP_BlkMod(S,T,P,KapFlg,&
+       R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)           
   
   ! For Computation of Kappa  
   

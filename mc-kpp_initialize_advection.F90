@@ -3,30 +3,27 @@
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_ADVECTION
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   REAL(r8) :: advection_chunk(PCOLS,begchunk:endchunk,2)
   INTEGER :: nmodeadv_temp(PLON,PLAT,2),modeadv_temp(PLON,PLAT,maxmodeadv,2),&
        nmodeadv_chunk(PCOLS,begchunk:endchunk,2)
   REAL(r8) :: advection_temp(PLON,PLAT,maxmodeadv,2)
   INTEGER :: ichnk,ncol,icol
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

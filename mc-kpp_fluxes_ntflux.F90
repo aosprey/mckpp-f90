@@ -1,18 +1,12 @@
 SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#endif
+#else 
+  USE mckpp_data_types
+#endif 
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else  
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   INTEGER k
   REAL MCKPP_FLUXES_SWDK
@@ -37,7 +31,6 @@ SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
 END SUBROUTINE mckpp_fluxes_ntflux
 
 REAL FUNCTION MCKPP_FLUXES_SWDK(z,jerlov)
-#include <parameter.inc>
 
   parameter(max=5)
   real Rfac(max),a1(max),a2(max)

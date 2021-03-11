@@ -1,7 +1,10 @@
 SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, Bo, Bosol, hbl, & 
      bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_Type,kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
  
   IMPLICIT NONE
@@ -26,12 +29,6 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
   !     stable/ustable forcing conditions, and where hbl is relative 
   !     to grid points (caseA), so that conditional branches can be 
   !     avoided in later subroutines.
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Necessary for IMPLICIT NONE
   real bvsq,cekman,cmonob,cs,cv,epsilon,fekman,fmonob,&

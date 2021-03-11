@@ -4,22 +4,16 @@
 #endif
 SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
 
   ! Compute coefficients for tridiagonal matrix (dimension=nzi).
   !     Note: cu(1) = 0. and cl(nzi) = 0. are necessary conditions.
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -56,7 +50,10 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
      dto,nzi,ind,rhs,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
+#else 
+  USE mckpp_data_types
 #endif
 
   ! Compute right hand side of tridiagonal matrix for scalar fields:
@@ -67,16 +64,7 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
   ! bottom  ..... ..... +dto/h(nzi)*diff(nzi)/dzb(nzi)*yo(nzi+1)
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
-      
   !  Input
   TYPE(kpp_const_type) :: kpp_const_fields
   real dto            ! timestep interval (seconds)
@@ -133,13 +121,11 @@ END SUBROUTINE mckpp_physics_solvers_tridrhs
 
 SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
 
+  USE mckpp_parameters
+
   ! Solve tridiagonal matrix for new vector yn, given right hand side
   ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
-
-#include <parameter.inc>
 
   ! Input
   integer nzi               ! dimension of matrix
@@ -188,7 +174,10 @@ END SUBROUTINE mckpp_physics_solvers_tridmat
 subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fields,kpp_const_fields)
   
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
+#else
+  USE mckpp_data_types
 #endif
 
 !     Modify rhs to correct scalar, jsclr, 
@@ -204,15 +193,6 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        6 : Seasonal mixed layer horizontal advection to dm
 !        7 : Seasonal thermocline horizontal advection to 1.5 dm
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
-
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
-#endif
 
   ! Input
   integer nzi,&              ! vertical dimension of field
@@ -236,10 +216,11 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
   real xsA(21)   ! yearly excess of heat
 
   !data f/.1,.1,6*0.0,.1,.3,.4,.2/
-  data f/.05,.05,5*0.0,.05,.15,.20,.30,.20/
-  data xsA/48.26,21.73,29.02,56.59,19.94,15.96,18.28,&
-           40.52,37.06,29.83,29.47,15.77, 1.47,14.55,&
-           4.22,28.19,39.54,19.58,20.27,11.19,21.72/
+  f = (/.05, .05, 0.0, 0.0, 0.0, 0.0, 0.0, .05, .15, .20, &
+       .30, .20/)
+  xsA = (/48.26, 21.73, 29.02, 56.59, 19.94, 15.96, 18.28, &
+         40.52, 37.06, 29.83, 29.47, 15.77, 1.47, 14.55, &
+         4.22, 28.19, 39.54, 19.58, 20.27, 11.19, 21.72/)
 
   if(mode.le.0) return 
 !               find ocean year

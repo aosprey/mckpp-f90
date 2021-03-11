@@ -1,19 +1,15 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fields)
 #ifdef MCKPP_CAM3
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type
+#else 
+  USE mckpp_data_types
 #endif
   IMPLICIT NONE
   
   ! Rho dependent interior flux parameterization.
   ! Add double-diffusion diffusivities to Ri-mix values at blending
   ! interface and below.
- 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-  ! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>     
-#endif
   
   ! Necessary for IMPLICIT NONE (NPK 11/2/13)
   integer km,kmp1,ki

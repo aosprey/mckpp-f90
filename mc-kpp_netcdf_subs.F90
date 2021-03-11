@@ -1,8 +1,6 @@
 SUBROUTINE MCKPP_NCDF_DEF_DIM (ncid,dimid,dimlen,varid,name,units,delta,long_name)
   
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
       
@@ -32,8 +30,6 @@ END SUBROUTINE MCKPP_NCDF_DEF_DIM
 SUBROUTINE MCKPP_NCDF_DEF_VAR (ncid,varid,ndims,dims,name,units,long_name)
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   include 'netcdf.inc'
   
   REAL*4 valid_min,valid_max,miss_val,fill_val
@@ -67,10 +63,10 @@ SUBROUTINE MCKPP_NCDF_DEF_VAR (ncid,varid,ndims,dims,name,units,long_name)
 END SUBROUTINE MCKPP_NCDF_DEF_VAR
 
 SUBROUTINE MCKPP_HANDLE_ERR(status)
-  
+ 
+  USE mckpp_parameters
+ 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   include 'netcdf.inc'
   
   integer status
@@ -87,22 +83,18 @@ END SUBROUTINE MCKPP_HANDLE_ERR
 #include <params.h>
 SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
   USE shr_kind_mod, only: r8=>shr_kind_r8 !,r4=>shr_kind_r4
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_READ_PAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
 #endif  
 
@@ -213,22 +205,18 @@ END SUBROUTINE MCKPP_READ_PAR
 #include <params.h>
 SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
   USE shr_kind_mod, only: r8=>shr_kind_r8 !,r4=>shr_kind_r4
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields
 #else
 SUBROUTINE MCKPP_READ_IPAR (kpp_3d_fields,ncid,vname,npars,nt,par_out)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
 #endif  
 
@@ -321,12 +309,10 @@ END SUBROUTINE MCKPP_READ_IPAR
 SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name,longitude_name,&
      time_name,start_lon,start_lat,offset_lon,offset_lat,first_time,last_time,time_varid)
 
+  USE mckpp_parameters
+
   IMPLICIT NONE
   
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
-  
-#include <parameter.inc>
 #include <netcdf.inc>
 
   INTEGER ncid,offset_lon,offset_lat,lon_dimid,lon_varid,lat_dimid,lat_varid,time_dimid,time_varid,ix,iy

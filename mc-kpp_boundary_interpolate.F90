@@ -2,19 +2,18 @@
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP(kpp_3d_fields,kpp_const_fields)      
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
@@ -90,19 +89,18 @@ END SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP
 #include <misc.h>
 #include <params.h>
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL  
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
   IMPLICIT NONE
 
-#ifdef MCKPP_CAM3
-#include <parameter.inc>
-#else
-#include <mc-kpp_3d_type.com>
+#ifndef MCKPP_CAM3
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif

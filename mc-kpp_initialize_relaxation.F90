@@ -3,28 +3,25 @@
 #include <params.h>
 SUBROUTINE MCKPP_INITIALIZE_RELAXATION
   USE shr_kind_mod,only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif
 
 ! Re-write logic to allow for relaxing either SST or
 ! salinity - NPK 24/08/11
 
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>  
   REAL(r8) :: relax_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
 #else
-! Automatically includes parameter.inc!
-#include <mc-kpp_3d_type.com>
   TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif
@@ -147,13 +144,13 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
   CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields,kpp_const_fields)
 
 ! Do we need these initialization statements?
-!  DO iy=1,ny
-!     DO ix=1,nx
-!        ipoint=(iy-1)*nx+ix
-!        kpp_3d_fields%fcorr(ipoint)=0.0
-!        kpp_3d_fields%scorr(ipoint,:)=0.0
-!     ENDDO
-!  ENDDO
+  DO iy=1,ny
+     DO ix=1,nx
+        ipoint=(iy-1)*nx+ix
+        kpp_3d_fields%fcorr(ipoint)=0.0
+        kpp_3d_fields%scorr(ipoint,:)=0.0
+     ENDDO
+  ENDDO
   
   write(6,*) 'MCKPP_INITIALIZE_RELAXATION: Calculated SST0, fcorr and scorr'
   RETURN

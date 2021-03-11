@@ -1,26 +1,23 @@
 #ifdef MCKPP_CAM3
 SUBROUTINE mckpp_initialize_geography
   USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields,kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
 SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
+  USE mckpp_data_types
 #endif /*MCKPP_CAM3*/
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
-#include <parameter.inc>
   INTEGER :: ichnk,icol,ncol
 #else  
-  ! Automatically includes parameter.inc
-#include <mc-kpp_3d_type.com>  
   TYPE(kpp_3d_type)    :: kpp_3d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
 #endif  
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #include <netcdf.inc>
   
@@ -67,7 +64,6 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
         
      ! layer thickness h, layer grids zgrid, interface depths d
      hsum = 0.0
-     kpp_const_fields%dm(0) = 0.0
      DO i=1,NZ
         if(kpp_const_fields%L_STRETCHGRID) then
            kpp_const_fields%hm(i) = kpp_const_fields%hm(i) * kpp_const_fields%DMAX / sumh 
@@ -79,6 +75,7 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
         kpp_const_fields%dm(i) = hsum
      ENDDO
   ENDIF
+  kpp_const_fields%dm(0) = 0.0
   kpp_const_fields%hm(nzp1) = 1.e-10 
   kpp_const_fields%zm(nzp1) = -kpp_const_fields%DMAX
   
