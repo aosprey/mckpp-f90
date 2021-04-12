@@ -1,18 +1,20 @@
-
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE mckpp_initialize_ocean_profiles
-  USE mckpp_parameters
+#endif
+
+SUBROUTINE mckpp_initialize_ocean_profiles()
+  
+#ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8
   USE pmgrid, only: masterproc
   USE ppgrid, only: pcols,begchunk,endchunk
   USE phys_grid, only: get_ncols_p, scatter_field_to_chunk
 #else
-SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
 
   IMPLICIT NONE
 #include <netcdf.inc>  
@@ -20,9 +22,6 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
 ! local
@@ -81,7 +80,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
            WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find longitude ',&
                 kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
 #endif
-           CALL MCKPP_ABORT
+           CALL MCKPP_ABORT()
         ENDIF
      ENDDO
      start(1)=ix
@@ -111,7 +110,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
            write(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find latitude ',&
                 kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
 #endif
-           CALL MCKPP_ABORT
+           CALL MCKPP_ABORT()
         ENDIF
      ENDDO
      start(2)=iy
@@ -269,7 +268,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
 #endif
   ELSE
      WRITE(nuerr,*) "MCKPP_INITIALIZE_OCEAN_PROFILES: No code for L_INITDATA=.FALSE."
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
 
   ! Calculate and remove reference salinity      
@@ -304,18 +303,16 @@ SUBROUTINE mckpp_initialize_ocean_profiles(kpp_3d_fields,kpp_const_fields)
   ENDIF
 #endif
   
-  RETURN
 END SUBROUTINE mckpp_initialize_ocean_profiles
 
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
+
 SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,var_out)
+  
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only : r8=>shr_kind_r8, r4=>shr_kind_r4
 #endif  
-  USE mckpp_parameters
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
+  
   IMPLICIT NONE
   
   INTEGER, intent(in) :: nz_in
@@ -374,22 +371,21 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
         ENDDO
      ENDDO
   ENDDO
-  RETURN
+
 END SUBROUTINE mckpp_initialize_ocean_profiles_vinterp
 
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL
+
+SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
+  
+#ifdef MCKPP_CAM3  
   USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields,kpp_1d_type
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p  
 #else
-SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
 #endif
+  USE mckpp_parameters 
 
   ! Initialize ocean model:
   ! Set coefficients for tridiagonal matrix solver.
@@ -400,11 +396,6 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
-#else
-  ! Input
-  TYPE(kpp_const_type) :: kpp_const_fields  
-  ! Output
-  TYPE(kpp_3d_type) :: kpp_3d_fields
 #endif
   
   ! Local
@@ -514,5 +505,5 @@ SUBROUTINE mckpp_initialize_ocean_model(kpp_3d_fields,kpp_const_fields)
 #endif
 
   ENDIF
-  RETURN
+
 END SUBROUTINE mckpp_initialize_ocean_model

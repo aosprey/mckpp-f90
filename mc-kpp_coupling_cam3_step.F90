@@ -10,7 +10,6 @@ SUBROUTINE MCKPP_COUPLING_CAM3_STEP(srf_state,srfflx)
   USE phys_grid,    only: get_ncols_p,get_rlat_all_p,get_rlon_all_p
   USE time_manager, only: get_step_size,get_curr_calday,get_nstep,is_end_curr_day
   USE physconst,    only: latvap
-  USE mckpp_parameters
   USE mckpp_types,  only: kpp_3d_fields,kpp_1d_fields,kpp_const_fields
   USE pmgrid,       only: masterproc
 
@@ -207,7 +206,6 @@ END SUBROUTINE MCKPP_COUPLING_CAM3_STEP
 
 SUBROUTINE MCKPP_COUPLING_CAM3_OUTPUT(srfflx)
   USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_parameters 
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE comsrf, only: tsocn, icefrac, sicthk, ocnfrac, landfrac, aice, frzmlt, lwupocn, srfflx_parm, Focn
   USE ice_constants, only: Tffresh, tfrez, rhow, cp_ocn

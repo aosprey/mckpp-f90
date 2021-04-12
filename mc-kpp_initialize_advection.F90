@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_ADVECTION
+#endif
+
+SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
+  
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: npts, maxmodeadv
   
   IMPLICIT NONE
   
@@ -23,9 +26,6 @@ SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
        nmodeadv_chunk(PCOLS,begchunk:endchunk,2)
   REAL(r8) :: advection_temp(PLON,PLAT,maxmodeadv,2)
   INTEGER :: ichnk,ncol,icol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER nmode(npts)  
@@ -69,12 +69,12 @@ SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
         ENDDO
      ENDDO
 #else
-     call MCKPP_READ_IPAR(kpp_3d_fields,ncid_advec,'nmode_tadv',1,1,kpp_3d_fields%nmodeadv(:,1))
-     call MCKPP_READ_IPAR(kpp_3d_fields,ncid_advec,'mode_tadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,1))
-     call MCKPP_READ_PAR(kpp_3d_fields,ncid_advec,'tadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,1))
-     call MCKPP_READ_IPAR(kpp_3d_fields,ncid_advec,'nmode_sadv',1,1,kpp_3d_fields%nmodeadv(:,2))
-     call MCKPP_READ_IPAR(kpp_3d_fields,ncid_advec,'mode_sadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,2))
-     call MCKPP_READ_PAR(kpp_3d_fields,ncid_advec,'sadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,2))  
+     call MCKPP_READ_IPAR(ncid_advec,'nmode_tadv',1,1,kpp_3d_fields%nmodeadv(:,1))
+     call MCKPP_READ_IPAR(ncid_advec,'mode_tadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,1))
+     call MCKPP_READ_PAR(ncid_advec,'tadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,1))
+     call MCKPP_READ_IPAR(ncid_advec,'nmode_sadv',1,1,kpp_3d_fields%nmodeadv(:,2))
+     call MCKPP_READ_IPAR(ncid_advec,'mode_sadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,2))
+     call MCKPP_READ_PAR(ncid_advec,'sadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,2))  
 #endif
      status=NF_CLOSE(ncid_advec)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -93,5 +93,4 @@ SUBROUTINE mckpp_initialize_advection(kpp_3d_fields,kpp_const_fields)
 #endif
   ENDIF
 
-  RETURN
 END SUBROUTINE mckpp_initialize_advection

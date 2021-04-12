@@ -2,12 +2,13 @@
 #include <misc.h>
 #include <params.h>
 #endif
+
 SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
+
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_const_type
 #endif
 
   ! Compute coefficients for tridiagonal matrix (dimension=nzi).
@@ -43,17 +44,16 @@ SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
   !In the bottom layer
   cl(nzi)= 0.
 
-  return
 end SUBROUTINE mckpp_physics_solvers_tridcof
+
 
 SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghatflux,&
      dto,nzi,ind,rhs,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_const_type
 #endif
 
   ! Compute right hand side of tridiagonal matrix for scalar fields:
@@ -116,12 +116,12 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
           ntflux(i) - ntflux(i-1) ) + yo(i+1)*kpp_const_fields%tri(i,1,ind)*diff(i)
   endif
   
-  RETURN
 END SUBROUTINE mckpp_physics_solvers_tridrhs
+
 
 SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
 
-  USE mckpp_parameters
+  USE mckpp_parameters, ONLY: nztmax, nuerr
 
   ! Solve tridiagonal matrix for new vector yn, given right hand side
   ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
@@ -155,7 +155,7 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
         write(nuerr,*)'* bet=',bet
         write(nuerr,*)'*i-1=',i-1,' cc=',cc(i-1),'cl=',cl(i-1)
         write(nuerr,*)'*i=',i,' cc=',cc(i),' cu=',cu(i),' gam=',gam(i)
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
         bet=1.E-12
         !     Pause 3
      endif
@@ -168,17 +168,17 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
   ENDDO
   yn(nzi+1) = yo(nzi+1)
   
-  RETURN
 END SUBROUTINE mckpp_physics_solvers_tridmat
+
 
 subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fields,kpp_const_fields)
   
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
+  USE mckpp_parameters, ONLY: nuerr
 
 !     Modify rhs to correct scalar, jsclr, 
 !     for advection according to mode
@@ -336,7 +336,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
      else
         write(nuerr,*) 'STOP in rhsmod (ocn.f):'
         write(nuerr,*) '      mode out of range, mode=',mode
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      endif
      
      !     Finish both 6 and 7 here
@@ -348,5 +348,4 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 
   endif
   
-  return
 end subroutine mckpp_physics_solvers_rhsmod

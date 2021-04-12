@@ -1,121 +1,73 @@
+! Control routines to be called from main KPP code. 
 MODULE mckpp_xios_control
 
-! Control routines to be called from main KPP code. 
+  USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
+  USE mckpp_parameters, ONLY: nuout
+  USE mckpp_timer, ONLY: mckpp_start_timer, mckpp_stop_timer
+  USE mckpp_xios_io, ONLY: xios_comm, ctx_hdl_diags, &
+      mckpp_xios_diagnostic_definition, mckpp_xios_diagnostic_output, &
+      mckpp_xios_restart_definition, mckpp_xios_write_restart
 
-USE mckpp_data_types
-USE mckpp_timer
-USE mckpp_xios_io
+  USE mpi 
+  USE xios 
 
-USE mpi 
-USE xios 
-
-IMPLICIT NONE 
-
+  IMPLICIT NONE 
 
 CONTAINS 
 
-! Initialization for diagnostic output 
-SUBROUTINE mckpp_initialize_output(kpp_3d_fields,kpp_const_fields)
+  ! Startup MPI and XIOS, then initialize diagnostic output 
+  SUBROUTINE mckpp_initialize_output()
 
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
+    INTEGER :: ierr
 
-  CALL mckpp_xios_initialize()
-  CALL mckpp_xios_diagnostic_definition(kpp_3d_fields, kpp_const_fields)
+    CALL mpi_init(ierr)
+    CALL xios_initialize("client", return_comm=xios_comm)    
+    CALL mckpp_xios_diagnostic_definition()
 
-END SUBROUTINE mckpp_initialize_output
-
-
-! Diagnostic output
-SUBROUTINE mckpp_output_control(kpp_3d_fields, kpp_const_fields) 
-
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
- 
-  ! Send diags to XIOS at every ts 
-  CALL mckpp_xios_diagnostic_output(kpp_3d_fields, kpp_const_fields) 
-
-END SUBROUTINE mckpp_output_control
+  END SUBROUTINE mckpp_initialize_output
 
 
-! Restart output
-SUBROUTINE mckpp_restart_control(kpp_3d_fields, kpp_const_fields) 
+  ! Shutdown MPI and XIOS
+  SUBROUTINE mckpp_finalize_output() 
 
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
+    INTEGER :: ierr
 
-  REAL :: restart_time
- 
-  ! Check if restart timestep 
-  ! - always write restart at end of run 
-  CALL mckpp_start_timer("Write restart output") 
-  IF (MOD(kpp_const_fields%ntime,kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
-    kpp_const_fields%ntime .EQ. kpp_const_fields%nend*kpp_const_fields%ndtocn) THEN
+    CALL xios_context_finalize()
+    CALL xios_finalize()
+    CALL mpi_finalize(ierr)
 
-    ! Set correct time for validity of restart file (end of this timestep = start of next timestep)
-    restart_time=kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd
-
-    WRITE(6,*) "Writing restart at time ", restart_time    
-    CALL mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
-  END IF 
-  CALL mckpp_stop_timer("Write restart output") 
-
-END SUBROUTINE mckpp_restart_control
+  END SUBROUTINE mckpp_finalize_output
 
 
-SUBROUTINE mckpp_xios_write_restart(kpp_3d_fields, kpp_const_fields, restart_time) 
+  ! Diagnostic output
+  SUBROUTINE mckpp_output_control() 
 
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
-  REAL, INTENT(IN) :: restart_time
+    ! Send diags to XIOS at every ts 
+    CALL mckpp_xios_diagnostic_output() 
 
-  CHARACTER(LEN=9) :: restart_time_str
-  CHARACTER(LEN=17) :: restart_filename
-  CHARACTER(LEN=21) :: context_name
-  TYPE(xios_context) :: ctx_hdl_restart
-
-  WRITE(restart_time_str,'(F9.3)') restart_time
-  restart_filename = "restart_"//TRIM(ADJUSTL(restart_time_str))
-  context_name = "ctx_restart_"//TRIM(ADJUSTL(restart_time_str))
-
-  ! Define a new context for this restart file 
-  CALL xios_context_initialize(context_name, xios_comm)
-  CALL xios_get_handle(context_name, ctx_hdl_restart)
-  CALL xios_set_current_context(ctx_hdl_restart)
-
-  ! Define file  
-  CALL mckpp_xios_restart_definition(kpp_3d_fields, kpp_const_fields, restart_filename) 
-
-  ! Write fields 
-  CALL mckpp_xios_restart_output(kpp_3d_fields, kpp_const_fields) 
-
-  ! Now close context and switch back to diagnostic one 
-  CALL xios_context_finalize()
-  CALL xios_set_current_context(ctx_hdl_diags)
-
-END SUBROUTINE
+  END SUBROUTINE mckpp_output_control
 
 
-SUBROUTINE mckpp_xios_initialize()
+  ! Restart output
+  SUBROUTINE mckpp_restart_control() 
 
-  INTEGER :: ierr
-  
-  CALL mpi_init(ierr) ! This should go elsewhere but leave here for now. 
-  CALL xios_initialize("client", return_comm=xios_comm)
+    REAL :: restart_time
 
-END SUBROUTINE mckpp_xios_initialize
+    ! Check if restart timestep 
+    ! - always write restart at end of run 
+    CALL mckpp_start_timer("Write restart output") 
+    IF (MOD(kpp_const_fields%ntime,kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
+        kpp_const_fields%ntime .EQ. kpp_const_fields%nend*kpp_const_fields%ndtocn) THEN
 
+      ! Set correct time for validity of restart file
+      ! (end of this timestep = start of next timestep)
+      restart_time=kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd
 
-SUBROUTINE mckpp_xios_finalize() 
+      WRITE(nuout,*) "Writing restart at time ", restart_time    
+      CALL mckpp_xios_write_restart(restart_time) 
+    END IF
+    CALL mckpp_stop_timer("Write restart output") 
 
-  INTEGER :: ierr
-
-  CALL xios_context_finalize()
-  CALL xios_finalize()
-
-  CALL mpi_finalize(ierr)
-
-END SUBROUTINE mckpp_xios_finalize
-
+  END SUBROUTINE mckpp_restart_control
 
 END MODULE mckpp_xios_control

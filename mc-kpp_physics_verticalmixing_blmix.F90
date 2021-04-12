@@ -1,10 +1,10 @@
 SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stable, caseA, kbl, &
-     gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
+    gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
 
   ! mixing coefficients within boundary layer depend on surface
@@ -142,5 +142,4 @@ SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stab
   dkm1(2) = hbl * ws * sig * (1. + sig * Gs)
   dkm1(3) = hbl * ws * sig * (1. + sig * Gt)
   
-  RETURN
 END SUBROUTINE mckpp_physics_verticalmixing_blmix

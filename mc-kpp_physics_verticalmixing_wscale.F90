@@ -1,10 +1,11 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_const_type
 #endif
+
   IMPLICIT NONE
   
   ! compute turbulent velocity scales.
@@ -88,5 +89,4 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws,
      ws = wm     
   ENDIF
   
-  RETURN
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE

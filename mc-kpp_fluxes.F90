@@ -1,13 +1,11 @@
-SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
+SUBROUTINE MCKPP_FLUXES()
 
-  USE mckpp_data_types
-
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
+  USE mckpp_parameters, ONLY: npts
+  
   IMPLICIT NONE
 
-  TYPE(kpp_3d_type) :: kpp_3d_fields
   TYPE(kpp_1d_type) :: kpp_1d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
-
   REAL(8), DIMENSION(NPTS) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   INTEGER :: ipt
 
@@ -31,8 +29,7 @@ SUBROUTINE MCKPP_FLUXES(kpp_3d_fields,kpp_const_fields)
 !!$OMP END PARALLEL
 !#endif
   ELSE
-    CALL mckpp_read_fluxes(taux,tauy,swf,lwf,lhf,shf,rain,snow,&
-             kpp_3d_fields,kpp_const_fields)
+    CALL mckpp_read_fluxes(taux,tauy,swf,lwf,lhf,shf,rain,snow)
   ENDIF
       
 !#ifdef OPENMP

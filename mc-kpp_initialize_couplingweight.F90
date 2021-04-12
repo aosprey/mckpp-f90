@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT
+#endif
+
+SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
+  
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: scatter_field_to_chunk,get_ncols_p
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
 #else
-SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif  
+  USE mckpp_parameters, ONLY: nx_globe, ny_globe
 
   IMPLICIT NONE
 
@@ -19,9 +22,6 @@ SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
   REAL(r8) :: cplwght(PLON,PLAT),cplwght_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: icol,ncol,ichnk,lat_varid,lon_varid
   REAL(r4) :: latitude_in(PLAT),longitude_in(PLON)
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER start(2),count(2)
@@ -123,5 +123,4 @@ SUBROUTINE mckpp_initialize_couplingweight(kpp_3d_fields,kpp_const_fields)
 !!$     ENDDO
 !!$  ENDDO
   
-  RETURN  
 END SUBROUTINE mckpp_initialize_couplingweight

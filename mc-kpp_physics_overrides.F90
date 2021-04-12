@@ -1,28 +1,21 @@
-#ifdef MCKPP_CAM3
-SUBROUTINE mckpp_physics_overrides_bottomtemp
-#else
-SUBROUTINE mckpp_physics_overrides_bottomtemp(kpp_3d_fields,kpp_const_fields)  
-#endif
+SUBROUTINE mckpp_physics_overrides_bottomtemp()
 
   ! Written by NPK 10/4/08
 
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-
+  USE mckpp_parameters, ONLY: npts, nzp1
+  
   IMPLICIT NONE
   
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif  
   INTEGER ipt,z
   
@@ -45,37 +38,28 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp(kpp_3d_fields,kpp_const_fields)
   ENDDO
 #endif
   
-  RETURN
 END SUBROUTINE mckpp_physics_overrides_bottomtemp
 
-#ifdef MCKPP_CAM3
-SUBROUTINE mckpp_physics_overrides_sst0
-#else
-SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields,kpp_const_fields)
-#endif
+
+SUBROUTINE mckpp_physics_overrides_sst0()
+  
   ! Written by NPK 27/8/07
 
 #ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
 #else
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
-
-!#include <couple.com>
-!#include <sstclim.com>
 
   INTEGER ix,iy,ipoint
 
@@ -93,17 +77,17 @@ SUBROUTINE mckpp_physics_overrides_sst0(kpp_3d_fields,kpp_const_fields)
   ENDDO
 #endif
   
-  RETURN
 END SUBROUTINE mckpp_physics_overrides_sst0
+
 
 SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
+  USE mckpp_parameters, ONLY: nuout, nzp1
 
   IMPLICIT NONE
 
@@ -119,17 +103,17 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
   ! NPK 17/5/13.
   IF (kpp_1d_fields%comp_flag .and. kpp_const_fields%ocnT_file .ne. 'none' .and. &
        kpp_const_fields%sal_file .ne. 'none') THEN
-     WRITE(6,*) 'Resetting point to climatology ...'
+     WRITE(nuout,*) 'Resetting point to climatology ...'
      kpp_1d_fields%X(:,1)=kpp_1d_fields%ocnT_clim(:)
-     !WRITE(6,*) 'T = ',kpp_1d_fields%ocnT_clim(:)
+     !WRITE(nuout,*) 'T = ',kpp_1d_fields%ocnT_clim(:)
      kpp_1d_fields%X(:,2)=kpp_1d_fields%sal_clim(:)
-     !WRITE(6,*) 'S = ',kpp_1d_fields%sal_clim(:)
+     !WRITE(nuout,*) 'S = ',kpp_1d_fields%sal_clim(:)
      kpp_1d_fields%U=kpp_1d_fields%U_init(:,:)
-     !WRITE(6,*) 'U = ',kpp_1d_fields%U_init(:,1)
-     !WRITE(6,*) 'V = ',kpp_1d_fields%U_init(:,2)
+     !WRITE(nuout,*) 'U = ',kpp_1d_fields%U_init(:,1)
+     !WRITE(nuout,*) 'V = ',kpp_1d_fields%U_init(:,2)
      kpp_1d_fields%reset_flag=999
   ELSE IF (kpp_1d_fields%comp_flag) THEN
-     WRITE(6,*) 'Cannot reset point to T,S climatology as either ocean temperature or salinity data '//&
+     WRITE(nuout,*) 'Cannot reset point to T,S climatology as either ocean temperature or salinity data '//&
           'not provided.  Will reset currents to initial conditions and keep going.'
      kpp_1d_fields%U=kpp_1d_fields%U_init(:,:)
      kpp_1d_fields%reset_flag=999
@@ -180,6 +164,5 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
      kpp_1d_fields%reset_flag=0
   ENDIF
   
-  RETURN
 END SUBROUTINE mckpp_physics_overrides_check_profile
 

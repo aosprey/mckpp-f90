@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE mckpp_read_ice  
+#endif
+
+SUBROUTINE mckpp_read_ice()
+
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif  
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
 
   ! Read in ice concentrations from a user-provided netCDF file.
   ! Called _only_ if L_CLIMICE is TRUE in 3D_ocn.nml.
@@ -25,9 +28,6 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: ice_temp(PLON,PLAT), ice_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,ico
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   integer :: ice_nx,ice_ny
@@ -90,7 +90,7 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
         WRITE(nuout,*) 'Time for which to read ice exceeds the last time in the netCDF file &
              & and L_PERIODIC_CLIMICE has not been specified.  Attempting to read ice will lead to &
              & an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
       
@@ -102,7 +102,7 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
   IF (abs(time_in-iceclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
      write(nuerr,*) 'MCKPP_READ_ICE: Cannot find time,',iceclim_time,'in ice concentration climatology file'
      write(nuerr,*) 'MCKPP_READ_ICE: The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
 
   status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
@@ -187,5 +187,4 @@ SUBROUTINE mckpp_read_ice(kpp_3d_fields,kpp_const_fields)
   status=NF_CLOSE(ncid)
 #endif
   
-  RETURN
 END SUBROUTINE mckpp_read_ice

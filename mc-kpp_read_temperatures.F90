@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_READ_TEMPERATURES_3D  
+#endif
+
+SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
+
+#ifdef MCKPP_CAM3  
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)  
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -19,9 +22,6 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: ocnT_temp(PLON,PLAT,NZP1), ocnT_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: my_nx, my_ny
@@ -62,10 +62,10 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
   status=NF_INQ_DIM(ocnT_ncid,z_dimid,tmp_name,nz_file)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (NZP1.ne.nz_file) THEN
-     WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Input file for ocean temperature climatology &
+     WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Input file for ocean temperature climatology &
           & does not have the correct number of vertical levels. &
           & It should have ',NZP1,' but instead has ',nz_file
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ELSE
      status=NF_GET_VAR_REAL(ocnT_ncid,z_varid,z)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -73,16 +73,16 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
   ENDIF
 
 #ifdef MCKPP_CAM3
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'  
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'  
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ocnT_ncid,'ocean temp clim','latitude','longitude','t',&
        kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),first_timein,&
        last_timein,time_varid)
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
 #else
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ocnT_ncid,'ocean temp clim','latitude','longitude','t',kpp_3d_fields%dlon(1),&
        kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
 #endif
   
   status=NF_INQ_VARID(ocnT_ncid,'temperature',ocnT_varid)
@@ -100,10 +100,10 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
            ocnT_time=ocnT_time-kpp_const_fields%ocnT_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Time for which to read the ocean temperatures exceeds &
+        WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Time for which to read the ocean temperatures exceeds &
              & the last time in the netCDF file and L_PERIODIC_OCNT has not been specified.  Attempting to &
              & read ocean temperatures will lead to an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
 
@@ -116,7 +116,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
      write(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Cannot find time ',ocnT_time,&
           ' in ocean temperature climatology input file'
      write(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(ocnT_ncid,ocnT_varid,start,count,ocnT_in)
   status=NF_CLOSE(ocnT_ncid)
@@ -150,23 +150,21 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D(kpp_3d_fields,kpp_const_fields)
   deallocate(z)
 #endif
   
-  RETURN
 END SUBROUTINE MCKPP_READ_TEMPERATURES_3D
 
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM
+
+SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
+  
+#ifdef MCKPP_CAM3  
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
 
   IMPLICIT NONE
   
@@ -175,9 +173,6 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: bottom_temp(PLON,PLAT), bottom_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: my_nx, my_ny
@@ -213,7 +208,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
   status=NF_INQ_VARID(ncid,'T',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
 #ifdef MCKPP_CAM3 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,'bottom temp climatology','latitude','longitude',&
        't',kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
@@ -222,7 +217,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,'bottom temp climatology','latitude','longitude',&
        't',kpp_3d_fields%dlon(1),kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
 #endif
-  WRITE(6,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
   
   bottomclim_time=kpp_const_fields%time+0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdbottom
   IF (bottomclim_time .gt. last_timein) THEN
@@ -231,10 +226,10 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
            bottomclim_time=bottomclim_time-kpp_const_fields%bottom_temp_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Time for which to read bottom temperature exceeds &
+        WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Time for which to read bottom temperature exceeds &
              & the last time in the netCDF file and L_PERIODIC_BOTTOM_TEMP has not been specified.  &
              & Attempting to read bottom temperature will lead to an error, so aborting now...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
  
@@ -248,7 +243,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
      write(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Cannot find time',bottomclim_time,&
           'in bottom temperature climatology file'
      write(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -282,5 +277,4 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM(kpp_3d_fields,kpp_const_fields)
   ENDDO
 #endif
   
-  RETURN
 END SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM

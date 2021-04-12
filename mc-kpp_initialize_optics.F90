@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE mckpp_initialize_optics
+#endif
+
+SUBROUTINE mckpp_initialize_optics()
+  
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE mckpp_initialize_optics(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif  
+  USE mckpp_parameters, ONLY: npts
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -20,8 +23,6 @@ SUBROUTINE mckpp_initialize_optics(kpp_3d_fields,kpp_const_fields)
   INTEGER :: jerlov_temp(PLON,PLAT),jerlov_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,icol
 #else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
   integer jerlov(npts)
 #endif
   integer ipt, status, ncid_paras
@@ -43,7 +44,7 @@ SUBROUTINE mckpp_initialize_optics(kpp_3d_fields,kpp_const_fields)
 #else     
      status=NF_OPEN(kpp_const_fields%paras_file,0,ncid_paras)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     call MCKPP_READ_IPAR(kpp_3d_fields,ncid_paras,'jerlov',1,1,kpp_3d_fields%jerlov)
+     call MCKPP_READ_IPAR(ncid_paras,'jerlov',1,1,kpp_3d_fields%jerlov)
      status=NF_CLOSE(ncid_paras)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
 #endif
@@ -60,5 +61,4 @@ SUBROUTINE mckpp_initialize_optics(kpp_3d_fields,kpp_const_fields)
 #endif
   ENDIF
   
-  RETURN
 END SUBROUTINE mckpp_initialize_optics

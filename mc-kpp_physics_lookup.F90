@@ -1,10 +1,11 @@
 SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only : kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_const_type
 #endif
+
   IMPLICIT NONE
 
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -49,5 +50,4 @@ SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
      ENDDO
   ENDDO
       
-  RETURN
 END SUBROUTINE mckpp_physics_lookup

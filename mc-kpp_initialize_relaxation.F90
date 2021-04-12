@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_RELAXATION
+#endif
+
+SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
+  
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, ny_globe, nuout
 
 ! Re-write logic to allow for relaxing either SST or
 ! salinity - NPK 24/08/11
@@ -21,17 +24,8 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: relax_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
-
-!#include <constants.com>
-!#include <ocn_advec.com>
-!#include <couple.com>
-!#include <sstclim.com>
-!#include <relax_3d.com>
-  
+ 
   INTEGER ix,iy,ipoint,my_ny
   
 !  REAL sst_in(NX_GLOBE,NY_GLOBE,1)
@@ -141,7 +135,7 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
      ENDDO
 #endif
   ENDIF
-  CALL MCKPP_PHYSICS_OVERRIDES_SST0(kpp_3d_fields,kpp_const_fields)
+  CALL MCKPP_PHYSICS_OVERRIDES_SST0()
 
 ! Do we need these initialization statements?
   DO iy=1,ny
@@ -152,6 +146,6 @@ SUBROUTINE mckpp_initialize_relaxation(kpp_3d_fields,kpp_const_fields)
      ENDDO
   ENDDO
   
-  write(6,*) 'MCKPP_INITIALIZE_RELAXATION: Calculated SST0, fcorr and scorr'
-  RETURN
+  write(nuout,*) 'MCKPP_INITIALIZE_RELAXATION: Calculated SST0, fcorr and scorr'
+
 END SUBROUTINE mckpp_initialize_relaxation

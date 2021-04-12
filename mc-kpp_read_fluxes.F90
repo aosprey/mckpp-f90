@@ -1,14 +1,12 @@
-SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
-     kpp_3d_fields, kpp_const_fields)
+SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
+  USE mckpp_parameters, ONLY: nx, ny, npts, nuout, nuerr
 
   IMPLICIT NONE
 
 #include <netcdf.inc>
 
-  TYPE(kpp_3d_type), INTENT(INOUT) :: kpp_3d_fields
-  TYPE(kpp_const_type), INTENT(INOUT) :: kpp_const_fields
   REAL, DIMENSION(npts), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   
   REAL*4, DIMENSION(nx,ny) :: var_in
@@ -41,7 +39,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow, &
   IF (abs(time_in-time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
     WRITE(nuerr,*) 'MCKPP_READ_FLUXES: Cannot find time,',time,'in fluxes file'
     WRITE(nuerr,*) 'MCKPP_READ_FLUXES: The closest I came was',time_in
-    CALL MCKPP_ABORT
+    CALL MCKPP_ABORT()
   ENDIF
 
   WRITE(nuout,*) 'MCKPP_READ_FLUXES: Reading fluxes from time point ',start(3)

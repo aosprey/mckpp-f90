@@ -1,11 +1,14 @@
-
 SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_type,kpp_1d_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_type, kpp_1d_type, &
+      mckpp_allocate_1d_fields
 #endif
+  USE mckpp_parameters, ONLY: nz, nzp1, nztmax, nzp1tmax, &
+      nvel, nsclr, nvp1, nsp1, maxmodeadv, nsflxs, njdt
+  
   IMPLICIT NONE
 
 !     Accepts a 3D variable of the KPP derived type.
@@ -188,16 +191,19 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   
   kpp_1d_fields%point=point
   
-  RETURN
 END SUBROUTINE mckpp_fields_3dto1d
 
+
 SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_3d_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_type, kpp_1d_type
 #endif
+  USE mckpp_parameters, ONLY: nz, nzp1, nztmax, nzp1tmax, &
+      nvel, nsclr, nvp1, nsp1
+
   IMPLICIT NONE
   
   ! Accepts a 1D and a 3D variable of the KPP derived type.
@@ -330,5 +336,4 @@ SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
   temp=kpp_1d_fields%dampv_flag
   kpp_3d_fields%dampv_flag(point)=temp
   
-  RETURN
 END SUBROUTINE mckpp_fields_1dto3d

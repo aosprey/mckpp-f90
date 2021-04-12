@@ -1,10 +1,11 @@
 subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
+
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only : kpp_1d_type, kpp_const_type
 #else
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
+  USE mckpp_parameters, ONLY: nzp1
 
   ! compute fraction of solar short-wave flux penetrating to specified
   ! depth (times fact) due to exponential decay in  Jerlov water type
@@ -40,8 +41,8 @@ subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
           exp(r1) + (1.-rfac(kpp_1d_fields%jerlov)) * exp(r2) 
   ENDDO
   
-  RETURN
 end subroutine MCKPP_PHYSICS_SWFRAC_OPT
+
 
 subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
 
@@ -79,5 +80,4 @@ subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
   r2   = MAX(z*fact/a2(jwtype), rmin)
   swdk = rfac(jwtype)  * exp(r1) + (1.-rfac(jwtype)) * exp(r2)
 
-  RETURN
 END SUBROUTINE MCKPP_PHYSICS_SWFRAC

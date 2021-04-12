@@ -6,7 +6,7 @@ MODULE mckpp_types
   USE shr_kind_mod,only: r8 => shr_kind_r8, r4=>shr_kind_r4
   USE ppgrid,      only: pcols,begchunk,endchunk
   USE phys_grid,   only: get_ncols_p
-  USE mckpp_parameters
+  USE mckpp_parameters, ONLY: nz, nzp1, nztmax, nzp1tmax, nvel, nvp1, nsclr, nsp1, maxmodeadv, njdt, nsflxs
   
   IMPLICIT NONE
   
@@ -88,8 +88,6 @@ MODULE mckpp_types
      INTEGER :: old(PCOLS),old_pt,new(PCOLS),new_pt,&
           jerlov(PCOLS),jerlov_pt,nmodeadv(PCOLS,2),&
           modeadv(PCOLS,maxmodeadv,2)          
-     real(r8) :: VEC_mean(PCOLS,NZP1,N_VAROUTS),VEC_range(PCOLS,NZP1,N_VAROUTS,2),&
-          SCLR_mean(PCOLS,N_SINGOUTS),SCLR_range(PCOLS,N_SINGOUTS,2)
   END TYPE kpp_3d_type
   
   TYPE kpp_1d_type
@@ -163,15 +161,6 @@ MODULE mckpp_types
           ndtupdocnt,ocnt_period,ndtupdsal,sal_period,ndt_interp_sal,ndt_interp_ocnt,&
           ndtupdbottom,bottom_temp_period,&
           ifirst,ilast,jfirst,jlast,day_out
-     INTEGER,dimension(N_VAROUTS) :: &
-          ndt_varout_inst,ndt_varout_range,ndt_varout_mean,&
-          zprof_varout_inst,zprof_varout_mean,zprof_varout_range,&
-          varid_vec_inst,varid_vec_mean,varid_vec_range,&
-          ntout_vec_inst,ntout_vec_mean,ntout_vec_range
-     INTEGER,dimension(N_SINGOUTS) :: &
-          ndt_singout_inst,ndt_singout_range,ndt_singout_mean,&
-          varid_sing_inst,varid_sing_mean,varid_sing_range,&
-          ntout_sing_inst,ntout_sing_mean,ntout_sing_range
      LOGICAL :: L_OUTPUT_MEAN,L_OUTPUT_INST,L_OUTPUT_RANGE,&
           L_RESTARTW,L_CLIMSST,L_UPD_CLIMSST,L_PERIODIC_CLIMSST,&
           L_CLIMICE,L_UPD_CLIMICE,L_PERIODIC_CLIMICE,L_CLIM_ICE_DEPTH,L_CLIM_SNOW_ON_ICE,&
@@ -181,9 +170,6 @@ MODULE mckpp_types
           L_VARY_BOTTOM_TEMP,L_UPD_BOTTOM_TEMP,L_PERIODIC_BOTTOM_TEMP,&
           L_OUTKELVIN,L_COUPLE_CURRENTS,L_FLUXDATA,L_REST,L_VGRID_FILE,L_STRETCHGRID,&
           L_CPLWGHT,L_ADVECT,L_INITDATA,L_INTERPINIT,L_NO_ISOTHERM,L_NO_FREEZE,L_DAMP_CURR
-     LOGICAL,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs_mask
-     INTEGER,dimension(NZP1,0:N_ZPROFS_MAX) :: zprofs
-     INTEGER,dimension(0:N_ZPROFS_MAX) :: zprofs_nvalid
 #ifdef MCKPP_CAM3
      INTEGER :: relax_sst_in(NY_GLOBE), relax_ocnT_in(NY_GLOBE), relax_sal_in(NY_GLOBE)
 #else

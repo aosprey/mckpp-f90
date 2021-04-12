@@ -49,7 +49,7 @@ EXECUTABLE=KPP_ocean
 
 FORCED_FILES = $(wildcard *.F90)
 FORCED_OBJS = $(FORCED_FILES:.F90=.o)
-FORCED_MODS = PARAMETERS.mod MCKPP_TIMER.mod MCKPP_DATA_TYPES.mod MCKPP_NAMELISTS.mod MCKPP_XIOS_CONTROL.mod MCKPP_XIOS_IO.mod
+FORCED_MODS = mckpp_parameters.mod mckpp_timer.mod mckpp_data_fields.mod mckpp_namelists.mod mckpp_xios_control.mod mckpp_xios_io.mod
 
 FORCED_COMPILE = $(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(XIOS_INC) $(NCDF_INC) 
 FORCED_LINK = $(F90)  $(F90_FLAGS) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${XIOS_LIB} ${NCDF_LIB}
@@ -60,22 +60,22 @@ FORCED_LINK = $(F90)  $(F90_FLAGS) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE}
 .F90.o : $(FORCED_MODS)
 	$(FORCED_COMPILE) -c $<
 
-PARAMETERS.mod : mc-kpp_parameters.F90
+mckpp_parameters.mod : mc-kpp_parameters.F90
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_TIMER.mod : mc-kpp_timer.F90 PARAMETERS.mod
+mckpp_timer.mod : mc-kpp_timer.F90 mckpp_parameters.mod
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_DATA_TYPES.mod : mc-kpp_data_types.F90 PARAMETERS.mod
+mckpp_data_fields.mod : mc-kpp_data_fields.F90 mckpp_parameters.mod
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_NAMELISTS.mod : mc-kpp_namelists.F90 PARAMETERS.mod
+mckpp_namelists.mod : mc-kpp_namelists.F90 mckpp_parameters.mod
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_XIOS_IO.mod : mc-kpp_xios_io.F90 MCKPP_TIMER.mod PARAMETERS.mod MCKPP_DATA_TYPES.mod
+mckpp_xios_io.mod : mc-kpp_xios_io.F90 mckpp_timer.mod mckpp_parameters.mod mckpp_data_fields.mod
 	$(FORCED_COMPILE) -c $<
 
-MCKPP_XIOS_CONTROL.mod : mc-kpp_xios_control.F90 MCKPP_TIMER.mod MCKPP_XIOS_IO.mod MCKPP_DATA_TYPES.mod
+mckpp_xios_control.mod : mc-kpp_xios_control.F90 mckpp_timer.mod mckpp_xios_io.mod mckpp_data_fields.mod
 	$(FORCED_COMPILE) -c $<
 
 forced : CPP_FLAGS=$(F90_CPP_FLAG)-DOPENMP

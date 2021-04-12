@@ -1,8 +1,8 @@
-SUBROUTINE MCKPP_ABORT
+SUBROUTINE MCKPP_ABORT()
 
+  USE mckpp_parameters, ONLY: nuout, nuerr
+  
   IMPLICIT NONE
-  INTEGER nuout,nuerr
-  PARAMETER (nuout=6,nuerr=0)
   
 #ifdef MCKPP_COUPLE
 #ifdef MCKPP_CAM3

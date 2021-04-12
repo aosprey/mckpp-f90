@@ -1,10 +1,11 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fields)
+
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type
 #endif
+
   IMPLICIT NONE
   
   ! Rho dependent interior flux parameterization.
@@ -50,5 +51,4 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fi
      endif
   ENDDO
   
-  RETURN
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX
