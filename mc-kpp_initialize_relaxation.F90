@@ -14,7 +14,8 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, ny_globe, nuout
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, ny_globe
 
 ! Re-write logic to allow for relaxing either SST or
 ! salinity - NPK 24/08/11
@@ -27,7 +28,8 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
 #endif
  
   INTEGER ix,iy,ipoint,my_ny
-  
+   CHARACTER(LEN=27) :: routine = "MCKPP_INITIALIZE_RELAXATION"
+ 
 !  REAL sst_in(NX_GLOBE,NY_GLOBE,1)
 !  COMMON /save_sstin/ sst_in
 
@@ -146,6 +148,6 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
      ENDDO
   ENDDO
   
-  write(nuout,*) 'MCKPP_INITIALIZE_RELAXATION: Calculated SST0, fcorr and scorr'
+  CALL mckpp_print(routine, "Calculated SST0, fcorr and scorr")
 
 END SUBROUTINE mckpp_initialize_relaxation

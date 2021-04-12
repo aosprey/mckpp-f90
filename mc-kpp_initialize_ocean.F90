@@ -14,7 +14,8 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
 
   IMPLICIT NONE
 #include <netcdf.inc>  
@@ -36,6 +37,9 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
   INTEGER ix,iy,count(3),start(3)
   INTEGER kin,k
   REAL deltaz,deltavar,offset_sst
+  
+  CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_OCEAN_PROFILES"
+  CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
   my_nx = nx_globe 
@@ -72,14 +76,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
 #endif
         ix=ix+1
         IF (ix .GE. nx_in) THEN
-           WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Error reading initial conditions'
+           CALL mckpp_print_error(routine, "Error reading initial conditions") 
 #ifdef MCKPP_CAM3
-           WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find longitude ',&
-                kpp_global_fields%longitude(1),' in range ',x_in(1),x_in(nx_in)
+           WRITE(message,*) 'Cannot find longitude ', & 
+               kpp_global_fields%longitude(1),' in range ',x_in(1),x_in(nx_in)
 #else
-           WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find longitude ',&
-                kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
+           WRITE(message,*) 'Cannot find longitude ', &
+               kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
 #endif
+           CALL mckpp_print_error(routine, message)
            CALL MCKPP_ABORT()
         ENDIF
      ENDDO
@@ -102,14 +107,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
 #endif
         iy=iy+1
         IF (iy .GE. ny_in) THEN
-           write(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Error reading initial conditions'
+           CALL mckpp_print_error(routine, "Error reading initial conditions") 
 #ifdef MCKPP_CAM3
-           WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find latitude ',&
-                kpp_global_fields%latitude(1),' in range ',y_in(1),y_in(ny_in)
+           WRITE(message,*) 'Cannot find latitude ', &
+               kpp_global_fields%latitude(1),' in range ',y_in(1),y_in(ny_in)
 #else
-           write(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Cannot find latitude ',&
-                kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
+           WRITE(message,*) 'Cannot find latitude ',&
+               kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
 #endif
+           CALL mckpp_print_error(routine, message)
            CALL MCKPP_ABORT()
         ENDIF
      ENDDO
@@ -139,7 +145,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,1))
 #endif
      ELSE
-        write(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: You have to interpolate'
+       CALL mckpp_print_error(routine, "You have to interpolate") 
      ENDIF
 #ifdef MCKPP_CAM3
      ENDIF ! End of masterproc section
@@ -149,8 +155,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
         kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)        
      ENDDO
-     IF (masterproc) THEN
-        WRITE(6,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized zonal velocity'
+     CALL mckpp_print(routine, "Initialized zonal velocity")
 #endif
      status=NF_INQ_VARID(ncid,'v',varid)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -164,7 +169,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,2))
 #endif
      ELSE
-        write(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: You have to interpolate'
+       CALL mckpp_print_error(routine, "You have to interpolate") 
      ENDIF
 #ifdef MCKPP_CAM3
      ENDIF ! End of masterproc section
@@ -174,8 +179,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
         kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)        
      ENDDO     
-     IF (masterproc) THEN 
-        WRITE(nuout,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized meridional velocity'
+     CALL mckpp_print(routine, "Initialized meridional velocity") 
 #else
      ! Save initial currents in case they are needed to reinitalise
      ! dodgy profiles (see resetting routines in mc-kpp_physics_overrides)
@@ -204,7 +208,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,1))
 #endif
      ELSE
-        WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: You have to interpolate'
+        CALL mckpp_print_error(routine, "You have to interpolate") 
      ENDIF
 
      ! KPP requires temperatures in CELSIUS.  If initial conditions
@@ -223,11 +227,10 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         ncol=get_ncols_p(ichnk)
         kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
      ENDDO
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized temperature'
 #else
      kpp_3d_fields%X(:,:,1) = kpp_3d_fields%X(:,:,1) - offset_sst
-     WRITE(nuout,*) " MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized temperature"
 #endif
+     CALL mckpp_print(routine, "Initialized temperature") 
           
 #ifdef MCKPP_CAM3
      IF (masterproc) THEN
@@ -255,7 +258,7 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,2))
 #endif
      ELSE
-        WRITE(nuerr,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: You have to interpolate'
+        CALL mckpp_print_error(routine, "You have to interpolate")
      ENDIF
 #ifdef MCKPP_CAM3
      ENDIF ! End of masterproc section
@@ -264,10 +267,10 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
         ncol=get_ncols_p(ichnk)
         kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
      ENDDO
-     IF (masterproc) WRITE(6,*) 'MCKPP_INITIALIZE_OCEAN_PROFILES: Initialized salinity' 
+     CALL mckpp_print(routine, "Initialized salinity") 
 #endif
   ELSE
-     WRITE(nuerr,*) "MCKPP_INITIALIZE_OCEAN_PROFILES: No code for L_INITDATA=.FALSE."
+     CALL mckpp_print_error(routine, "No code for L_INITDATA=.FALSE.")
      CALL MCKPP_ABORT()
   ENDIF
 

@@ -46,7 +46,8 @@ end SUBROUTINE mckpp_initialize_fluxes_variables
 ! No support for data atmosphere when coupled to CAM3
 #ifndef MCKPP_CAM3 
 SUBROUTINE mckpp_initialize_fluxes_file()
-  
+
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_data_fields, ONLY: kpp_const_fields
 
   IMPLICIT NONE
@@ -54,12 +55,15 @@ SUBROUTINE mckpp_initialize_fluxes_file()
 #include <netcdf.inc>
   
   INTEGER status,index(3)
-  
+  CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FLUXES"
+  CHARACTER(LEN=max_message_len) :: message
+
   index(1)=1
   index(2)=1
   index(3)=1
   
-  WRITE(6,*) 'MCKPP_INITIALIZE_FLUXES: Opening file ',kpp_const_fields%forcing_file
+  WRITE(message,*) "Opening file ", kpp_const_fields%forcing_file
+  CALL mckpp_print(routine, message)
   status=NF_OPEN(kpp_const_fields%forcing_file,0,kpp_const_fields%flx_ncid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
@@ -84,6 +88,5 @@ SUBROUTINE mckpp_initialize_fluxes_file()
        index,kpp_const_fields%flx_first_timein)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
             
-  RETURN
 END SUBROUTINE mckpp_initialize_fluxes_file
 #endif
