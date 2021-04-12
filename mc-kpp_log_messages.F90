@@ -2,6 +2,7 @@
 ! stderr. If running in parallel (CAM) only masterproc writes messages.
 ! 
 ! Ideas:
+! - split long messages over multiple lines
 ! - flags to control the level of prints
 ! - flag to flush output after each write
 ! - support to redirect messages to file
@@ -20,7 +21,7 @@ MODULE mckpp_log_messages
   PRIVATE
   
   INTEGER :: nuout = 6,  nuerr = 0
-  INTEGER, PARAMETER :: max_message_len = 100, max_print_len = 150
+  INTEGER, PARAMETER :: max_message_len = 150, max_print_len = 200
 
 CONTAINS
 
