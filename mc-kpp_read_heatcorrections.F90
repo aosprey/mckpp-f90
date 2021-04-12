@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_READ_FCORR_2D
+#endif
+
+SUBROUTINE MCKPP_READ_FCORR_2D()
+
+#ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_paramaters 
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
 
   IMPLICIT NONE
   INTEGER start(3),count(3)
@@ -22,9 +25,6 @@ SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL (r8) :: fcorr_temp(PLON,PLAT), fcorr_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,icol,ncol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: my_nx, my_ny
@@ -92,7 +92,7 @@ SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
              & Time for which to read the flux corrections exceeds the last time in the netCDF file &
              & and L_PERIODIC_FCORR has not been specified. Attempting to read flux corrections will lead to &
              & an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
 
@@ -128,23 +128,21 @@ SUBROUTINE MCKPP_READ_FCORR_2D(kpp_3d_fields,kpp_const_fields)
   ENDDO
 #endif
   
-  RETURN
 END SUBROUTINE MCKPP_READ_FCORR_2D
 
+
+SUBROUTINE MCKPP_READ_FCORR_3D()
+
 #ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-SUBROUTINE MCKPP_READ_FCORR_3D
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
   
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -152,9 +150,6 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: fcorr_temp(PLON,PLAT,NZP1), fcorr_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: icol,ncol,ichnk
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: my_nx, my_ny
@@ -201,7 +196,7 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
   status=NF_INQ_DIM(fcorr_ncid,z_dimid,tmp_name,nz_file)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (NZP1.ne.nz_file) THEN
-     WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Input file for flux corrections does &
+     WRITE(nuerr,*) 'MCKPP_READ_FCORR_3D: Input file for flux corrections does &
           & not have the correct number of vertical levels. ',&
           'It should have ',NZP1,' but instead has ',nz_file
      CALL MCKPP_ABORT
@@ -211,16 +206,16 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
   ENDIF
   
 #ifdef MCKPP_CAM3  
-  !WRITE(6,*) 'MCKPP_READ_FCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  !WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(fcorr_ncid,'flux correction','latitude','longitude',&
        't',kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
        first_timein,last_timein,time_varid)
-  !WRITE(6,*) 'MCKPP_READ_FCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  !WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
 #else
-  !WRITE(6,*) 'MCKPP_READ_FCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  !WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(fcorr_ncid,'flux correction','latitude','longitude',&
        't',kpp_3d_fields%dlon(1),kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
-  !WRITE(6,*) 'MCKPP_READ_FCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  !WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
 #endif
   status=NF_INQ_VARID(fcorr_ncid,'fcorr',fcorr_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -240,10 +235,10 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
            fcorr_time=fcorr_time-kpp_const_fields%fcorr_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'MCKPP_READ_FCORR_3D: Time for which to read the flux corrections exceeds the &
+        WRITE(nuerr,*) 'MCKPP_READ_FCORR_3D: Time for which to read the flux corrections exceeds the &
              & last time in the netCDF file and L_PERIODIC_FCORR has not been specified. &
              & Attempting to read flux corrections will lead to an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
   
@@ -256,7 +251,7 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
   IF (abs(time_in-fcorr_time) .GT. 0.01) THEN
      write(nuerr,*) 'MCKPP_READ_FCORR_3D: Cannot find time',fcorr_time,'in flux-correction input file'
      write(nuerr,*) 'The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(fcorr_ncid,fcorr_varid,start,count,fcorr_in)
   status=NF_CLOSE(fcorr_ncid)
@@ -290,5 +285,4 @@ SUBROUTINE MCKPP_READ_FCORR_3D(kpp_3d_fields,kpp_const_fields)
   deallocate(z)
 #endif  
 
-  RETURN
 END SUBROUTINE MCKPP_READ_FCORR_3D

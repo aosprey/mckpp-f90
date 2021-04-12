@@ -1,6 +1,7 @@
 MODULE mckpp_timer
 
-  USE mckpp_parameters
+  USE mckpp_parameters, ONLY: nuout, nuerr, max_error_msg_len
+  
   IMPLICIT NONE 
 
   PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, mckpp_print_timers, mckpp_define_new_timer

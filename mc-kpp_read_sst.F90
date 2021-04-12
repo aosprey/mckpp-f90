@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_READ_SST
+#endif 
+
+SUBROUTINE MCKPP_READ_SST()
+
+#ifdef MCKPP_CAM3  
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -19,9 +22,6 @@ SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: sst_temp(PLON,PLAT), sst_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,icol
-#else  
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: sst_nx, sst_ny
@@ -80,10 +80,10 @@ SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
            sstclim_time=sstclim_time-kpp_const_fields%climsst_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'Time for which to read SST exceeds the last time in the netCDF file &
+        WRITE(nuerr,*) 'Time for which to read SST exceeds the last time in the netCDF file &
              & and L_PERIODIC_CLIMSST has not been specified.  Attempting to read SST will lead to &
              & an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
   write(nuout,*) 'MCKPP_READ_SST: Reading climatological SST for time ',sstclim_time
@@ -97,7 +97,7 @@ SUBROUTINE MCKPP_READ_SST(kpp_3d_fields,kpp_const_fields)
   IF (abs(time_in-sstclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
      write(nuerr,*) 'MCKPP_READ_SST: Cannot find time,',sstclim_time,'in SST climatology file'
      write(nuerr,*) 'MCKPP_READ_SST: The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
  
   status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)

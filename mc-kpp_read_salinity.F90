@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_READ_SALINITY_3D  
+#endif
+
+SUBROUTINE MCKPP_READ_SALINITY_3D()
+
+#ifdef MCKPP_CAM3 
   USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, get_ncols_p
 #else
-SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, nzp1, nx_globe, ny_globe, nuout, nuerr
 
   IMPLICIT NONE
   INTEGER ix,iy,iz,ipoint,sal_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
@@ -22,9 +25,6 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
 #ifdef MCKPP_CAM3
   REAL(r8) :: sal_temp(PLON,PLAT,NZP1), sal_chunk(PCOLS,begchunk:endchunk,NZP1)
   INTEGER :: ichnk,icol,ncol
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
 
   INTEGER :: my_nx, my_ny
@@ -71,7 +71,7 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
      WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Input file for salinity climatology does not &
           & have the correct number of vertical levels. ',&
           'MCKPP_READ_SALINITY_3D: It should have ',NZP1,' but instead has ',nz_file
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ELSE
      status=NF_GET_VAR_REAL(sal_ncid,z_varid,z)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -105,7 +105,7 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
         WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Time for which to read the salinity climatology exceeds &
              & the last time in the netCDF file and L_PERIODIC_SAL has not been specified. &
              & Attempting to read salinity climatology will lead to an error, so aborting now ...'
-        CALL MCKPP_ABORT
+        CALL MCKPP_ABORT()
      ENDIF
   ENDIF
   
@@ -117,7 +117,7 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
   IF (abs(time_in-sal_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
      write(nuerr,*) 'MCKPP_READ_SALINITY_3D: Cannot find time',sal_time,'in salinity climatology input file'
      write(nuerr,*) 'MCKPP_READ_SALINITY_3D: The closest I came was',time_in
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(sal_ncid,sal_varid,start,count,sal_in)
   WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Read salinity for time ',sal_time
@@ -160,5 +160,4 @@ SUBROUTINE MCKPP_READ_SALINITY_3D(kpp_3d_fields,kpp_const_fields)
   deallocate(z)
 #endif  
 
-  RETURN
 END SUBROUTINE MCKPP_READ_SALINITY_3D

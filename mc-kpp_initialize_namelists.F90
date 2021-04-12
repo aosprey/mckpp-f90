@@ -1,20 +1,19 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_INITIALIZE_NAMELIST
+#endif
+
+SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
+  
+#ifdef MCKPP_CAM3  
   USE mckpp_types, only: kpp_const_fields
 #else
-SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
-  USE mckpp_data_types
-#endif /*MCKPP_CAM3*/
+  USE mckpp_data_fields, ONLY: kpp_const_fields, mckpp_allocate_const_fields
+#endif
   USE mckpp_namelists
-  USE mckpp_parameters
+  USE mckpp_parameters 
 
   IMPLICIT NONE
-
-#ifndef MCKPP_CAM3
-  TYPE(kpp_const_type) :: kpp_const_fields
-#endif
   
   ! Local variables    
   INTEGER :: i,j,k,l,ipt,ix,iy
@@ -61,19 +60,19 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   WRITE(nuout,*) 'KPP : Read Namelist PARAMETERS'
   IF ( (nx .LE. 0) .OR. (ny .LE. 0) .OR. (nz .LE. 0) ) THEN 
     WRITE(nuerr,*) 'KPP : You must specify values of nx, ny and nz in the namelist'
-    CALL MCKPP_ABORT
+    CALL MCKPP_ABORT()
   END IF 
   IF (ngrid .LE. 0) THEN 
     WRITE(nuerr,*) 'KPP : You must specify a value of ngrid in the namelist'
-    CALL MCKPP_ABORT
+    CALL MCKPP_ABORT()
   END IF 
   IF (nztmax .LE. 0) THEN 
     WRITE(nuerr,*) 'KPP : You must specify a value of nztmax in the namelist'
-    CALL MCKPP_ABORT
+    CALL MCKPP_ABORT()
   END IF 
   IF ( (nx_globe .LE. 0) .OR. (ny_globe .LE. 0) ) THEN 
     WRITE(nuerr,*) 'KPP : You must specify a value of nx_globe and ny_globe in the namelist'
-    CALL MCKPP_ABORT
+    CALL MCKPP_ABORT()
   END IF 
 
   nzm1 = nz -1 
@@ -92,7 +91,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
        nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
 
 #ifndef MCKPP_CAM3
-  CALL mckpp_allocate_const_fields(kpp_const_fields) 
+  CALL mckpp_allocate_const_fields() 
 #endif 
   allocate(kpp_const_fields%wmt(0:891,0:49))
   allocate(kpp_const_fields%wst(0:891,0:49))
@@ -143,12 +142,12 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   READ(75,NAME_DOMAIN)
   IF (DMAX .LE. 0.0) THEN 
      WRITE(nuerr,*) 'KPP : You must specify a depth for the domain'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   IF ((L_STRETCHGRID) .AND. (dscale .EQ. 0.0)) THEN
      WRITE(nuerr,*) 'KPP : You cannot have dscale=0 for stretched ',&
           'grids'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   write(nuout,*) 'KPP : Read Namelist DOMAIN'
   kpp_const_fields%alat=alat
@@ -178,7 +177,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   READ(75,NAME_TIMES) 
   IF ((dtsec .LE. 0.0) .OR. (startt .LT. 0.0) .OR. (finalt .LT. 0.0)) THEN 
      WRITE(nuerr,*) 'KPP : You must specify values of dtsec,startt,finalt in the namelist'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   kpp_const_fields%ndtocn=ndtocn
   kpp_const_fields%spd=spd
@@ -194,7 +193,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
      WRITE(nuerr,*) 'dto=',kpp_const_fields%dto
      WRITE(nuerr,*) 'finalt=',kpp_const_fields%finalt
      WRITE(nuerr,*) 'startt=',kpp_const_fields%startt
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
   kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
@@ -268,17 +267,17 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   IF (L_FCORR_WITHZ .AND. L_FCORR) THEN
      WRITE(nuerr,*) 'KPP : L_FCORR and L_FCORR_WITHZ are '&
           //'mutually exclusive.  Choose one or neither.'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   IF (L_SFCORR_WITHZ .AND. L_SFCORR) THEN
      WRITE(nuerr,*) 'KPP : L_SFCORR and L_SFCORR_WITHZ are '&
           //'mutually exclusive.  Choose one or neither.'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   IF (L_FCORR_WITHZ .AND. L_RELAX_SST) THEN
      WRITE(nuerr,*) 'KPP : L_FCORR_WITHZ and L_RELAX_SST are '&
           //'mutually exclusive.  Choose one or neither.'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   IF (L_NO_ISOTHERM .AND. (ocnT_file .eq. 'none' .or.&
        sal_file .eq. 'none')) THEN
@@ -286,7 +285,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
           //'reseting of isothermal points, you must specify files '&
           //'from which to read climatological ocean temperature '&
           //'(ocnT_file) and salinity (sal_file).'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ELSEIF (L_NO_ISOTHERM) THEN
      kpp_const_fields%iso_bot=isotherm_bottom
      kpp_const_fields%iso_thresh=isotherm_threshold
@@ -305,5 +304,4 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST(kpp_const_fields)
   ! compatability with OpenMP DEFAULT(private). NPK 8/2/13
   CALL mckpp_initialize_constants(kpp_const_fields)    
   
-  RETURN
 END SUBROUTINE MCKPP_INITIALIZE_NAMELIST

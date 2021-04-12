@@ -1,22 +1,19 @@
+SUBROUTINE mckpp_initialize_geography()
+
 #ifdef MCKPP_CAM3
-SUBROUTINE mckpp_initialize_geography
   USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_fields,kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
-SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_const_fields, kpp_3d_fields
 #endif /*MCKPP_CAM3*/
+  USE mckpp_parameters, ONLY: nz, nzp1, npts
 
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,icol,ncol
-#else  
-  TYPE(kpp_3d_type)    :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif  
   
 #include <netcdf.inc>
@@ -107,5 +104,4 @@ SUBROUTINE mckpp_initialize_geography(kpp_3d_fields,kpp_const_fields)
   ENDDO  
 #endif
   
-  RETURN
 END SUBROUTINE mckpp_initialize_geography

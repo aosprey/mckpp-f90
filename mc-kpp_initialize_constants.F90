@@ -5,12 +5,12 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   ! only once.
 
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_const_type
 #else 
-  USE mckpp_data_types
-#endif /*MCKPP_CAM3*/
+  USE mckpp_data_fields, ONLY: kpp_const_type
+#endif 
   USE mckpp_namelists
+  USE mckpp_parameters
   
   IMPLICIT NONE
 
@@ -149,5 +149,4 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%L_NO_FREEZE=L_NO_FREEZE
   kpp_const_fields%L_DAMP_CURR=L_DAMP_CURR
 
-  RETURN
 END SUBROUTINE mckpp_initialize_constants

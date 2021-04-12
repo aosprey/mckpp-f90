@@ -4,10 +4,6 @@ MODULE mckpp_data_fields
 
   IMPLICIT NONE
 
-  PUBLIC kpp_3d_type, kpp_1d_type, kpp_const_type, &
-      kpp_3d_fields, kpp_const_fields, &
-      allocate_3d_fields, allocate_1d_fields, allocate_const_fields
-
   TYPE kpp_3D_type
 
     REAL, ALLOCATABLE :: & 

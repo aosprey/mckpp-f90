@@ -1,15 +1,12 @@
 #ifndef MCKPP_CAM3
-SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
+SUBROUTINE MCKPP_RESTART_IO_READ()
 
-  USE mckpp_data_types
-
-  IMPLICIT NONE
-
-  ! Inputs 
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
+  USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
+  USE mckpp_parameters, ONLY: npts, nzp1, nuout, nuerr
   
-  WRITE(6,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  IMPLICIT NONE
+  
+  WRITE(nuout,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
   IF ( REAL(NPTS)*REAL(NZP1) .LT. 3000000. ) THEN   
      OPEN(30,FILE=kpp_const_fields%restart_infile,status='unknown',form='unformatted')
      READ(30) kpp_const_fields%time,kpp_3d_fields%U,kpp_3d_fields%X,kpp_3d_fields%CP,&
@@ -33,21 +30,18 @@ SUBROUTINE MCKPP_RESTART_IO_READ(kpp_3d_fields,kpp_const_fields)
      WRITE(nuerr,*) 'Start time doesn''t match the restart record'
      WRITE(nuerr,*) 'Start time in restart record = ',kpp_const_fields%time
      WRITE(nuerr,*) 'Start time in namelist = ',kpp_const_fields%startt
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   
-  RETURN
 END SUBROUTINE MCKPP_RESTART_IO_READ
 
-SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
+
+SUBROUTINE MCKPP_RESTART_IO_WRITE()
  
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
+  USE mckpp_parameters, ONLY: npts, nzp1, nuout, nuerr
      
   IMPLICIT NONE
-
-  ! Inputs
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
     
   ! When the number of points in the model (NX*NY*NZP1) becomes
   ! quite large, we exceed the maximum size for Fortran unformatted
@@ -55,7 +49,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
   ! works around this by splitting the restart file in two.
   ! %Us and %Xs are the largest fields, so they get their own file.
 
-  WRITE(6,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  WRITE(nuout,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
   IF ( REAL(NPTS)*REAL(NZP1) .LT. 3000000. ) THEN
      OPEN(31,FILE=kpp_const_fields%restart_outfile,status='unknown',form='unformatted')
      WRITE(31) kpp_const_fields%time,kpp_3d_fields%U,kpp_3d_fields%X,kpp_3d_fields%CP,&
@@ -79,20 +73,23 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE(kpp_3d_fields,kpp_const_fields)
 END SUBROUTINE MCKPP_RESTART_IO_WRITE
 #endif
 
+
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
-  USE mckpp_parameters
+#endif
+SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
+  
+#ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE ppgrid, only: pcols,begchunk,endchunk
   USE phys_grid,only: get_ncols_p,gather_chunk_to_field
   USE pmgrid, only: masterproc
 #else
-SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1, nzp1tmax, nuout, nuerr
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -102,8 +99,6 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1)
 #else
-  TYPE(kpp_3d_type),intent(in) :: kpp_3d_fields
-  TYPE(kpp_const_type),intent(in) :: kpp_const_fields
   LOGICAL, ALLOCATABLE :: ALL_OCEAN(:)
 #endif
   
@@ -139,12 +134,12 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
   ALLOCATE( z_out(1:NZP1tmax+1) ) 
 
   WRITE(netcdf_restart_outfile,'(A17,A3)') kpp_const_fields%restart_outfile,'.nc'
-  WRITE(6,*) netcdf_restart_outfile
+  WRITE(nuout,*) netcdf_restart_outfile
 
   status=NF_CREATE(netcdf_restart_outfile,NF_CLOBBER,ncid)
-  WRITE(6,*) status,netcdf_restart_outfile
+  WRITE(nuout,*) status,netcdf_restart_outfile
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR
-  WRITE(6,*) 'Created file '//netcdf_restart_outfile
+  WRITE(nuout,*) 'Created file '//netcdf_restart_outfile
 #ifdef MCKPP_CAM3
   IF (my_nx .gt. 1) delta=kpp_global_fields%longitude(2)-kpp_global_fields%longitude(1)
 #else
@@ -163,7 +158,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
   CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(6),2,dim_varids(6),'intcnt','unitless',0.0,' ')
 
   DO ivar=1,nvars
-     WRITE(6,*) ivar
+     WRITE(nuout,*) ivar
      SELECT CASE(ivar)
      CASE (1)
         CALL MCKPP_NCDF_DEF_VAR(ncid,varids(ivar),1,(/dim_dimids(5)/),'time','days','time')
@@ -261,7 +256,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF(kpp_3d_fields,kpp_const_fields)
 ENDIF ! End of masterproc section
 #endif
   DO ivar=1,nvars
-     WRITE(6,*) ivar
+     WRITE(nuout,*) ivar
      SELECT CASE(ivar)
      CASE(1)
 #ifdef MCKPP_CAM3
@@ -278,7 +273,7 @@ ENDIF ! End of masterproc section
            ncol=get_ncols_p(ichnk)
            temp_chunk(1:ncol,ichnk,1:NZP1)=kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,1)
         ENDDO
-        !WRITE(6,*) temp_chunk
+        !WRITE(nuout,*) temp_chunk
         CALL MCKPP_REFORMAT_MASK_OUTPUT_CHUNK(temp_chunk,NZP1,1e20,temp_chunk)
         CALL gather_chunk_to_field(1,1,NZP1,PLON,temp_chunk(1,begchunk,1),temp_global_3d(:,:,:,1))
         IF (masterproc) THEN
@@ -674,26 +669,24 @@ ENDIF ! End of masterproc section
   ENDIF
 #endif
 
-  RETURN
 END SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF
 
+
+SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF()
+
 #ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF  
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE ppgrid, only: pcols,begchunk,endchunk
   USE phys_grid,only: get_ncols_p,scatter_field_to_chunk
-#if (defined SPMD )
+#ifdef SPMD
   USE mpishorthand
 #endif
 #else
-SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1, nuout, nuerr
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -703,8 +696,6 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
   REAL(r8) :: temp_global_3d(PLON,PLAT,NZP1,2),temp_global_2d(PLON,PLAT),&
        temp_chunk(PCOLS,begchunk:endchunk,NZP1),double_time
 #else
-  TYPE(kpp_3d_type),intent(inout) :: kpp_3d_fields
-  TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
   LOGICAL, ALLOCATABLE :: ALL_OCEAN(:)  
 #endif
 
@@ -736,7 +727,7 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
   ALLOCATE( temp_twod(my_nx*my_ny,1:NZP1) )
      
   netcdf_restart_infile = TRIM(ADJUSTL(kpp_const_fields%restart_infile)) // '.nc'
-  WRITE(6,*) netcdf_restart_infile
+  WRITE(nuout,*) netcdf_restart_infile
 
   status=NF_OPEN(netcdf_restart_infile,NF_NOWRITE,ncid)
   
@@ -744,26 +735,26 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF(kpp_3d_fields,kpp_const_fields)
   status=NF_INQ_DIMID(ncid,'longitude',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nlon)
   IF (file_nlon .NE. my_nx) THEN
-     WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of longitudes in restart file is ',file_nlon,&
+     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of longitudes in restart file is ',file_nlon,&
           ' but number of longitudes in the model is ',my_nx,'.  &
           & Please correct either the restart file or the model in order to continue.'
-  !   CALL MCKPP_ABORT
+  !   CALL MCKPP_ABORT()
   ENDIF
   status=NF_INQ_DIMID(ncid,'latitude',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nlat)
   IF (file_nlat .NE. my_ny) THEN
-     WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of latitudes in restart file is ',file_nlat,&
+     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of latitudes in restart file is ',file_nlat,&
           ' but number of latitudes in the model is ',my_ny,'.  &
           & Please correct either the restart file or the model in order to continue.'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
   status=NF_INQ_DIMID(ncid,'z',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nz)
   IF (file_nz .NE. NZP1) THEN
-     WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of depths in restart file is ',file_nz,&
+     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of depths in restart file is ',file_nz,&
           ' but number of depths in the model is ',NZP1,'.  &
           & Please correct either the restart file or the model in order to continue.'
-     CALL MCKPP_ABORT
+     CALL MCKPP_ABORT()
   ENDIF
 
   DO ivar=1,nvars
@@ -793,9 +784,9 @@ DO ivar=1,nvars
       IF (masterproc) THEN
 #endif
       IF (ABS(kpp_const_fields%time-kpp_const_fields%startt) .GT. 1e-4) THEN
-         WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time does not match the restart record.'
-         WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in restart record = ',kpp_const_fields%time
-         WRITE(6,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in namelist = ',kpp_const_fields%startt
+         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time does not match the restart record.'
+         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in restart record = ',kpp_const_fields%time
+         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in namelist = ',kpp_const_fields%startt
          ! CALL MCKPP_ABORT
       ENDIF
 #ifdef MCKPP_CAM3
@@ -1171,6 +1162,5 @@ ENDDO
   ENDIF ! End of masterproc section
 #endif
 
-  RETURN
 END SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF
 

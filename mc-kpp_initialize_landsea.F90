@@ -1,17 +1,20 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE mckpp_initialize_landsea
+#endif
+
+SUBROUTINE mckpp_initialize_landsea()
+
+#ifdef MCKPP_CAM3 
   USE shr_kind_mod, only : r8=>shr_kind_r8
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
   USE phys_grid, only: scatter_field_to_chunk, get_ncols_p
 #else
-SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_parameters, ONLY: npts
  
   IMPLICIT NONE
  
@@ -22,8 +25,6 @@ SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
   REAL(r8) :: landsea_chunk(PCOLS,begchunk:endchunk),ocdepth_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk, icol, ncol
 #else
-  TYPE (kpp_3d_type) :: kpp_3d_fields
-  TYPE (kpp_const_type) :: kpp_const_fields
   REAL :: landsea(npts)
 #endif
 
@@ -56,7 +57,7 @@ SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
         ENDDO
      ENDDO
 #else
-     call MCKPP_READ_PAR(kpp_3d_fields,ncid_landsea,'lsm',1,1,landsea)
+     call MCKPP_READ_PAR(ncid_landsea,'lsm',1,1,landsea)
      DO ipt=1,npts
         IF (landsea(ipt) .EQ. 1.0) THEN
            kpp_3d_fields%L_OCEAN(ipt)=.FALSE.
@@ -64,7 +65,7 @@ SUBROUTINE mckpp_initialize_landsea(kpp_3d_fields,kpp_const_fields)
            kpp_3d_fields%L_OCEAN(ipt)=.TRUE.
         ENDIF
      ENDDO     
-     call MCKPP_READ_PAR(kpp_3d_fields,ncid_landsea,'max_depth',1,1,kpp_3d_fields%ocdepth)
+     call MCKPP_READ_PAR(ncid_landsea,'max_depth',1,1,kpp_3d_fields%ocdepth)
 #endif     
      WRITE(6,*) 'Read landsea mask'     
      status=NF_CLOSE(ncid_landsea)
