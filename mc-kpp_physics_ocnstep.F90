@@ -1,10 +1,11 @@
 SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
-  USE mckpp_parameters
+  USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax, nuout
   
   !-----------------------------------------------------------------------
   ! Note in this version:
@@ -83,15 +84,15 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
      ! Estimate new profiles by  extrapolation
      DO k=1,NZP1
         DO l=1,NVEL
-!	   WRITE(6,*) 'k=',k,'l=',l,'new=',kpp_1d_fields%new,'old=',&
+!	   WRITE(nuout,*) 'k=',k,'l=',l,'new=',kpp_1d_fields%new,'old=',&
 !         kpp_1d_fields%old,'Us(new)=',kpp_1d_fields%Us(k,l,kpp_1d_fields%new),&
 !         'Us(old)=',kpp_1d_fields%Us(k,l,kpp_1d_fields%old)
            IF (kpp_1d_fields%old .lt. 0 .or. kpp_1d_fields%old .gt. 1) THEN
-              WRITE(6,*) 'Dodgy value of old at k=',k,'l=',l,'old=',kpp_1d_fields%old
+              WRITE(nuout,*) 'Dodgy value of old at k=',k,'l=',l,'old=',kpp_1d_fields%old
               kpp_1d_fields%old=kpp_1d_fields%new
            ENDIF
            IF (kpp_1d_fields%new .lt. 0 .or. kpp_1d_fields%new .gt. 1) THEN
-              WRITE(6,*) 'Dodgy value of new at k=',k,'l=',l,'new=',kpp_1d_fields%new
+              WRITE(nuout,*) 'Dodgy value of new at k=',k,'l=',l,'new=',kpp_1d_fields%new
               kpp_1d_fields%new=kpp_1d_fields%old
            ENDIF        
            kpp_1d_fields%U(k,l)=2.*kpp_1d_fields%Us(k,l,kpp_1d_fields%new)- &
@@ -219,14 +220,14 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
      ENDIF
      kpp_1d_fields%reset_flag=kpp_1d_fields%reset_flag+1
      IF (kpp_1d_fields%reset_flag .gt. comp_iter_max) THEN
-        WRITE(6,*) 'Failed to find a reasonable solution in the semi-implicit integration after ',&
+        WRITE(nuout,*) 'Failed to find a reasonable solution in the semi-implicit integration after ',&
              comp_iter_max,' iterations.'
-        WRITE(6,*) 'At point lat = ',kpp_1d_fields%dlat,' lon =',kpp_1d_fields%dlon,&
+        WRITE(nuout,*) 'At point lat = ',kpp_1d_fields%dlat,' lon =',kpp_1d_fields%dlon,&
              ' ipt = ',kpp_1d_fields%point,':'
-        !WRITE(6,*) 'U = ',kpp_1d_fields%U(:,1)
-        !WRITE(6,*) 'V = ',kpp_1d_fields%U(:,2)
-        !WRITE(6,*) 'T = ',kpp_1d_fields%X(:,1)
-        !WRITE(6,*) 'S = ',kpp_1d_fields%X(:,2)            
+        !WRITE(nuout,*) 'U = ',kpp_1d_fields%U(:,1)
+        !WRITE(nuout,*) 'V = ',kpp_1d_fields%U(:,2)
+        !WRITE(nuout,*) 'T = ',kpp_1d_fields%X(:,1)
+        !WRITE(nuout,*) 'S = ',kpp_1d_fields%X(:,2)            
      ENDIF
   ENDDO
   ! End of trapping code.
@@ -347,5 +348,5 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   enddo
   
   ! close(40+ntime)
-  return
+
 end SUBROUTINE mckpp_physics_ocnstep
