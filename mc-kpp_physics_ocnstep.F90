@@ -5,7 +5,8 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #else
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
-  USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax, nuout
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax
   
   !-----------------------------------------------------------------------
   ! Note in this version:
@@ -57,7 +58,10 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 
   ! These aren't used elsewhere in the code but maybe they should go in kpp_fields
   REAL :: eflx, esnk, Tmke, Ptke    
-  REAL, ALLOCATABLE, DIMENSION(:) :: rmke(:)  
+  REAL, ALLOCATABLE, DIMENSION(:) :: rmke(:)
+  
+  CHARACTER(LEN=21) :: routine = "MCKPP_PHYSICS_OCNSTEP"
+  CHARACTER(LEN=max_message_len) :: message
   
   ! Number of iterations for computational instability
   integer comp_iter_max
@@ -84,15 +88,14 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
      ! Estimate new profiles by  extrapolation
      DO k=1,NZP1
         DO l=1,NVEL
-!	   WRITE(nuout,*) 'k=',k,'l=',l,'new=',kpp_1d_fields%new,'old=',&
-!         kpp_1d_fields%old,'Us(new)=',kpp_1d_fields%Us(k,l,kpp_1d_fields%new),&
-!         'Us(old)=',kpp_1d_fields%Us(k,l,kpp_1d_fields%old)
            IF (kpp_1d_fields%old .lt. 0 .or. kpp_1d_fields%old .gt. 1) THEN
-              WRITE(nuout,*) 'Dodgy value of old at k=',k,'l=',l,'old=',kpp_1d_fields%old
+              WRITE(message,*) 'Dodgy value of old at k=',k,'l=',l,'old=',kpp_1d_fields%old
+              CALL write_print_warning(routine, message)
               kpp_1d_fields%old=kpp_1d_fields%new
            ENDIF
            IF (kpp_1d_fields%new .lt. 0 .or. kpp_1d_fields%new .gt. 1) THEN
-              WRITE(nuout,*) 'Dodgy value of new at k=',k,'l=',l,'new=',kpp_1d_fields%new
+              WRITE(message,*) 'Dodgy value of new at k=',k,'l=',l,'new=',kpp_1d_fields%new
+              CALL write_print_warning(routine, message)
               kpp_1d_fields%new=kpp_1d_fields%old
            ENDIF        
            kpp_1d_fields%U(k,l)=2.*kpp_1d_fields%Us(k,l,kpp_1d_fields%new)- &
@@ -176,11 +179,12 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
               endif
            endif
         endif
-        if( iter.gt.(itermax+1) ) then 
-           write(nuout,1009) kpp_const_fields%ntime,& ! comment out for hmix data
+        if( iter.gt.(itermax+1) ) then
+           write(message,1009) kpp_const_fields%ntime,& ! comment out for hmix data
                 kpp_1d_fields%dlon,kpp_1d_fields%dlat,hmixe,hmixn,hmixn-hmixe,kmixn,iter
 1009       format('  long iteration at',i6,' steps',/,' location=(',f7.2,',',f6.2,')',/,&
-                '  hmixest=',f7.2,' hmixnew=',f7.2,' diff=',f6.1,' kmixn=',i3,' iteration=',i3)
+               '  hmixest=',f7.2,' hmixnew=',f7.2,' diff=',f6.1,' kmixn=',i3,' iteration=',i3)
+           CALL mckpp_print_warning(routine, message) 
         endif
      ENDIF
 
@@ -220,14 +224,12 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
      ENDIF
      kpp_1d_fields%reset_flag=kpp_1d_fields%reset_flag+1
      IF (kpp_1d_fields%reset_flag .gt. comp_iter_max) THEN
-        WRITE(nuout,*) 'Failed to find a reasonable solution in the semi-implicit integration after ',&
-             comp_iter_max,' iterations.'
-        WRITE(nuout,*) 'At point lat = ',kpp_1d_fields%dlat,' lon =',kpp_1d_fields%dlon,&
-             ' ipt = ',kpp_1d_fields%point,':'
-        !WRITE(nuout,*) 'U = ',kpp_1d_fields%U(:,1)
-        !WRITE(nuout,*) 'V = ',kpp_1d_fields%U(:,2)
-        !WRITE(nuout,*) 'T = ',kpp_1d_fields%X(:,1)
-        !WRITE(nuout,*) 'S = ',kpp_1d_fields%X(:,2)            
+        WRITE(message,*) 'Failed to find a reasonable solution in the semi-implicit integration after ',&
+            comp_iter_max,' iterations.'
+        CALL mckpp_print_warning(routine, message) 
+        WRITE(message,*) 'At point lat = ',kpp_1d_fields%dlat,' lon =',kpp_1d_fields%dlon,&
+            ' ipt = ',kpp_1d_fields%point,':'
+        CALL mckpp_print_warning(routine, message) 
      ENDIF
   ENDDO
   ! End of trapping code.
