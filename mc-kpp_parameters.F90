@@ -5,10 +5,6 @@ MODULE mckpp_parameters
        max_restart_filename_len = 50, & 
        max_error_msg_len = 100
 
-  INTEGER, PARAMETER :: & 
-       nuout = 6, & 
-       nuerr = 0
-
   ! These are read in from parameters namelist
   INTEGER :: & 
 
