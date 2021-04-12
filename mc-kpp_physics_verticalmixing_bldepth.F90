@@ -1,12 +1,12 @@
 SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, Bo, Bosol, hbl, & 
-     bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
+    bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_Type,kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
- 
+
   IMPLICIT NONE
   
   !     the oceanic planetray boundary layer depth, hbl, is determined as
@@ -199,5 +199,4 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
   ! determine caseA and caseB
   caseA  = 0.5 + SIGN( 0.5,-kpp_const_fields%zm(kbl) -0.5 * kpp_const_fields%hm(kbl) -hbl)
 
-  return
 end SUBROUTINE mckpp_physics_verticalmixing_bldepth

@@ -1,10 +1,12 @@
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
+
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
+  USE mckpp_parameters, ONLY: nz, nzp1, nsp1
+
   !  Interface between 1-d model and vertical mixing
   IMPLICIT NONE
 
@@ -154,5 +156,4 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
   enddo
   kpp_1d_fields%ghat(nz) = 0.0
 
-  RETURN
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING

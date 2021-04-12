@@ -1,23 +1,25 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-SUBROUTINE mckpp_physics_driver
+#endif
+
+SUBROUTINE mckpp_physics_driver()
+  
+#ifdef MCKPP_CAM3
   USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_1d_type,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid,only: get_ncols_p
 #else
-SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
-  USE mckpp_data_types
-  USE mckpp_timer
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_1d_type, kpp_const_fields
+  USE mckpp_timer, ONLY: mckpp_define_new_timer, mckpp_start_timer, mckpp_stop_timer
 #endif
+  USE mckpp_parameters
+  
   IMPLICIT NONE
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
-#else
-  TYPE(kpp_3d_type) :: kpp_3d_fields
-  TYPE(kpp_const_type) :: kpp_const_fields
 #endif
   
   ! Local
@@ -93,13 +95,8 @@ SUBROUTINE mckpp_physics_driver(kpp_3d_fields,kpp_const_fields)
   
   IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN
      CALL mckpp_start_timer("Update ancillaries")
-#ifdef MCKPP_CAM3
-     CALL MCKPP_PHYSICS_OVERRIDES_BOTTOMTEMP
-#else
-     CALL MCKPP_PHYSICS_OVERRIDES_BOTTOMTEMP(kpp_3d_fields,kpp_const_fields)
-#endif
+     CALL MCKPP_PHYSICS_OVERRIDES_BOTTOMTEMP()
      CALL mckpp_stop_timer("Update ancillaries")
   ENDIF
 
-  RETURN
 END SUBROUTINE mckpp_physics_driver

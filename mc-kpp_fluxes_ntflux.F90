@@ -1,10 +1,11 @@
 SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif 
+  USE mckpp_parameters, ONLY: nz
 
   IMPLICIT NONE
 
@@ -27,7 +28,6 @@ SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
      ENDIF
   ENDDO
 
-  RETURN
 END SUBROUTINE mckpp_fluxes_ntflux
 
 REAL FUNCTION MCKPP_FLUXES_SWDK(z,jerlov)
@@ -43,6 +43,5 @@ REAL FUNCTION MCKPP_FLUXES_SWDK(z,jerlov)
   j = jerlov
   MCKPP_FLUXES_SWDK = Rfac(j) * dexp(dble(z/a1(j))) + (1.0-Rfac(j)) * dexp(dble(z/a2(j)))
 
-  return
 end FUNCTION MCKPP_FLUXES_SWDK
 

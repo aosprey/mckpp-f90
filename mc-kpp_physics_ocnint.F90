@@ -1,10 +1,12 @@
 SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo)
+  
 #ifdef MCKPP_CAM3
-  USE mckpp_parameters
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
-  USE mckpp_data_types
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
+  USE mckpp_parameters, ONLY: nz, nztmax, nzp1, nsclr, nvel 
+  
   IMPLICIT NONE
 
   ! Integrate the ocn model by backwards Euler(implicit)discretization
@@ -215,5 +217,4 @@ SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo
      call MCKPP_PHYSICS_SOLVERS_TRIDMAT(cu,cc,cl,rhs,Xo(:,n),NZ,kpp_1d_fields%X(:,n))
   ENDDO
 
-  RETURN
 END SUBROUTINE mckpp_physics_ocnint
