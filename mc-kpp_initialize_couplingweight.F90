@@ -14,6 +14,7 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif  
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nx_globe, ny_globe
 
   IMPLICIT NONE
@@ -29,10 +30,11 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
   INTEGER ipoint_globe
 
 #include <netcdf.inc>
-!#include <couple.com>
   
   REAL*4 ixx, jyy, cplwght_in(NX_GLOBE,NY_GLOBE)
-  
+  CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_COUPLINGWEIGHT"
+  CHARACTER(LEN=max_message_len) :: message
+
 !  If L_CPLWGHT has been set, then we will use the
 !  NetCDF file to set values of cplwght over the
 !  entire globe.
@@ -49,7 +51,7 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
   start(2) = 1
   count(1) = NX_GLOBE
   count(2) = NY_GLOBE
-  WRITE(6,*) 'MCKPP_INITIALIZE_COUPLINGWEIGHT: Reading coupling weight (alpha)'
+  CALL mckpp_print(routine, "Reading coupling weight (alpha)")
   status=NF_INQ_VARID(ncid_cplwght,'alpha',cplwght_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_GET_VARA_REAL(ncid_cplwght,cplwght_varid,start,count,cplwght_in)
@@ -109,10 +111,11 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 !!$           IF (kpp_3d_fields%L_OCEAN(ipoint) .and. kpp_3d_fields%ocdepth(ipoint) .gt. 100) THEN
 !!$              kpp_3d_fields%L_OCEAN(ipoint)=.FALSE.
 !!$              kpp_3d_fields%cplwght(ipoint_globe)=0
-!!$              WRITE(6,*) 'Overwriting coupling mask at'
-!!$              WRITE(6,*) 'ixx=',ixx,'jyy=',jyy,'ipoint_globe=',ipoint_globe,'ipoint=',ipoint,'cplwght=',&
+!!$              CALL mckpp_print(routine, "Overwriting coupling mask at: ")
+!!$              WRITE(message,*) 'ixx=',ixx,'jyy=',jyy,'ipoint_globe=',ipoint_globe,'ipoint=',ipoint,'cplwght=',&
 !!$                   kpp_3d_fields%cplwght(ipoint_globe),'ocdepth=',kpp_3d_fields%ocdepth(ipoint),&
 !!$                   'L_OCEAN=',kpp_3d_fields%L_OCEAN(ipoint)
+!!$              CALL mckpp_print(routine, message) 
 !!$           ENDIF
 !!$        ELSE
 !!$           ! Point is outside coupling domain.

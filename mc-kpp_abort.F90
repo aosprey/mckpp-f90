@@ -1,6 +1,4 @@
 SUBROUTINE MCKPP_ABORT()
-
-  USE mckpp_parameters, ONLY: nuout, nuerr
   
   IMPLICIT NONE
   

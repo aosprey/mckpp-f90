@@ -5,6 +5,7 @@ SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif 
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nz
 
   IMPLICIT NONE
@@ -14,8 +15,11 @@ SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
   EXTERNAL MCKPP_FLUXES_SWDK
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
+  CHARACTER(LEN=31) :: routine = "MCKPP_FLUXES_NTFLUX"
+  CHARACTER(LEN=max_message_len) :: message
   
-  !WRITE(6,*) 'MCKPP_FLUXES_NTFLUX at time = ',kpp_const_fields%ntime
+  ! WRITE(message,*) "At time = ", kpp_const_fields%ntime
+  ! CALL mckpp_print(routine, message)
   IF (kpp_const_fields%ntime .le. 1) THEN
      DO k=0,NZ
         kpp_1d_fields%swdk_opt(k)=MCKPP_FLUXES_SWDK(-kpp_const_fields%dm(k),kpp_1d_fields%jerlov)
