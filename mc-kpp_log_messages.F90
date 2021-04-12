@@ -14,7 +14,7 @@ MODULE mckpp_log_messages
  
   IMPLICIT NONE 
 
-  PUBLIC :: mckpp_print_log, mckpp_print_error, mckpp_print_warning
+  PUBLIC :: mckpp_print, mckpp_print_error, mckpp_print_warning
   PUBLIC :: max_message_len
 
   PRIVATE
@@ -25,15 +25,15 @@ MODULE mckpp_log_messages
 CONTAINS
 
   ! Write to stdout
-  SUBROUTINE mckpp_print_log(routine, message)
+  SUBROUTINE mckpp_print(routine, message)
 
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
     CHARACTER(LEN=max_print_len) :: print_message
     
     print_message = TRIM(routine) // ": " // TRIM(message)
-    CALL mckpp_print(nuout, print_message) 
+    CALL mckpp_write(nuout, print_message) 
     
-  END SUBROUTINE mckpp_print_log
+  END SUBROUTINE mckpp_print
 
 
   ! Write error to stderr, split over 2 lines 
@@ -43,10 +43,10 @@ CONTAINS
     CHARACTER(LEN=max_print_len) :: print_message
 
     print_message = "Error in " // TRIM(routine) // ":"
-    CALL mckpp_print(nuerr, print_message)
+    CALL mckpp_write(nuerr, print_message)
     
     print_message = message
-    CALL mckpp_print(nuerr, print_message)
+    CALL mckpp_write(nuerr, print_message)
     
   END SUBROUTINE mckpp_print_error
 
@@ -58,16 +58,16 @@ CONTAINS
     CHARACTER(LEN=max_print_len) :: print_message
 
     print_message = "Warning in " // TRIM(routine) // ":"
-    CALL mckpp_print(nuerr, print_message)
+    CALL mckpp_write(nuerr, print_message)
     
     print_message = message
-    CALL mckpp_print(nuerr, print_message)
+    CALL mckpp_write(nuerr, print_message)
     
   END SUBROUTINE mckpp_print_warning
   
 
   ! Internal : call write
-  SUBROUTINE mckpp_print(unit, string)
+  SUBROUTINE mckpp_write(unit, string)
 
     INTEGER, INTENT(IN) :: unit
     CHARACTER(LEN=*) :: string
@@ -78,6 +78,6 @@ CONTAINS
     WRITE(unit,*) string
 #endif
 
-  END SUBROUTINE mckpp_print 
+  END SUBROUTINE mckpp_write
   
 END MODULE mckpp_log_messages 
