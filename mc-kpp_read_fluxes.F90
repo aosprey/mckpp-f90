@@ -1,7 +1,8 @@
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
-  USE mckpp_parameters, ONLY: nx, ny, npts, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, npts
 
   IMPLICIT NONE
 
@@ -15,6 +16,9 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   INTEGER :: status, flx_ncid, time_varid
   INTEGER, DIMENSION(3) :: count, start
 
+  CHARACTER(LEN=27) :: routine = "MCKPP_READ_FLUXES"
+  CHARACTER(LEN=max_message_len) :: message
+
   status=NF_OPEN(kpp_const_fields%forcing_file,0,flx_ncid)
   IF (status.NE.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
@@ -22,28 +26,33 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   start = (/1,1,1/)
 
   ! Boundaries of data in file
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES")
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(flx_ncid,'fluxes','latitude','longitude','time',kpp_3d_fields%dlon(1),&
        kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
 
   ! Work out time and check valid 
   time=kpp_const_fields%time+0.5*kpp_const_fields%dtsec/kpp_const_fields%spd
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Reading fluxes for time ',&
+  WRITE(message,*) 'Reading fluxes for time ',&
        time,kpp_const_fields%time,kpp_const_fields%dtsec,kpp_const_fields%spd
-  
+  CALL mckpp_print(routine, message) 
+
   start(3)=MAX(NINT((time-first_timein)*kpp_const_fields%spd/kpp_const_fields%dtsec)+1,1)
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Reading time from time point ',start(3)
+  WRITE(message,*) 'Reading time from time point ',start(3)
+  CALL mckpp_print(routine, message)
 
   status=NF_GET_VAR1_REAL(flx_ncid,time_varid,start(3),time_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-    WRITE(nuerr,*) 'MCKPP_READ_FLUXES: Cannot find time,',time,'in fluxes file'
-    WRITE(nuerr,*) 'MCKPP_READ_FLUXES: The closest I came was',time_in
+    WRITE(message,*) 'Cannot find time,',time,'in fluxes file'
+    CALL mckpp_print_error(routine, message)
+    WRITE(message,*) 'The closest I came was',time_in
+    CALL mckpp_print_error(routine, message)
     CALL MCKPP_ABORT()
   ENDIF
 
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Reading fluxes from time point ',start(3)
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read taux'
+  WRITE(message,*) 'Reading fluxes from time point ',start(3)
+  CALL mckpp_print(routine, message) 
+  CALL mckpp_print(routine, "Read taux")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(1),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -53,7 +62,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
 
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read tauy'
+  CALL mckpp_print(routine, "Read tauy")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(2),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -63,7 +72,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read swf'
+  CALL mckpp_print(routine, "Read swf")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(3),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -73,7 +82,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read lwf'
+  CALL mckpp_print(routine, "Read lwf")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(4),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -83,7 +92,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
 
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read lhf'
+  CALL mckpp_print(routine, "Read lhf")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(5),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -93,7 +102,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read shf'
+  CALL mckpp_print(routine, "Read shf")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(6),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -103,7 +112,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Read rain'
+  CALL mckpp_print(routine, "Read rain")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(7),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   DO iy=1,ny
@@ -113,7 +122,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
  ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Set snow to zero'
+  CALL mckpp_print(routine, "Set snow to zero")
   DO iy=1,ny
     DO ix=1,nx
       ipt=(iy-1)*nx+ix
@@ -121,6 +130,6 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     ENDDO
   ENDDO
  
-  WRITE(nuout,*) 'MCKPP_READ_FLUXES: Finished reading fluxes'  
+  CALL mckpp_print(routine, "Finished reading fluxes") 
   
 END SUBROUTINE MCKPP_READ_FLUXES
