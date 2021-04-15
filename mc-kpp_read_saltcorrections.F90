@@ -171,6 +171,9 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
   CHARACTER(LEN=30) tmp_name
   REAL*4, allocatable :: sfcorr_in(:,:,:,:),longitudes(:),latitudes(:),z(:)
   
+  CHARACTER(LEN=20) :: routine = "MCKPP_READ_SFCORR_3D"
+  CHARACTER(LEN=max_message_len) :: message
+
   ! Read in a NetCDF file containing a 
   ! time-varying salinity correction at every model vertical level.
   ! Frequency of read is controlled by ndtupdsfcorr in the namelist

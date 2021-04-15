@@ -5,7 +5,7 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #else
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
-  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax
   
   !-----------------------------------------------------------------------
@@ -90,12 +90,12 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
         DO l=1,NVEL
            IF (kpp_1d_fields%old .lt. 0 .or. kpp_1d_fields%old .gt. 1) THEN
               WRITE(message,*) 'Dodgy value of old at k=',k,'l=',l,'old=',kpp_1d_fields%old
-              CALL write_print_warning(routine, message)
+              CALL mckpp_print_warning(routine, message)
               kpp_1d_fields%old=kpp_1d_fields%new
            ENDIF
            IF (kpp_1d_fields%new .lt. 0 .or. kpp_1d_fields%new .gt. 1) THEN
               WRITE(message,*) 'Dodgy value of new at k=',k,'l=',l,'new=',kpp_1d_fields%new
-              CALL write_print_warning(routine, message)
+              CALL mckpp_print_warning(routine, message)
               kpp_1d_fields%new=kpp_1d_fields%old
            ENDIF        
            kpp_1d_fields%U(k,l)=2.*kpp_1d_fields%Us(k,l,kpp_1d_fields%new)- &

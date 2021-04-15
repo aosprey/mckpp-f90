@@ -89,9 +89,9 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   mrp1 = mr + 1 
   npts_globe = nx_globe * ny_globe 
 
-  WRITE(message,*) & 
-       "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  &
-       nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
+  WRITE(message,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = "
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
   CALL mckpp_print(routine, message)
 
 #ifndef MCKPP_CAM3

@@ -2,7 +2,7 @@
 MODULE mckpp_xios_control
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
-  USE mckpp_parameters, ONLY: nuout
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_timer, ONLY: mckpp_start_timer, mckpp_stop_timer
   USE mckpp_xios_io, ONLY: xios_comm, ctx_hdl_diags, &
       mckpp_xios_diagnostic_definition, mckpp_xios_diagnostic_output, &
@@ -52,6 +52,8 @@ CONTAINS
   SUBROUTINE mckpp_restart_control() 
 
     REAL :: restart_time
+    CHARACTER(LEN=21) :: routine = "MCKPP_RESTART_CONTROL"
+    CHARACTER(LEN=max_message_len) :: message
 
     ! Check if restart timestep 
     ! - always write restart at end of run 
@@ -63,7 +65,8 @@ CONTAINS
       ! (end of this timestep = start of next timestep)
       restart_time=kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd
 
-      WRITE(nuout,*) "Writing restart at time ", restart_time    
+      WRITE(message,*) "Writing restart at time ", restart_time
+      CALL mckpp_print(routine, message)
       CALL mckpp_xios_write_restart(restart_time) 
     END IF
     CALL mckpp_stop_timer("Write restart output") 
