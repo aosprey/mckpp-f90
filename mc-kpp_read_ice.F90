@@ -144,7 +144,7 @@ SUBROUTINE mckpp_read_ice()
 #endif
      status=NF_INQ_VARID(ncid,'icedepth',varid)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     WRITE(message,*) 'MCKPP_READ_ICE: Reading climatological ICEDEPTH for time ',iceclim_time             
+     WRITE(message,*) 'Reading climatological ICEDEPTH for time ',iceclim_time             
      CALL mckpp_print(routine, message) 
      status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)

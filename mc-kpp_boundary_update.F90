@@ -47,7 +47,8 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE()
   ! Update surface currents - this routine does not exist 
   ! IF(kpp_const_fields%L_UPD_CLIMCURR .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdcurr) .EQ. 0) THEN
      ! CALL read_surface_currents(kpp_3d_fields,kpp_const_fields)
-     ! CALL mckpp_print(routine, "Called read_surface_currents, ntime = ", kpp_const_fields%ntime
+     ! WRITE(message,*) "Called read_surface_currents, ntime = ", kpp_const_fields%ntime
+     ! CALL mckpp_print(routine, message) 
   ! ENDIF
   
   ! Update heat corrections

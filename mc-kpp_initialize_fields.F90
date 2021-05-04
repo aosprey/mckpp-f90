@@ -75,8 +75,8 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
         ENDDO
      ENDDO
    ELSEIF (.NOT. kpp_const_fields%L_REGGRID .AND. .NOT. kpp_const_fields%L_LANDSEA) THEN
-     message = "If you set L_REGGRID=.FALSE., you must specify a land-sea mask file from which" &
-         // " to read the locations of the gridpoints in the horizontal."
+     WRITE(message,*) "If you set L_REGGRID=.FALSE., you must specify a land-sea mask file from which", & 
+         " to read the locations of the gridpoints in the horizontal."
      CALL mckpp_print_warning(routine, message)
   ENDIF
 #endif

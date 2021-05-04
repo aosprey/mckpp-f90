@@ -130,7 +130,7 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(sal_ncid,sal_varid,start,count,sal_in)
-  WRITE(message,*) 'MCKPP_READ_SALINITY_3D: Read salinity for time ',sal_time
+  WRITE(message,*) 'Read salinity for time ',sal_time
   CALL mckpp_print(routine, message) 
   status=NF_CLOSE(sal_ncid)
 

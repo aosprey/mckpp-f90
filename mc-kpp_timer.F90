@@ -164,7 +164,7 @@ CONTAINS
 
     ! Check length of timer name
     IF (LEN(name) .GT. max_name_length) THEN
-      WRITE(message,*) 'KPP TIMER : Name of timer must not exceed ', max_name_length, ' characters: ', name
+      WRITE(message,*) 'Name of timer must not exceed ', max_name_length, ' characters: ', name
       CALL mckpp_print_error(routine, message)
       RETURN
     ENDIF

@@ -344,7 +344,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 706     continue
         
      else
-        WRITE(message,*) 'STOP in rhsmod (ocn.f): mode out of range, mode = ', mode
+        WRITE(message,*) 'mode out of range, mode = ', mode
         CALL mckpp_print_error(routine, message)
         CALL MCKPP_ABORT()
      endif

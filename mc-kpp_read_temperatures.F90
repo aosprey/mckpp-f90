@@ -194,7 +194,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
        nlat_file,nlon_file,ntime_file,count(3),start(3),ix,iy,ipoint
   CHARACTER(LEN=30) tmp_name
 
-  CHARACTER(LEN=26) :: routine = "MCKPP_READ_TEMPERATURES_3D"
+  CHARACTER(LEN=30) :: routine = "MCKPP_READ_TEMPERATURES_BOTTOM"
   CHARACTER(LEN=max_message_len) :: message
   
 #ifdef MCKPP_CAM3
