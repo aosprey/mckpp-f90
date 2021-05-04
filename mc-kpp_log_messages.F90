@@ -31,7 +31,7 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
     CHARACTER(LEN=max_print_len) :: print_message
     
-    print_message = TRIM(routine) // ": " // TRIM(message)
+    print_message = TRIM(routine) // ": " // TRIM(ADJUSTL(message))
     CALL mckpp_write(nuout, print_message) 
     
   END SUBROUTINE mckpp_print
@@ -74,9 +74,9 @@ CONTAINS
     CHARACTER(LEN=*) :: string
 
 #ifdef MCKPP_CAM3
-    IF (masterproc) THEN WRITE(unit,*) TRIM(string)
+    IF (masterproc) THEN WRITE(unit,*) TRIM(ADJUSTL(string))
 #else
-    WRITE(unit,*) TRIM(string)
+    WRITE(unit,*) TRIM(ADJUSTL(string))
 #endif
 
   END SUBROUTINE mckpp_write
