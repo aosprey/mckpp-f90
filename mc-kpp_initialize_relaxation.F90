@@ -86,7 +86,8 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
         ELSE
 #ifdef MCKPP_CAM3
            IF (masterproc) THEN
-              WRITE(6,*) iy,kpp_const_fields%relax_sal_in(iy)
+              WRITE(message,*) iy,kpp_const_fields%relax_sal_in(iy)
+              CALL mckpp_print(routine, message)
               kpp_global_fields%relax(:,iy)=1./(kpp_const_fields%relax_sal_in(iy)*kpp_const_fields%spd)           
            ENDIF
 #else

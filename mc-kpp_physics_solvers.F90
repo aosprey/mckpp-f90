@@ -238,9 +238,9 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        day = time - dpy * (idint(time/dpy))  ! 365.25))
 !        month = 1 + int(12. * day / dpy)    ! 367.)
 !        if(month.gt.12) then
-!           write(nuerr,*) 'STOP rhsmod (ocn.f):'
-!           write(nuerr,*) '     rounding error, month gt 12 =',month
-!           stop 97
+!           WRITE(message,*) 'Rounding error, month gt 12 =',month
+!           CALL mckpp_print_error(routine, message) 
+!           CALL mckpp_abort()
 !        endif
 
 !       Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual
@@ -307,9 +307,9 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
      !     month = 1 + int(12. * day / dpy)    ! 367.)
      !     diag
      !     if(month.gt.12) then
-     !     write(nuerr,*) 'STOP rhsmod (ocn.f):'
-     !     write(nuerr,*) '     rounding error, month gt 12 =',month
-     !     stop 97
+     !     WRITE(message,*) 'Rounding error, month gt 12 =',month
+     !     CALL mckpp_print_error(routine, message) 
+     !     CALL mckpp_abort()
      !     endif  
      !     diag
      !     Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual

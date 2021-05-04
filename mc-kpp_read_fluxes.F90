@@ -16,7 +16,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   INTEGER :: status, flx_ncid, time_varid
   INTEGER, DIMENSION(3) :: count, start
 
-  CHARACTER(LEN=27) :: routine = "MCKPP_READ_FLUXES"
+  CHARACTER(LEN=17) :: routine = "MCKPP_READ_FLUXES"
   CHARACTER(LEN=max_message_len) :: message
 
   status=NF_OPEN(kpp_const_fields%forcing_file,0,flx_ncid)
