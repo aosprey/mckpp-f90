@@ -69,8 +69,8 @@ END SUBROUTINE MCKPP_NCDF_DEF_VAR
 
 SUBROUTINE MCKPP_HANDLE_ERR(status)
  
-  USE mckpp_parameters, ONLY: nuerr
- 
+  USE mckpp_log_messages, ONLY: mckpp_print_error
+  
   IMPLICIT NONE
   include 'netcdf.inc'
   
@@ -78,7 +78,7 @@ SUBROUTINE MCKPP_HANDLE_ERR(status)
   CHARACTER*80 err_message
   
   err_message=NF_STRERROR(status)
-  write(nuerr,*) err_message
+  CALL mckpp_print_error("",err_message)
   
   CALL MCKPP_ABORT()
   
@@ -93,7 +93,8 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts
 
   IMPLICIT NONE
   
@@ -113,6 +114,9 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
   INTEGER start(4),count(4),ix,iy,ipt,ipar,ixx,iyy, nx_in, ny_in
   INTEGER status,dimid,varid
   
+  CHARACTER(LEN=14) :: routine = "MCKPP_READ_PAR"
+  CHARACTER(LEN=max_message_len) :: message
+  
 #ifndef MCKPP_CAM3
   status=NF_INQ_DIMID(ncid,'longitude',dimid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -120,16 +124,16 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'longitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  WRITE(nuout,*) 'MCKPP_READ_PAR: Reading longitude'
   status=NF_GET_VAR_REAL(ncid,varid,x_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ixx=1
   DO WHILE (abs(x_in(ixx)-kpp_3d_fields%dlon(1)) .GT. 1.e-3)
      ixx=ixx+1        
      IF (ixx .GE. nx_in) THEN
-       write(nuerr,*) 'Error reading initial conditions'
-       write(nuerr,*) 'Can''t find longitude ',&
+       CALL mckpp_print_error(routine, "Error reading initial conditions")
+       WRITE(message,*) 'Can''t find longitude ',&
            kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
+       CALL mckpp_print_error(routine, message)
        CALL MCKPP_ABORT()
      ENDIF
   ENDDO
@@ -142,17 +146,16 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'latitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  WRITE(nuout,*) 'MCKPP_READ_PAR: Reading latitude'
   status=NF_GET_VAR_REAL(ncid,varid,y_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   iyy=1
   DO WHILE (abs(y_in(iyy)-kpp_3d_fields%dlat(1)) .GT. 1.e-3)
-     !WRITE(nuout,*) y_in(iyy),kpp_3d_fields%dlat(1)
      iyy=iyy+1
      IF (iyy .GE. ny_in) THEN
-       write(nuerr,*) 'Error reading initial conditions'
-       write(nuerr,*) 'Can''t find latitude ',&
+       CALL mckpp_print_error(routine, "Error reading initial conditions")
+       WRITE(message,*) 'Can''t find latitude ',&
               kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
+       CALL mckpp_print_error(routine, message)
        CALL MCKPP_ABORT()
      ENDIF
   ENDDO
@@ -179,7 +182,8 @@ SUBROUTINE MCKPP_READ_PAR (ncid,vname,npars,nt,par_out)
 #endif
   
   status=NF_INQ_VARID(ncid,vname,varid)
-  WRITE(nuout,*) 'MCKPP_READ_PAR: Reading variable ',vname
+  WRITE(message,*) 'Reading variable ', vname
+  CALL mckpp_print(routine, message)
   status=NF_GET_VARA_REAL(ncid,varid,start,count,par_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
@@ -209,7 +213,8 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts
 
   IMPLICIT NONE
   
@@ -229,12 +234,14 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
   INTEGER start(4),count(4),ix,iy,ipt,ipar,ixx,iyy
   INTEGER status,dimid,varid
   
+  CHARACTER(LEN=14) :: routine = "MCKPP_READ_IPAR"
+  CHARACTER(LEN=max_message_len) :: message
+  
 #ifndef MCKPP_CAM3
   status=NF_INQ_DIMID(ncid,'longitude',dimid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'longitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  WRITE(nuout,*) 'MCKPP_READ_IPAR: Reading longitude'
   status=NF_GET_VAR_REAL(ncid,varid,x_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ixx=1
@@ -248,13 +255,11 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_VARID(ncid,'latitude',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  WRITE(nuout,*) 'MCKPP_READ_IPAR: Reading latitude'
   status=NF_GET_VAR_REAL(ncid,varid,y_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   iyy=1
   DO WHILE (abs(y_in(iyy)-kpp_3d_fields%dlat(1)) .GT. 1.e-3)
-     !WRITE(nuout,*) y_in(iyy),kpp_3d_fields%dlat(1)
-     iyy=iyy+1
+      iyy=iyy+1
   ENDDO
   start(2)=iyy
   count(2)=ny
@@ -279,7 +284,8 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
 #endif
   
   status=NF_INQ_VARID(ncid,vname,varid)
-  WRITE(nuout,*) 'MCKPP_READ_IPAR: Reading variable ',vname
+  WRITE(message,*) 'Reading variable ', vname
+  CALL mckpp_print(routine, message)
   status=NF_GET_VARA_INT(ncid,varid,start,count,par_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
@@ -303,7 +309,8 @@ END SUBROUTINE MCKPP_READ_IPAR
 SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name,longitude_name,&
      time_name,start_lon,start_lat,offset_lon,offset_lat,first_time,last_time,time_varid)
 
-  USE mckpp_parameters, ONLY: nx_globe, ny_globe, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx_globe, ny_globe
 
   IMPLICIT NONE
   
@@ -316,6 +323,9 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   
   INTEGER nlat_file,nlon_file,ntime_file,status
   REAL*4 longitudes(NX_GLOBE),latitudes(NY_GLOBE)
+
+  CHARACTER(LEN=33) :: routine = "MCKPP_DETERMINE_NETCDF_BOUNDARIES"
+  CHARACTER(LEN=max_message_len) :: message
   
   status=NF_INQ_DIMID(ncid,latitude_name,lat_dimid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -323,7 +333,6 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)      
   status=NF_INQ_VARID(ncid,latitude_name,lat_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  !WRITE(nuout,*) 'MCKPP_DETERMINE_NETCDF_BOUNDARIES: Inquired on '//latitude_name,lat_varid
   
   status=NF_INQ_DIMID(ncid,longitude_name,lon_dimid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -331,7 +340,6 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)      
   status=NF_INQ_VARID(ncid,longitude_name,lon_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  !WRITE(nuout,*) 'MCKPP_DETERMINE_NETCDF_BOUNDARIES: Inquired on '//longitude_name,lon_varid
   
   status=NF_GET_VAR_REAL(ncid,lat_varid,latitudes(1:nlat_file))
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
@@ -341,8 +349,8 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   ix=1
   DO WHILE (abs(longitudes(ix)-start_lon) .GT. 1.e-3)
      IF (ix .gt. nlon_file) THEN
-        WRITE(nuerr,*) 'MCKPP_DETERMINE_NETCDF_BOUNDARIES: Could not find starting longitude in the '//&
-             file_description//' file'
+        WRITE(message,*) 'Could not find starting longitude in the ', file_description, ' file'
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
      ix=ix+1
@@ -352,8 +360,8 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   iy=1
   DO WHILE (abs(latitudes(iy)-start_lat) .GT. 1.e-3)
      IF (iy .gt. nlat_file) THEN
-        WRITE(nuerr,*) 'MCKPP_DETERMINE_NETCDF_BOUNDARIES: Could not find starting latitude in the '//&
-             file_description//' file'
+        WRITE(message,*) 'Could not find starting latitude in the ', file_description, ' file'
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
      iy=iy+1
@@ -362,8 +370,7 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   
   status=NF_INQ_VARID(ncid,time_name,time_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  !WRITE(nuout,*) 'MCKPP_DETERMINE_NETCDF_BOUNDARIES: Inquired on '//time_name,time_varid
-  status=NF_GET_VAR1_REAL(ncid,time_varid,1,first_time)
+   status=NF_GET_VAR1_REAL(ncid,time_varid,1,first_time)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   status=NF_INQ_DIMID(ncid,time_name,time_dimid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)

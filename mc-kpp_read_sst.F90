@@ -14,7 +14,8 @@ SUBROUTINE MCKPP_READ_SST()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -33,6 +34,9 @@ SUBROUTINE MCKPP_READ_SST()
   INTEGER count(3),start(3)
   INTEGER ix,iy,nlat_file,nlon_file,ntime_file
   CHARACTER(LEN=30) tmp_name
+
+  CHARACTER(LEN=14) :: routine = "MCKPP_READ_SST"
+  CHARACTER(LEN=max_message_len) :: message
   
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
@@ -80,23 +84,29 @@ SUBROUTINE MCKPP_READ_SST()
            sstclim_time=sstclim_time-kpp_const_fields%climsst_period
         ENDDO
      ELSE
-        WRITE(nuerr,*) 'Time for which to read SST exceeds the last time in the netCDF file &
-             & and L_PERIODIC_CLIMSST has not been specified.  Attempting to read SST will lead to &
-             & an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read SST exceeds the last time in the netCDF file ", & 
+            "and L_PERIODIC_CLIMSST has not been specified."
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read SST will lead to an error, so aborting now ..."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
-  write(nuout,*) 'MCKPP_READ_SST: Reading climatological SST for time ',sstclim_time
+  WRITE(message,*) 'Reading climatological SST for time ',sstclim_time
+  CALL mckpp_print(routine, message)
   start(3)=NINT((sstclim_time-first_timein)*kpp_const_fields%spd/&
        (kpp_const_fields%dto*kpp_const_fields%ndtupdsst))+1
-  WRITE(nuout,*) 'MCKPP_READ_SST: Reading climatological SST from position ',start(3)
+  WRITE(message,*) 'Reading climatological SST from position ',start(3)
+  CALL mckpp_print(routine, message)
 
   status=NF_GET_VAR1_REAL(ncid,time_varid,start(3),time_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
   IF (abs(time_in-sstclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_SST: Cannot find time,',sstclim_time,'in SST climatology file'
-     write(nuerr,*) 'MCKPP_READ_SST: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time,',sstclim_time,'in SST climatology file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
  

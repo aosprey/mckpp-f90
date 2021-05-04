@@ -87,7 +87,8 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
-  USE mckpp_parameters, ONLY: nuout, nzp1
+  USE mckpp_log_messages, ONLY: mckpp_print_warning, max_message_len
+  USE mckpp_parameters, ONLY: nzp1
 
   IMPLICIT NONE
 
@@ -96,6 +97,9 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
 
   INTEGER :: z,j
   REAL :: dz_total,dtdz_total,dz
+  
+  CHARACTER(LEN=36) :: routine = "MCKPP_PHSYICS_OVERRIDE_CHECK_PROFILE"
+  CHARACTER(LEN=max_message_len) :: message
 
   ! If the integration has failed because of unrealistic values in T, S, U or V
   ! or very high RMS difference between the old and new profiles, then reset
@@ -103,18 +107,23 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
   ! NPK 17/5/13.
   IF (kpp_1d_fields%comp_flag .and. kpp_const_fields%ocnT_file .ne. 'none' .and. &
        kpp_const_fields%sal_file .ne. 'none') THEN
-     WRITE(nuout,*) 'Resetting point to climatology ...'
+     CALL mckpp_print_warning(routine, "Resetting point to climatology.")
      kpp_1d_fields%X(:,1)=kpp_1d_fields%ocnT_clim(:)
-     !WRITE(nuout,*) 'T = ',kpp_1d_fields%ocnT_clim(:)
+     ! WRITE(message,*) 'T = ',kpp_1d_fields%ocnT_clim(:)
+     ! CALL mckpp_print_warning(routine, message)
      kpp_1d_fields%X(:,2)=kpp_1d_fields%sal_clim(:)
-     !WRITE(nuout,*) 'S = ',kpp_1d_fields%sal_clim(:)
+     ! WRITE(message,*) 'S = ',kpp_1d_fields%sal_clim(:)
+     ! CALL mckpp_print_warning(routine, message)
      kpp_1d_fields%U=kpp_1d_fields%U_init(:,:)
-     !WRITE(nuout,*) 'U = ',kpp_1d_fields%U_init(:,1)
-     !WRITE(nuout,*) 'V = ',kpp_1d_fields%U_init(:,2)
+     ! WRITE(message,*) 'U = ',kpp_1d_fields%U_init(:,1)
+     ! CALL mckpp_print_warning(routine, message)
+     ! WRITE(message,*) 'V = ',kpp_1d_fields%U_init(:,2)
+     ! CALL mckpp_print_warning(routine, message)
      kpp_1d_fields%reset_flag=999
   ELSE IF (kpp_1d_fields%comp_flag) THEN
-     WRITE(nuout,*) 'Cannot reset point to T,S climatology as either ocean temperature or salinity data '//&
+     WRITE(message,*) 'Cannot reset point to T,S climatology as either ocean temperature or salinity data '//&
           'not provided.  Will reset currents to initial conditions and keep going.'
+     CALL mckpp_print_warning(routine, message)
      kpp_1d_fields%U=kpp_1d_fields%U_init(:,:)
      kpp_1d_fields%reset_flag=999
   ENDIF

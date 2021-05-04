@@ -12,12 +12,15 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nzp1
 
   IMPLICIT NONE
 
   INTEGER prev_time,next_time,true_time
   REAL prev_weight,next_weight,ndays_upd_ocnT
+  CHARACTER(LEN=31) :: routine = "MCKPP_BOUNDARY_INTERPOLATE_TEMP"
+  CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
@@ -40,10 +43,15 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
      prev_time=prev_time+kpp_const_fields%ocnT_period
   ELSE
      prev_weight=(ndays_upd_ocnT-(true_time-prev_time))/ndays_upd_ocnT
-  ENDIF
-  WRITE(6,*) 'interp_ocnT : true_time = ',true_time
-  WRITE(6,*) 'interp_ocnT : prev_time = ',prev_time
-  WRITE(6,*) 'interp_ocnT : prev_weight = ',prev_weight
+   ENDIF
+
+  WRITE(message,*) "true_time = ", true_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "prev_time = ", prev_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "prev_weight = ", prev_weight
+  CALL mckpp_print(routine, message)
+  
   kpp_const_fields%time=prev_time
   CALL MCKPP_READ_TEMPERATURES_3D()
 #ifdef MCKPP_CAM3 
@@ -58,8 +66,12 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   ! Read ocean temperatures for next time
   next_time=prev_time+ndays_upd_ocnT
   next_weight=1-prev_weight
-  WRITE(6,*) 'interp_ocnT : next_time = ',next_time
-  WRITE(6,*) 'interp_ocnT : next_weight = ',next_weight
+
+  WRITE(message,*) "next_time = ", next_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "next_weight = ", next_weight
+  CALL mckpp_print(routine, message)
+
   kpp_const_fields%time=next_time
   CALL MCKPP_READ_TEMPERATURES_3D()
 #ifdef MCKPP_CAM3 
@@ -81,7 +93,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
 END SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP
 
 
-SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
+SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
@@ -90,12 +102,15 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nzp1
 
   IMPLICIT NONE
 
   INTEGER prev_time,next_time,true_time
   REAL prev_weight,next_weight,ndays_upd_sal
+  CHARACTER(LEN=31) :: routine = "mckpp_boundary_interpolate_temp"
+  CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
@@ -119,9 +134,14 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
   ELSE
      prev_weight=(ndays_upd_sal-(true_time-prev_time))/ndays_upd_sal
   ENDIF
-  WRITE(6,*) 'interp_sal : true_time = ',true_time
-  WRITE(6,*) 'interp_sal : prev_time = ',prev_time
-  WRITE(6,*) 'interp_sal : prev_weight = ',prev_weight
+
+  WRITE(message,*) "true_time = ", true_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "prev_time = ", prev_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "prev_weight = ", prev_weight
+  CALL mckpp_print(routine, message)
+  
   kpp_const_fields%time=prev_time
   CALL MCKPP_READ_SALINITY_3D()
 #ifdef MCKPP_CAM3 
@@ -136,8 +156,12 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
   ! Read ocean salinity for next time
   next_time=prev_time+ndays_upd_sal
   next_weight=1-prev_weight
-  WRITE(6,*) 'interp_sal : next_time = ',next_time
-  WRITE(6,*) 'interp_sal : next_weight = ',next_weight
+
+  WRITE(message,*) "next_time = ", next_time
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) "next_weight = ", next_weight
+  CALL mckpp_print(routine, message)
+
   kpp_const_fields%time=next_time
   CALL MCKPP_READ_SALINITY_3D()
 #ifdef MCKPP_CAM3 

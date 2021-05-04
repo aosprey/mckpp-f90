@@ -121,7 +121,8 @@ END SUBROUTINE mckpp_physics_solvers_tridrhs
 
 SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
 
-  USE mckpp_parameters, ONLY: nztmax, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nztmax
 
   ! Solve tridiagonal matrix for new vector yn, given right hand side
   ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
@@ -144,6 +145,9 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
   ! more local for implicit none
   integer i
 
+  CHARACTER(LEN=26) :: routine = "MCKPP_PHSYICS_SOLVER_TRIDMAT"
+  CHARACTER(LEN=max_message_len) :: message
+  
   ! Solve tridiagonal matrix.
   bet   = cc(1)
   yn(1) =  rhs(1) / bet    ! surface
@@ -151,10 +155,13 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
      gam(i)= cl(i-1)/bet
      bet   = cc(i) - cu(i)*gam(i)
      if(bet.eq.0.) then
-        write(nuerr,*)'* algorithm for solving tridiag matrix fails'
-        write(nuerr,*)'* bet=',bet
-        write(nuerr,*)'*i-1=',i-1,' cc=',cc(i-1),'cl=',cl(i-1)
-        write(nuerr,*)'*i=',i,' cc=',cc(i),' cu=',cu(i),' gam=',gam(i)
+        CALL mckpp_print_error(routine, "Algorithm for solving tridiag matrix failed.")
+        WRITE(message,*) 'bet = ', bet
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) 'i-1 = ', i-1, ', cc = ', cc(i-1), ', cl = ', cl(i-1)
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) 'i = ', i, ', cc = ', cc(i), ', cu=', cu(i), ', gam = ', gam(i)
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
         bet=1.E-12
         !     Pause 3
@@ -178,7 +185,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 #else
   USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
-  USE mckpp_parameters, ONLY: nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
 
 !     Modify rhs to correct scalar, jsclr, 
 !     for advection according to mode
@@ -215,6 +222,9 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
   real f(12)     ! monthly partion of annual advection
   real xsA(21)   ! yearly excess of heat
 
+  CHARACTER(LEN=27) :: routine = "MCKPP_PHSYICS_SOLVER_RHSMOD"
+  CHARACTER(LEN=max_message_len) :: message
+
   !data f/.1,.1,6*0.0,.1,.3,.4,.2/
   f = (/.05, .05, 0.0, 0.0, 0.0, 0.0, 0.0, .05, .15, .20, &
        .30, .20/)
@@ -228,9 +238,9 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        day = time - dpy * (idint(time/dpy))  ! 365.25))
 !        month = 1 + int(12. * day / dpy)    ! 367.)
 !        if(month.gt.12) then
-!           write(nuerr,*) 'STOP rhsmod (ocn.f):'
-!           write(nuerr,*) '     rounding error, month gt 12 =',month
-!           stop 97
+!           WRITE(message,*) 'Rounding error, month gt 12 =',month
+!           CALL mckpp_print_error(routine, message) 
+!           CALL mckpp_abort()
 !        endif
 
 !       Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual
@@ -297,9 +307,9 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
      !     month = 1 + int(12. * day / dpy)    ! 367.)
      !     diag
      !     if(month.gt.12) then
-     !     write(nuerr,*) 'STOP rhsmod (ocn.f):'
-     !     write(nuerr,*) '     rounding error, month gt 12 =',month
-     !     stop 97
+     !     WRITE(message,*) 'Rounding error, month gt 12 =',month
+     !     CALL mckpp_print_error(routine, message) 
+     !     CALL mckpp_abort()
      !     endif  
      !     diag
      !     Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual
@@ -334,8 +344,8 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 706     continue
         
      else
-        write(nuerr,*) 'STOP in rhsmod (ocn.f):'
-        write(nuerr,*) '      mode out of range, mode=',mode
+        WRITE(message,*) 'mode out of range, mode = ', mode
+        CALL mckpp_print_error(routine, message)
         CALL MCKPP_ABORT()
      endif
      

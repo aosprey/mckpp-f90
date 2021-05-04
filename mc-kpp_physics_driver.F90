@@ -32,7 +32,6 @@ SUBROUTINE mckpp_physics_driver()
   CHARACTER(LEN=19) trans_timer_name
   
 #ifdef MCKPP_CAM3
-  !WRITE(6,*) 'Before ocnstep, U = ',kpp_3d_fields(begchunk)%U(1:ncol,1,1)
   DO ichnk=begchunk,endchunk
      ncol=get_ncols_p(ichnk)
      DO icol=1,ncol
@@ -45,7 +44,6 @@ SUBROUTINE mckpp_physics_driver()
         ENDIF
      ENDDO
   ENDDO   
-  !WRITE(6,*) 'After ocnstep, U = ',kpp_3d_fields(begchunk)%U(1:ncol,1,1)
 #else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(NONE) &

@@ -10,6 +10,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
 #else
   USE mckpp_data_fields, ONLY: kpp_const_fields, mckpp_allocate_const_fields
 #endif
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   USE mckpp_namelists
   USE mckpp_parameters 
 
@@ -17,6 +18,8 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   
   ! Local variables    
   INTEGER :: i,j,k,l,ipt,ix,iy
+  CHARACTER(LEN=25) :: routine = "MCKPP_INITIALIZE_NAMELIST"
+  CHARACTER(LEN=max_message_len) :: message
  
   ! This is a bug fix for the IBM XLF compiler, which otherwise complains
   ! about "incorrect characters" in the namelist.  If you are using the
@@ -57,21 +60,21 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   ny_globe = 0.0
   
   READ(75,NAME_PARAMETERS) 
-  WRITE(nuout,*) 'KPP : Read Namelist PARAMETERS'
+  CALL mckpp_print(routine, "Read Namelist PARAMETERS") 
   IF ( (nx .LE. 0) .OR. (ny .LE. 0) .OR. (nz .LE. 0) ) THEN 
-    WRITE(nuerr,*) 'KPP : You must specify values of nx, ny and nz in the namelist'
+    CALL mckpp_print_error(routine, "You must specify values of nx, ny and nz in the namelist")
     CALL MCKPP_ABORT()
   END IF 
   IF (ngrid .LE. 0) THEN 
-    WRITE(nuerr,*) 'KPP : You must specify a value of ngrid in the namelist'
+    CALL mckpp_print_error(routine, "You must specify a value of ngrid in the namelist")
     CALL MCKPP_ABORT()
   END IF 
   IF (nztmax .LE. 0) THEN 
-    WRITE(nuerr,*) 'KPP : You must specify a value of nztmax in the namelist'
+    CALL mckpp_print_error(routine, "You must specify a value of nztmax in the namelist")
     CALL MCKPP_ABORT()
   END IF 
   IF ( (nx_globe .LE. 0) .OR. (ny_globe .LE. 0) ) THEN 
-    WRITE(nuerr,*) 'KPP : You must specify a value of nx_globe and ny_globe in the namelist'
+    CALL mckpp_print_error(routine, "You must specify a value of nx_globe and ny_globe in the namelist")
     CALL MCKPP_ABORT()
   END IF 
 
@@ -86,9 +89,10 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   mrp1 = mr + 1 
   npts_globe = nx_globe * ny_globe 
 
-  WRITE(nuout,*) &
-       "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = ",  &
-       nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
+  WRITE(message,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp1, mrp1, npts_globe = "
+  CALL mckpp_print(routine, message)
+  WRITE(message,*) nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
+  CALL mckpp_print(routine, message)
 
 #ifndef MCKPP_CAM3
   CALL mckpp_allocate_const_fields() 
@@ -114,7 +118,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   FL=334000.                ! Latent heat of fusion for ice
   FLSN=FL                   ! Latent heat of fusion for snow
   READ(75,NAME_CONSTANTS)
-  WRITE(nuout,*) 'KPP : Read Namelist CONSTANTS'
+  CALL mckpp_print(routine, "Read Namelist CONSTANTS")
   
   ! Initialize and read the processes namelist
   LKPP=.TRUE.
@@ -127,7 +131,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   LRHS=.FALSE.
   L_SSref=.TRUE.
   READ(75,NAME_PROCSWIT)
-  WRITE(nuout,*) 'KPP : Read Namelist PROCSWIT'
+  CALL mckpp_print(routine, "Read Namelist PROCSWIT")
   
   ! Initilalize and read the location name list
   DMAX=0.0
@@ -141,15 +145,14 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_VGRID_FILE=.FALSE.
   READ(75,NAME_DOMAIN)
   IF (DMAX .LE. 0.0) THEN 
-     WRITE(nuerr,*) 'KPP : You must specify a depth for the domain'
+     CALL mckpp_print_error(routine, "You must specify a depth for the domain")
      CALL MCKPP_ABORT()
   ENDIF
   IF ((L_STRETCHGRID) .AND. (dscale .EQ. 0.0)) THEN
-     WRITE(nuerr,*) 'KPP : You cannot have dscale=0 for stretched ',&
-          'grids'
+     CALL mckpp_print_error(routine, "You cannot have dscale=0 for stretched grids") 
      CALL MCKPP_ABORT()
   ENDIF
-  write(nuout,*) 'KPP : Read Namelist DOMAIN'
+  CALL mckpp_print(routine, "Read Namelist DOMAIN")
   kpp_const_fields%alat=alat
   kpp_const_fields%alon=alon
   kpp_const_fields%delta_lat=delta_lat
@@ -159,7 +162,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   ! Initialize and read the landsea name list
   L_LANDSEA=.FALSE.
   READ(75,NAME_LANDSEA)
-  WRITE(nuout,*) 'KPP : Read Namelist LANDSEA'
+  CALL mckpp_print(routine, "Read Namelist LANDSEA")
   
   ! Initialize and read the start name list
   L_INITDATA= .TRUE.
@@ -167,7 +170,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_RESTART= .FALSE.
   WRITE(restart_infile,*) 'fort.30'
   READ(75,NAME_START) 
-  write(nuout,*) 'KPP : Read Namelist START'
+  CALL mckpp_print(routine, "Read Namelist START")
   
   ! Initialize and read the times namelist
   ndtocn=1
@@ -176,7 +179,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   finalt=-999.999
   READ(75,NAME_TIMES) 
   IF ((dtsec .LE. 0.0) .OR. (startt .LT. 0.0) .OR. (finalt .LT. 0.0)) THEN 
-     WRITE(nuerr,*) 'KPP : You must specify values of dtsec,startt,finalt in the namelist'
+     CALL mckpp_print_error(routine, "You must specify values of dtsec,startt,finalt in the namelist")
      CALL MCKPP_ABORT()
   ENDIF
   kpp_const_fields%ndtocn=ndtocn
@@ -189,16 +192,16 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   kpp_const_fields%nstart=nint(kpp_const_fields%startt)/kpp_const_fields%dto
   IF (float(kpp_const_fields%nend*kpp_const_fields%ndtocn) .NE. &
        (kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dto) THEN
-     WRITE(nuerr,*) 'KPP : The integration length is not a multiple of the ocean timestep' 
-     WRITE(nuerr,*) 'dto=',kpp_const_fields%dto
-     WRITE(nuerr,*) 'finalt=',kpp_const_fields%finalt
-     WRITE(nuerr,*) 'startt=',kpp_const_fields%startt
+     CALL mckpp_print_error(routine, "The integration length is not a multiple of the ocean timestep")
+     WRITE(message, *) "dto = ", kpp_const_fields%dto, ", finalt = ", kpp_const_fields%finalt, &
+        ", startt = ", kpp_const_fields%startt
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
   kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
   kpp_const_fields%time=kpp_const_fields%startt
-  WRITE(nuout,*) 'KPP : Read Namelist TIMES'
+  CALL mckpp_print(routine, "Read Namelist TIMES") 
   
   ! Initialize and read the couple namelist
 #ifdef MCKPP_COUPLE
@@ -219,7 +222,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   jfirst=1
   jlast=ny
   READ(75,NAME_COUPLE)
-  write(nuout,*) 'KPP : Read Namelist COUPLE'
+  CALL mckpp_print(routine, "Read Namelist COUPLE")
   
   ! Initialize and read the advection namelist
   L_ADVECT=.FALSE.
@@ -263,28 +266,28 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   forcing_file='1D_ocean_forcing.nc'
   ocnT_file='none'
   READ(75,NAME_FORCING)
-  write(nuout,*) 'KPP : Read Namelist FORCING'    
+  CALL mckpp_print(routine, "Read Namelist FORCING")  
   IF (L_FCORR_WITHZ .AND. L_FCORR) THEN
-     WRITE(nuerr,*) 'KPP : L_FCORR and L_FCORR_WITHZ are '&
-          //'mutually exclusive.  Choose one or neither.'
+     WRITE(message, *) "L_FCORR and L_FCORR_WITHZ are mutually exclusive. Choose one or neither."
+     CALL mckpp_print_error(routine, message)
      CALL MCKPP_ABORT()
   ENDIF
   IF (L_SFCORR_WITHZ .AND. L_SFCORR) THEN
-     WRITE(nuerr,*) 'KPP : L_SFCORR and L_SFCORR_WITHZ are '&
-          //'mutually exclusive.  Choose one or neither.'
+     WRITE(message, *) "L_SFCORR and L_SFCORR_WITHZ are mutually exclusive. Choose one or neither."
+     CALL mckpp_print_error(routine, message)
      CALL MCKPP_ABORT()
   ENDIF
   IF (L_FCORR_WITHZ .AND. L_RELAX_SST) THEN
-     WRITE(nuerr,*) 'KPP : L_FCORR_WITHZ and L_RELAX_SST are '&
-          //'mutually exclusive.  Choose one or neither.'
+     WRITE(message, *) "L_FCORR_WITHZ and L_RELAX_SST are mutually exclusive. Choose one or neither."
+     CALL mckpp_print_error(routine, message)
      CALL MCKPP_ABORT()
   ENDIF
   IF (L_NO_ISOTHERM .AND. (ocnT_file .eq. 'none' .or.&
-       sal_file .eq. 'none')) THEN
-     WRITE(nuerr,*) 'KPP : If you specify L_NO_ISOTHERM for '&
-          //'reseting of isothermal points, you must specify files '&
-          //'from which to read climatological ocean temperature '&
-          //'(ocnT_file) and salinity (sal_file).'
+      sal_file .eq. 'none')) THEN
+     WRITE(message, *) "If you specify L_NO_ISOTHERM for reseting of isothermal points, " &
+        // "you must specify files from which to read climatological ocean temperature " &
+        // "(ocnT_file) and salinity (sal_file)."
+     CALL mckpp_print_error(routine, message)
      CALL MCKPP_ABORT()
   ELSEIF (L_NO_ISOTHERM) THEN
      kpp_const_fields%iso_bot=isotherm_bottom
@@ -297,7 +300,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_RESTARTW=.TRUE.      
   kpp_const_fields%ndt_per_restart=kpp_const_fields%nend*kpp_const_fields%ndtocn    
     READ(75,NAME_OUTPUT)
-  write(nuout,*) 'Read Namelist OUTPUT'    
+  CALL mckpp_print(routine, "Read Namelist OUTPUT") 
   
   ! Call routine to copy constants and logicals needed for ocean
   ! physics into the kpp_const_fields derived type.  Added for 

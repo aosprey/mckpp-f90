@@ -8,6 +8,7 @@ SUBROUTINE mckpp_initialize_geography()
 #else
   USE mckpp_data_fields, ONLY: kpp_const_fields, kpp_3d_fields
 #endif /*MCKPP_CAM3*/
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nz, nzp1, npts
 
   IMPLICIT NONE
@@ -22,10 +23,13 @@ SUBROUTINE mckpp_initialize_geography()
   REAL sumh,hsum,dfac,sk
   REAL*4 vgrid_in(NZ)
   INTEGER i,ipt,ncid,status,dimid,varid
+  CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_GEOGRAPHY"
+  CHARACTER(LEN=max_message_len) :: message
 
   ! define vertical grid fields
   IF (kpp_const_fields%L_VGRID_FILE) THEN 
-     !WRITE(6,*) 'Reading vertical grid from file ',kpp_const_fields%vgrid_file
+     ! WRITE(message,*) "Reading vertical grid from file ", kpp_const_fields%vgrid_file
+     ! CALL mckpp_print(routine, message)
      status=NF_OPEN(kpp_const_fields%vgrid_file,0,ncid)
      IF (status.ne.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
      status=NF_INQ_VARID(ncid,'d',varid)
@@ -45,8 +49,9 @@ SUBROUTINE mckpp_initialize_geography()
      IF (status.ne.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
      status=NF_CLOSE(ncid)
      kpp_const_fields%DMAX=-1.*(kpp_const_fields%zm(NZ)-kpp_const_fields%hm(NZ))
-     !WRITE(6,*) 'hm = ',kpp_const_fields%hm,'zm =',kpp_const_fields%zm,' dm = ',&
-     !     kpp_const_fields%dm,' DMAX = ',kpp_const_fields%DMAX
+     ! WRITE(message,*) 'hm = ', kpp_const_fields%hm, 'zm = ', kpp_const_fields%zm,' &
+     !     dm = ', kpp_const_fields%dm,' DMAX = ', kpp_const_fields%DMAX
+     ! CALL mckpp_print(routine, message)
   ELSE     
      IF (kpp_const_fields%L_STRETCHGRID) THEN
         sumh = 0.0

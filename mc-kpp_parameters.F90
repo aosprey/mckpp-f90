@@ -2,12 +2,7 @@ MODULE mckpp_parameters
 
   INTEGER, PARAMETER :: & 
        max_nc_filename_len = 50, &
-       max_restart_filename_len = 50, & 
-       max_error_msg_len = 100
-
-  INTEGER, PARAMETER :: & 
-       nuout = 6, & 
-       nuerr = 0
+       max_restart_filename_len = 50
 
   ! These are read in from parameters namelist
   INTEGER :: & 

@@ -14,7 +14,8 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nzp1, nx_globe, ny_globe, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nzp1, nx_globe, ny_globe
 
   IMPLICIT NONE
   INTEGER ix,iy,iz,ipoint,sal_varid,status,lat_varid,lon_varid,z_varid,z_dimid,time_varid,&
@@ -32,6 +33,9 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
   REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_sal,last_timein
   CHARACTER(LEN=30) tmp_name
   REAL*4, allocatable :: sal_in(:,:,:,:),latitudes(:),longitudes(:),z(:)
+
+  CHARACTER(LEN=22) :: routine = "MCKPP_READ_SALINITY_3D"
+  CHARACTER(LEN=max_message_len) :: message
 
 ! Read in a NetCDF file containing a 
 ! time-varying salinity field at every model vertical level.
@@ -68,16 +72,18 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
   status=NF_INQ_DIM(sal_ncid,z_dimid,tmp_name,nz_file)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (NZP1.ne.nz_file) THEN
-     WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Input file for salinity climatology does not &
-          & have the correct number of vertical levels. ',&
-          'MCKPP_READ_SALINITY_3D: It should have ',NZP1,' but instead has ',nz_file
+     WRITE(message,*) "Input file for salinity climatology does not ", & 
+         "have the correct number of vertical levels."
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_file
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ELSE
      status=NF_GET_VAR_REAL(sal_ncid,z_varid,z)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ENDIF
   
-  WRITE(6,*) 'MCKPP_READ_SALINITY_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES")
 #ifdef MCKPP_CAM3
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(sal_ncid,'salinity clim','latitude','longitude','t',&
        kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
@@ -94,7 +100,6 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
   sal_time=(ndays_upd_sal)*(FLOOR(kpp_const_fields%time,8)*NINT(kpp_const_fields%spd,8)/&
        (kpp_const_fields%ndtupdsal*NINT(kpp_const_fields%dto,8)))+&
        (0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdsal)
-  !WRITE(nuout,*) sal_time,last_timein
   
   IF (sal_time .gt. last_timein) THEN
      IF (kpp_const_fields%L_PERIODIC_SAL) THEN 
@@ -102,25 +107,31 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
            sal_time=sal_time-kpp_const_fields%sal_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Time for which to read the salinity climatology exceeds &
-             & the last time in the netCDF file and L_PERIODIC_SAL has not been specified. &
-             & Attempting to read salinity climatology will lead to an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read the salinity climatology exceeds the last time ", &
+            "in the netCDF file and L_PERIODIC_SAL has not been specified."
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read salinity climatology will lead to an error, so aborting now."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
   
-  write(nuout,*) 'MCKPP_READ_SALINITY_3D: Reading salinity for time ',sal_time
+  WRITE(message,*) 'Reading salinity for time ',sal_time
+  CALL mckpp_print(routine, message) 
   start(4)=NINT((sal_time-first_timein)*kpp_const_fields%spd/(kpp_const_fields%dto*kpp_const_fields%ndtupdsal))+1
   status=NF_GET_VAR1_REAL(sal_ncid,time_varid,start(4),time_in)
   
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-sal_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_SALINITY_3D: Cannot find time',sal_time,'in salinity climatology input file'
-     write(nuerr,*) 'MCKPP_READ_SALINITY_3D: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time',sal_time,'in salinity climatology input file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(sal_ncid,sal_varid,start,count,sal_in)
-  WRITE(nuout,*) 'MCKPP_READ_SALINITY_3D: Read salinity for time ',sal_time
+  WRITE(message,*) 'Read salinity for time ',sal_time
+  CALL mckpp_print(routine, message) 
   status=NF_CLOSE(sal_ncid)
 
 #ifdef MCKPP_CAM3
@@ -140,7 +151,6 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
              kpp_3d_fields(ichnk)%Sref(1:ncol)
      ENDDO
   ENDDO
-  !WRITE(6,*) kpp_3d_fields(begchunk)%sal_clim(:,1)
 #else
   ! Convert from REAL*4 to REAL*(default precision). Put all (NX,NY) points
   ! into one long array with dimension NPTS.      

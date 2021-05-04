@@ -14,7 +14,8 @@ SUBROUTINE mckpp_read_ice()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif  
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe
 
   ! Read in ice concentrations from a user-provided netCDF file.
   ! Called _only_ if L_CLIMICE is TRUE in 3D_ocn.nml.
@@ -39,6 +40,9 @@ SUBROUTINE mckpp_read_ice()
        lon_dimid,lat_dimid,ntime_file,nlon_file,nlat_file
   CHARACTER(LEN=30) tmp_name
 
+  CHARACTER(LEN=14) :: routine = "MCKPP_READ_ICE"
+  CHARACTER(LEN=max_message_len) :: message
+  
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
@@ -87,21 +91,26 @@ SUBROUTINE mckpp_read_ice()
            iceclim_time=iceclim_time-kpp_const_fields%climice_period
         ENDDO
      ELSE
-        WRITE(nuout,*) 'Time for which to read ice exceeds the last time in the netCDF file &
-             & and L_PERIODIC_CLIMICE has not been specified.  Attempting to read ice will lead to &
-             & an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read ice exceeds the last time in the netCDF file", &
+            " and L_PERIODIC_CLIMICE has not been specified."
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read ice will lead to an error, so aborting now ..."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
       
-  write(nuout,*) 'MCKPP_READ_ICE: Reading climatological ICECONC for time ',iceclim_time
+  WRITE(message,*) 'Reading climatological ICECONC for time ',iceclim_time
+  CALL mckpp_print(routine, message) 
   start(3)=NINT((iceclim_time-first_timein)*kpp_const_fields%spd/&
        (kpp_const_fields%dto*kpp_const_fields%ndtupdice))+1      
   status=NF_GET_VAR1_REAL(ncid,time_varid,start(3),time_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-iceclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_ICE: Cannot find time,',iceclim_time,'in ice concentration climatology file'
-     write(nuerr,*) 'MCKPP_READ_ICE: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time,',iceclim_time,'in ice concentration climatology file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
 
@@ -135,7 +144,8 @@ SUBROUTINE mckpp_read_ice()
 #endif
      status=NF_INQ_VARID(ncid,'icedepth',varid)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     WRITE(nuout,*) 'MCKPP_READ_ICE: Reading climatological ICEDEPTH for time ',iceclim_time             
+     WRITE(message,*) 'Reading climatological ICEDEPTH for time ',iceclim_time             
+     CALL mckpp_print(routine, message) 
      status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
 #ifdef MCKPP_CAM3
@@ -161,7 +171,8 @@ SUBROUTINE mckpp_read_ice()
 #endif
      status=NF_INQ_VARID(ncid,'snowdepth',varid)
      IF (status.NE.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     WRITE(nuout,*) 'MCKPP_READ_ICE: Reading climatological SNOWDEPTH for time ',iceclim_time     
+     WRITE(message,*) 'Reading climatological SNOWDEPTH for time ',iceclim_time     
+     CALL mckpp_print(routine, message) 
      status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
      IF (status.NE.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)     
 #ifdef MCKPP_CAM3

@@ -14,6 +14,7 @@ SUBROUTINE mckpp_initialize_landsea()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts
  
   IMPLICIT NONE
@@ -29,12 +30,14 @@ SUBROUTINE mckpp_initialize_landsea()
 #endif
 
   INTEGER :: ipt,status,ncid_landsea
+  CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_LANDSEA"
+  CHARACTER(LEN=max_message_len) :: message
   
   IF (kpp_const_fields%L_LANDSEA) THEN
-     WRITE(6,*) kpp_const_fields%landsea_file
+     WRITE(message,*) "Reading", kpp_const_fields%landsea_file
+     CALL mckpp_print(routine, message)
      status=NF_OPEN(kpp_const_fields%landsea_file,0,ncid_landsea)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)    
-     WRITE(6,*) 'Initialized landsea file',ncid_landsea
      
 #ifdef MCKPP_CAM3
      IF (masterproc) THEN 
@@ -43,7 +46,8 @@ SUBROUTINE mckpp_initialize_landsea()
      ENDIF
      CALL scatter_field_to_chunk(1,1,1,PLON,ocdepth,ocdepth_chunk(1,begchunk))
      CALL scatter_field_to_chunk(1,1,1,PLON,landsea,landsea_chunk(1,begchunk))
-     WRITE(6,*) ocdepth_chunk(2,begchunk),landsea_chunk(2,begchunk)
+     WRITE(message,*) ocdepth_chunk(2,begchunk),landsea_chunk(2,begchunk)
+     CALL mckpp_print(routine, message)
      DO ichnk=begchunk,endchunk
         ncol=get_ncols_p(ichnk)
         kpp_3d_fields(ichnk)%ocdepth(:)=ocdepth_chunk(:,ichnk)
@@ -67,7 +71,7 @@ SUBROUTINE mckpp_initialize_landsea()
      ENDDO     
      call MCKPP_READ_PAR(ncid_landsea,'max_depth',1,1,kpp_3d_fields%ocdepth)
 #endif     
-     WRITE(6,*) 'Read landsea mask'     
+     CALL mckpp_print(routine, "Read landsea mask") 
      status=NF_CLOSE(ncid_landsea)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ELSE
@@ -76,5 +80,4 @@ SUBROUTINE mckpp_initialize_landsea()
      ENDDO
   ENDIF
   
-  RETURN
 END SUBROUTINE mckpp_initialize_landsea

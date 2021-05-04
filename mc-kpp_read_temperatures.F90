@@ -14,7 +14,8 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -33,6 +34,9 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
   REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_ocnT,last_timein
   CHARACTER(LEN=30) tmp_name
 
+  CHARACTER(LEN=26) :: routine = "MCKPP_READ_TEMPERATURES_3D"
+  CHARACTER(LEN=max_message_len) :: message
+  
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
@@ -62,27 +66,29 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
   status=NF_INQ_DIM(ocnT_ncid,z_dimid,tmp_name,nz_file)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (NZP1.ne.nz_file) THEN
-     WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Input file for ocean temperature climatology &
-          & does not have the correct number of vertical levels. &
-          & It should have ',NZP1,' but instead has ',nz_file
+     WRITE(message,*) "Input file for ocean temperature climatology does not have the ", & 
+         "correct number of vertical levels."
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_file
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ELSE
      status=NF_GET_VAR_REAL(ocnT_ncid,z_varid,z)
      IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     WRITE(nuout,*) 'Read in depths from the ocean temperature climatology input file'
+     CALL mckpp_print(routine, "Read in depths from the ocean temperature climatology input file")
   ENDIF
 
 #ifdef MCKPP_CAM3
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'  
+  CALL mckpp_print(routine, 'Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES')
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ocnT_ncid,'ocean temp clim','latitude','longitude','t',&
        kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),first_timein,&
        last_timein,time_varid)
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  CALL mckpp_print(routine, 'Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES')
 #else
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  CALL mckpp_print(routine, 'Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES')
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ocnT_ncid,'ocean temp clim','latitude','longitude','t',kpp_3d_fields%dlon(1),&
-       kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+      kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
+  CALL mckpp_print(routine, 'Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES')
 #endif
   
   status=NF_INQ_VARID(ocnT_ncid,'temperature',ocnT_varid)
@@ -92,30 +98,33 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
   ocnT_time=(ndays_upd_ocnT)*(FLOOR(kpp_const_fields%time,8)*NINT(kpp_const_fields%spd,8)/&
        (kpp_const_fields%ndtupdocnT*NINT(kpp_const_fields%dto,8)))+&
        (0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdocnT)
-  WRITE(nuout,*) ocnT_time,last_timein
-     
+
   IF (ocnT_time .gt. last_timein) THEN
      IF (kpp_const_fields%L_PERIODIC_OCNT) THEN 
         DO WHILE (ocnT_time .gt. last_timein)
            ocnT_time=ocnT_time-kpp_const_fields%ocnT_period
         ENDDO
      ELSE
-        WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Time for which to read the ocean temperatures exceeds &
-             & the last time in the netCDF file and L_PERIODIC_OCNT has not been specified.  Attempting to &
-             & read ocean temperatures will lead to an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read the ocean temperatures exceeds the last time ", &
+            "in the netCDF file and L_PERIODIC_OCNT has not been specified."
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read ocean temperatures will lead to an error, so aborting now."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
 
-  write(nuout,*) 'MCKPP_READ_TEMPERATUERS_3D: Reading ocean temperature for time ',ocnT_time
+  WRITE(message,*) 'Reading ocean temperature for time ',ocnT_time
+  CALL mckpp_print(routine, message)
   start(4)=NINT((ocnT_time-first_timein)*kpp_const_fields%spd/(kpp_const_fields%dto*kpp_const_fields%ndtupdocnT))+1
   status=NF_GET_VAR1_REAL(ocnT_ncid,time_varid,start(4),time_in)
   
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-ocnT_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: Cannot find time ',ocnT_time,&
-          ' in ocean temperature climatology input file'
-     write(nuerr,*) 'MCKPP_READ_TEMPERATURES_3D: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time ', ocnT_time, ' in ocean temperature climatology input file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(ocnT_ncid,ocnT_varid,start,count,ocnT_in)
@@ -164,7 +173,8 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe
 
   IMPLICIT NONE
   
@@ -183,6 +193,9 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
   INTEGER varid,time_varid,lat_varid,lon_varid,time_dimid,lat_dimid,lon_dimid,&
        nlat_file,nlon_file,ntime_file,count(3),start(3),ix,iy,ipoint
   CHARACTER(LEN=30) tmp_name
+
+  CHARACTER(LEN=30) :: routine = "MCKPP_READ_TEMPERATURES_BOTTOM"
+  CHARACTER(LEN=max_message_len) :: message
   
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
@@ -208,7 +221,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
   status=NF_INQ_VARID(ncid,'T',varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
 #ifdef MCKPP_CAM3 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,'bottom temp climatology','latitude','longitude',&
        't',kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
@@ -217,7 +230,7 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,'bottom temp climatology','latitude','longitude',&
        't',kpp_3d_fields%dlon(1),kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
 #endif
-  WRITE(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'
+  CALL mckpp_print(routine, "Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES")
   
   bottomclim_time=kpp_const_fields%time+0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdbottom
   IF (bottomclim_time .gt. last_timein) THEN
@@ -226,23 +239,27 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
            bottomclim_time=bottomclim_time-kpp_const_fields%bottom_temp_period
         ENDDO
      ELSE
-        WRITE(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Time for which to read bottom temperature exceeds &
-             & the last time in the netCDF file and L_PERIODIC_BOTTOM_TEMP has not been specified.  &
-             & Attempting to read bottom temperature will lead to an error, so aborting now...'
+        WRITE(message,*) "Time for which to read bottom temperature exceeds the last time ", & 
+            "in the netCDF file and L_PERIODIC_BOTTOM_TEMP has not been specified."
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read bottom temperature will lead to an error, so aborting now."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
  
-  write(nuout,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Reading climatological bottom temp for time ',bottomclim_time
+  WRITE(message,*) 'Reading climatological bottom temp for time ',bottomclim_time
   start(3)=NINT((bottomclim_time-first_timein)*kpp_const_fields%spd/&
        (kpp_const_fields%dto*kpp_const_fields%ndtupdbottom))+1
   
   status=NF_GET_VAR1_REAL(ncid,time_varid,start(3),time_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-bottomclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: Cannot find time',bottomclim_time,&
-          'in bottom temperature climatology file'
-     write(nuerr,*) 'MCKPP_READ_TEMPERATURES_BOTTOM: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time', bottomclim_time, &
+         'in bottom temperature climatology file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was', time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)

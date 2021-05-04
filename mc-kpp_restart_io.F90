@@ -2,11 +2,16 @@
 SUBROUTINE MCKPP_RESTART_IO_READ()
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
-  USE mckpp_parameters, ONLY: npts, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: npts, nzp1
   
   IMPLICIT NONE
   
-  WRITE(nuout,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  CHARACTER(LEN=21) :: routine = "MCKPP_RESTART_IO_READ"
+  CHARACTER(LEN=max_message_len) :: message
+  
+  WRITE(message,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  CALL mckpp_print(routine, message)
   IF ( REAL(NPTS)*REAL(NZP1) .LT. 3000000. ) THEN   
      OPEN(30,FILE=kpp_const_fields%restart_infile,status='unknown',form='unformatted')
      READ(30) kpp_const_fields%time,kpp_3d_fields%U,kpp_3d_fields%X,kpp_3d_fields%CP,&
@@ -27,9 +32,12 @@ SUBROUTINE MCKPP_RESTART_IO_READ()
   ENDIF
 
   IF (abs(kpp_const_fields%time-kpp_const_fields%startt) .GT. 1.e-4) THEN 
-     WRITE(nuerr,*) 'Start time doesn''t match the restart record'
-     WRITE(nuerr,*) 'Start time in restart record = ',kpp_const_fields%time
-     WRITE(nuerr,*) 'Start time in namelist = ',kpp_const_fields%startt
+     WRITE(message,*) 'Start time doesn''t match the restart record'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'Start time in restart record = ',kpp_const_fields%time
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'Start time in namelist = ',kpp_const_fields%startt
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   
@@ -39,9 +47,13 @@ END SUBROUTINE MCKPP_RESTART_IO_READ
 SUBROUTINE MCKPP_RESTART_IO_WRITE()
  
   USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
-  USE mckpp_parameters, ONLY: npts, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_parameters, ONLY: npts, nzp1
      
   IMPLICIT NONE
+  
+  CHARACTER(LEN=22) :: routine = "MCKPP_RESTART_IO_WRITE"
+  CHARACTER(LEN=max_message_len) :: message
     
   ! When the number of points in the model (NX*NY*NZP1) becomes
   ! quite large, we exceed the maximum size for Fortran unformatted
@@ -49,7 +61,8 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE()
   ! works around this by splitting the restart file in two.
   ! %Us and %Xs are the largest fields, so they get their own file.
 
-  WRITE(nuout,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  WRITE(message,*) 'Total number of points = ',REAL(NPTS)*REAL(NZP1)
+  CALL mckpp_print(routine, message)
   IF ( REAL(NPTS)*REAL(NZP1) .LT. 3000000. ) THEN
      OPEN(31,FILE=kpp_const_fields%restart_outfile,status='unknown',form='unformatted')
      WRITE(31) kpp_const_fields%time,kpp_3d_fields%U,kpp_3d_fields%X,kpp_3d_fields%CP,&
@@ -89,7 +102,8 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1, nzp1tmax, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1, nzp1tmax
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -115,6 +129,10 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   REAL*4, allocatable :: lon_out(:),lat_out(:),z_out(:)
   REAL*4 :: delta
 
+  CHARACTER(LEN=29) :: routine = "MCKPP_RESTART_IO_WRITE_NETCDF"
+  CHARACTER(LEN=max_message_len) :: message
+  
+
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 
@@ -134,12 +152,11 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   ALLOCATE( z_out(1:NZP1tmax+1) ) 
 
   WRITE(netcdf_restart_outfile,'(A17,A3)') kpp_const_fields%restart_outfile,'.nc'
-  WRITE(nuout,*) netcdf_restart_outfile
 
   status=NF_CREATE(netcdf_restart_outfile,NF_CLOBBER,ncid)
-  WRITE(nuout,*) status,netcdf_restart_outfile
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR
-  WRITE(nuout,*) 'Created file '//netcdf_restart_outfile
+  WRITE(message,*) 'Created file ', netcdf_restart_outfile
+  CALL mckpp_print(routine, message)
 #ifdef MCKPP_CAM3
   IF (my_nx .gt. 1) delta=kpp_global_fields%longitude(2)-kpp_global_fields%longitude(1)
 #else
@@ -158,7 +175,6 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(6),2,dim_varids(6),'intcnt','unitless',0.0,' ')
 
   DO ivar=1,nvars
-     WRITE(nuout,*) ivar
      SELECT CASE(ivar)
      CASE (1)
         CALL MCKPP_NCDF_DEF_VAR(ncid,varids(ivar),1,(/dim_dimids(5)/),'time','days','time')
@@ -256,7 +272,6 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
 ENDIF ! End of masterproc section
 #endif
   DO ivar=1,nvars
-     WRITE(nuout,*) ivar
      SELECT CASE(ivar)
      CASE(1)
 #ifdef MCKPP_CAM3
@@ -273,7 +288,6 @@ ENDIF ! End of masterproc section
            ncol=get_ncols_p(ichnk)
            temp_chunk(1:ncol,ichnk,1:NZP1)=kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,1)
         ENDDO
-        !WRITE(nuout,*) temp_chunk
         CALL MCKPP_REFORMAT_MASK_OUTPUT_CHUNK(temp_chunk,NZP1,1e20,temp_chunk)
         CALL gather_chunk_to_field(1,1,NZP1,PLON,temp_chunk(1,begchunk,1),temp_global_3d(:,:,:,1))
         IF (masterproc) THEN
@@ -686,7 +700,8 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
 
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -712,6 +727,9 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF()
          'rho  ','hmix ','kmix ','Sref ','SSref','Ssurf',&
          'Tref ','old  ','new  ','Us   ','Vs   ','Ts   ','Ss   ','hmixd'/)
 
+  CHARACTER(LEN=28) :: routine = "MCKPP_RESTART_IO_READ_NETCDF"
+  CHARACTER(LEN=max_message_len) :: message
+
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 
@@ -727,33 +745,37 @@ SUBROUTINE MCKPP_RESTART_IO_READ_NETCDF()
   ALLOCATE( temp_twod(my_nx*my_ny,1:NZP1) )
      
   netcdf_restart_infile = TRIM(ADJUSTL(kpp_const_fields%restart_infile)) // '.nc'
-  WRITE(nuout,*) netcdf_restart_infile
-
   status=NF_OPEN(netcdf_restart_infile,NF_NOWRITE,ncid)
   
   ! Conduct safety checks on the restart file for number of longitudes, latitudes and vertical points
   status=NF_INQ_DIMID(ncid,'longitude',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nlon)
   IF (file_nlon .NE. my_nx) THEN
-     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of longitudes in restart file is ',file_nlon,&
-          ' but number of longitudes in the model is ',my_nx,'.  &
-          & Please correct either the restart file or the model in order to continue.'
-  !   CALL MCKPP_ABORT()
+     WRITE(message,*) 'Number of longitudes in restart file is ', file_nlon, &
+          ' but number of longitudes in the model is ' ,my_nx
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'Please correct either the restart file or the model in order to continue.'
+     CALL mckpp_print_error(routine, message) 
+     ! CALL MCKPP_ABORT()
   ENDIF
   status=NF_INQ_DIMID(ncid,'latitude',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nlat)
   IF (file_nlat .NE. my_ny) THEN
-     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of latitudes in restart file is ',file_nlat,&
-          ' but number of latitudes in the model is ',my_ny,'.  &
-          & Please correct either the restart file or the model in order to continue.'
+     WRITE(message,*) 'Number of latitudes in restart file is ', file_nlat, &
+         ' but number of latitudes in the model is ', my_ny
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'Please correct either the restart file or the model in order to continue.'
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_INQ_DIMID(ncid,'z',dimids(1))
   status=NF_INQ_DIMLEN(ncid,dimids(1),file_nz)
   IF (file_nz .NE. NZP1) THEN
-     WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Number of depths in restart file is ',file_nz,&
-          ' but number of depths in the model is ',NZP1,'.  &
-          & Please correct either the restart file or the model in order to continue.'
+     WRITE(message,*) 'Number of depths in restart file is ', file_nz, &
+         ' but number of depths in the model is ', NZP1
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'Please correct either the restart file or the model in order to continue.'
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
 
@@ -784,9 +806,12 @@ DO ivar=1,nvars
       IF (masterproc) THEN
 #endif
       IF (ABS(kpp_const_fields%time-kpp_const_fields%startt) .GT. 1e-4) THEN
-         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time does not match the restart record.'
-         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in restart record = ',kpp_const_fields%time
-         WRITE(nuerr,*) 'MCKPP_RESTART_IO_READ_NETCDF: Start time in namelist = ',kpp_const_fields%startt
+         WRITE(message,*) 'Start time does not match the restart record.'
+         CALL mckpp_print_error(routine, message) 
+         WRITE(message,*) 'Start time in restart record = ',kpp_const_fields%time
+         CALL mckpp_print_error(routine, message) 
+         WRITE(message,*) 'Start time in namelist = ',kpp_const_fields%startt
+         CALL mckpp_print_error(routine, message) 
          ! CALL MCKPP_ABORT
       ENDIF
 #ifdef MCKPP_CAM3

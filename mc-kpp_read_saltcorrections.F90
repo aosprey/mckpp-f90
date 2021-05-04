@@ -14,7 +14,8 @@ SUBROUTINE MCKPP_READ_SFCORR_2D()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
 
   IMPLICIT NONE
   INTEGER start(3),count(3)
@@ -31,9 +32,11 @@ SUBROUTINE MCKPP_READ_SFCORR_2D()
   REAL :: sfcorr_time
   REAL*4 ixx,jyy,first_timein,time_in,ndays_upd_sfcorr,last_timein
   REAL*4, ALLOCATABLE :: sfcorr_twod_in(:,:,:),latitudes(:),longitudes(:),z(:)
-
   CHARACTER(LEN=30) tmp_name
   
+  CHARACTER(LEN=20) :: routine = "MCKPP_READ_SFCORR_2D"
+  CHARACTER(LEN=max_message_len) :: message
+    
   ! Read in a NetCDF file containing a time-varying salinity correction
   ! at the surface only.  Frequency of read is controlled by ndtupdsfcorr
   ! in the namelist
@@ -63,16 +66,16 @@ SUBROUTINE MCKPP_READ_SFCORR_2D()
   count(:)=(/my_nx,my_ny,1/)
 
 #ifdef MCKPP_CAM3  
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_2D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  ! CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(sfcorr_ncid,'salinity correction','latitude','longitude',&
        't',kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
        first_timein,last_timein,time_varid)
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_2D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'        
+  ! CALL mckpp_print(routine, "Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
 #else
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_2D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  ! CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(sfcorr_ncid,'salinity correction','latitude','longitude',&
        't',kpp_3d_fields%dlon(1),kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_2D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'            
+  ! CALL mckpp_print(routine, "Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
 #endif
  
   status=NF_INQ_VARID(sfcorr_ncid,'sfcorr',sfcorr_varid)
@@ -89,21 +92,27 @@ SUBROUTINE MCKPP_READ_SFCORR_2D()
            sfcorr_time=sfcorr_time-kpp_const_fields%sfcorr_period
         ENDDO
      ELSE
-        WRITE(nuerr,*) 'MCKPP_READ_SFCORR_2D: Time for which to read the salinity corrections &
-             & exceeds the last time in the netCDF file and L_PERIODIC_SFCORR has not been specified. &
-             & Attempting to read salinity corrections will lead to an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read the salinity corrections exceeds the last time ", &
+           "in the netCDF file and L_PERIODIC_SFCORR has not been specified. "
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read salinity corrections will lead to an error, ", &
+           "so aborting now ..."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
 
-  WRITE(nuout,*) 'MCKPP_READ_SFCORR_2D: Reading salinity correction for time ',sfcorr_time
+  WRITE(message,*) 'Reading salinity correction for time ',sfcorr_time
+  CALL mckpp_print(routine, message)
   start(3)=NINT((sfcorr_time-first_timein)*kpp_const_fields%spd/(kpp_const_fields%dto*kpp_const_fields%ndtupdsfcorr))+1
   status=NF_GET_VAR1_REAL(sfcorr_ncid,time_varid,start(3),time_in)
   
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-sfcorr_time) .GT. 0.03*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     write(nuerr,*) 'MCKPP_READ_SFCORR_2D: Cannot find time',sfcorr_time,'in flux-correction input file'
-     write(nuerr,*) 'MCKPP_READ_SFCORR_3D: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time',sfcorr_time,'in flux-correction input file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(sfcorr_ncid,sfcorr_varid,start,count,sfcorr_twod_in)
@@ -142,7 +151,8 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1, nuout, nuerr
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
       
   IMPLICIT NONE
 #include <netcdf.inc>
@@ -161,6 +171,9 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
   CHARACTER(LEN=30) tmp_name
   REAL*4, allocatable :: sfcorr_in(:,:,:,:),longitudes(:),latitudes(:),z(:)
   
+  CHARACTER(LEN=20) :: routine = "MCKPP_READ_SFCORR_3D"
+  CHARACTER(LEN=max_message_len) :: message
+
   ! Read in a NetCDF file containing a 
   ! time-varying salinity correction at every model vertical level.
   ! Frequency of read is controlled by ndtupdsfcorr in the namelist
@@ -196,9 +209,10 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
   status=NF_INQ_DIM(sfcorr_ncid,z_dimid,tmp_name,nz_file)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (NZP1.ne.nz_file) THEN
-     WRITE(nuerr,*) 'MCKPP_READ_SFCORR_3D: Input file for salinity corrections does not have the &
-          & correct number of vertical levels. ',&
-          'It should have ',NZP1,' but instead has ',nz_file
+     WRITE(message,*) "Input file for salinity corrections does not have the correct number of vertical levels."
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_file
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ELSE
      status=NF_GET_VAR_REAL(sfcorr_ncid,z_varid,z)
@@ -206,25 +220,26 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
   ENDIF
 
 #ifdef MCKPP_CAM3
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  ! CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(sfcorr_ncid,'salinity correction','latitude','longitude',&
        't',kpp_global_fields%longitude(1),kpp_global_fields%latitude(1),start(1),start(2),&
        first_timein,last_timein,time_varid)
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'        
+  ! CALL mckpp_print(routine, "Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
 
 #else
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_3D: Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES'    
+  ! CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(sfcorr_ncid,'salinity correction','latitude','longitude',&
        't',kpp_3d_fields%dlon(1),kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
-  !WRITE(nuout,*) 'MCKPP_READ_SFCORR_3D: Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES'        
+  ! CALL mckpp_print(routine, "Returned from MCKPP_DETERMINE_NETCDF_BOUNDARIES") 
 #endif
   status=NF_INQ_VARID(sfcorr_ncid,'sfcorr',sfcorr_varid)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
 !  ndays_upd_sfcorr = kpp_const_fields%ndtupdsfcorr*kpp_const_fields%dto/kpp_const_fields%spd
-!  WRITE(nuout,*) ndays_upd_sfcorr,FLOOR(kpp_const_fields%time,8)*NINT(kpp_const_fields%spd,8),&
+!  WRITE(message,*) ndays_upd_sfcorr,FLOOR(kpp_const_fields%time,8)*NINT(kpp_const_fields%spd,8),&
 !       kpp_const_fields%ndtupdsfcorr*NINT(kpp_const_fields%dto,8),&
 !       0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdsfcorr
+!  CALL mckpp_print_error(routine, message) 
 !  sfcorr_time=(ndays_upd_sfcorr)*FLOOR(kpp_const_fields%time,8)*NINT(kpp_const_fields%spd,8)/&
 !       FLOAT(kpp_const_fields%ndtupdsfcorr*NINT(kpp_const_fields%dto,8))+&
 !       (0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdsfcorr)  
@@ -236,22 +251,28 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
            sfcorr_time=sfcorr_time-kpp_const_fields%sfcorr_period
         ENDDO
      ELSE
-        WRITE(nuerr,*) 'MCKPP_READ_SFCORR_3D: Time for which to read the salinity corrections exceeds the &
-             & last time in the netCDF file and L_PERIODIC_SFCORR has not been specified. &
-             & Attempting to read salinity corrections will lead to an error, so aborting now ...'
+        WRITE(message,*) "Time for which to read the salinity corrections exceeds the last time ", &
+           "in the netCDF file and L_PERIODIC_SFCORR has not been specified. "
+        CALL mckpp_print_error(routine, message) 
+        WRITE(message,*) "Attempting to read salinity corrections will lead to an error, ", &
+           "so aborting now ..."
+        CALL mckpp_print_error(routine, message) 
         CALL MCKPP_ABORT()
      ENDIF
   ENDIF
   
-  write(nuout,*) 'MCKPP_READ_SFCORR_3D: Reading salinity correction for time ',sfcorr_time
+  WRITE(message,*) 'Reading salinity correction for time ',sfcorr_time
+  CALL mckpp_print(routine, message)
   start(4)=NINT((sfcorr_time-first_timein)*kpp_const_fields%spd/&
        (kpp_const_fields%dto*kpp_const_fields%ndtupdsfcorr))+1  
   status=NF_GET_VAR1_REAL(sfcorr_ncid,time_varid,start(4),time_in)
       
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   IF (abs(time_in-sfcorr_time) .GT. 0.01) THEN
-     write(nuerr,*) 'MCKPP_READ_SFCORR_3D: Cannot find time',sfcorr_time,'in flux-correction input file'
-     write(nuerr,*) 'MCKPP_READ_SFCORR_3D: The closest I came was',time_in
+     WRITE(message,*) 'Cannot find time',sfcorr_time,'in flux-correction input file'
+     CALL mckpp_print_error(routine, message) 
+     WRITE(message,*) 'The closest I came was',time_in
+     CALL mckpp_print_error(routine, message) 
      CALL MCKPP_ABORT()
   ENDIF
   status=NF_GET_VARA_REAL(sfcorr_ncid,sfcorr_varid,start,count,sfcorr_in)

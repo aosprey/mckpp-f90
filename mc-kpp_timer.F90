@@ -1,10 +1,11 @@
 MODULE mckpp_timer
 
-  USE mckpp_parameters, ONLY: nuout, nuerr, max_error_msg_len
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   
   IMPLICIT NONE 
 
-  PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, mckpp_print_timers, mckpp_define_new_timer
+  PUBLIC :: mckpp_initialize_timers, mckpp_start_timer, mckpp_stop_timer, &
+      mckpp_print_timers, mckpp_define_new_timer
 
   PRIVATE
 
@@ -22,6 +23,8 @@ MODULE mckpp_timer
 
   INTEGER :: timers_allocated, index_timer, index_total
 
+  CHARACTER(LEN=11) :: routine = "MCKPP_TIMER"
+  CHARACTER(LEN=max_message_len) :: message
 
 CONTAINS 
 
@@ -71,8 +74,9 @@ CONTAINS
     END IF 
 
     IF (index .NE. -1) THEN     
-      IF (timers(index)%running .EQV. .TRUE.) THEN       
-        WRITE(nuerr,*) 'KPP TIMER : Trying to start timer ', name, ' when it is already running.'
+      IF (timers(index)%running .EQV. .TRUE.) THEN
+        WRITE(message,*) "Trying to start timer ", TRIM(name), " when it is already running."
+        CALL mckpp_print_error(routine, message) 
       ELSE 
         timers(index)%start_time = get_current_time()
         timers(index)%running = .TRUE.
@@ -91,16 +95,16 @@ CONTAINS
   
     REAL(kind=8) time
     INTEGER :: index 
-    CHARACTER(LEN=max_error_msg_len) :: error_msg
-
+ 
     time = get_current_time()
 
-    index = lookup_timer_index(name) 
-    error_msg = 'KPP TIMER : Trying to stop timer '//name//' when it is not running.'
+    index = lookup_timer_index(name)
+    WRITE(message,*) "Trying to stop timer ", TRIM(name), " when it is not running."
+    
     IF (index .EQ. -1) THEN  
-      WRITE(nuerr,*) error_msg
+      CALL mckpp_print_error(routine, message) 
     ELSE IF (timers(index)%running .EQV. .FALSE.) THEN 
-      WRITE(nuerr,*) error_msg
+      CALL mckpp_print_error(routine, message) 
     ELSE 
       timers(index)%elapsed_time = timers(index)%elapsed_time + & 
                                    (time - timers(index)%start_time) 
@@ -109,7 +113,6 @@ CONTAINS
 
     timers(index_timer)%elapsed_time = timers(index_timer)%elapsed_time + & 
                                       (get_current_time() - time) 
-
   END SUBROUTINE mckpp_stop_timer
 
   
@@ -123,10 +126,12 @@ CONTAINS
     timers(index_total)%elapsed_time = time - timers(index_total)%start_time
 
     ! Print statistics 
-    WRITE(nuout,*) '**** KPP TIMER STATISTICS ****'
-    WRITE(nuout,'(A10,20X,2X,A22)') 'Timer name', 'Elapsed_time(s)' 
+    CALL mckpp_print(routine, "**** KPP TIMER STATISTICS ****")
+    WRITE(message,'(A10,20X,2X,A22)') 'Timer name', 'Elapsed_time(s)' 
+    CALL mckpp_print("", message) 
     DO i = 1, timers_allocated
-      WRITE(nuout,'(A30,2X,F11.3)') timers(i)%name, timers(i)%elapsed_time
+      WRITE(message,'(A30,2X,F11.3)') timers(i)%name, timers(i)%elapsed_time
+      CALL mckpp_print("", message)     
     END DO 
 
   END SUBROUTINE mckpp_print_timers 
@@ -139,7 +144,7 @@ CONTAINS
 
     index = -1 
     IF (timers_allocated .GE. max_timers) THEN 
-      WRITE(nuerr,*) 'KPP TIMER : Reached maximum number of timers'
+      CALL mckpp_print_error(routine, "Reached maximum number of timers") 
       RETURN
     END IF 
 
@@ -158,8 +163,9 @@ CONTAINS
     lookup_timer_index = -1
 
     ! Check length of timer name
-    IF (LEN(name) .GT. max_name_length) THEN 
-      WRITE(nuerr,*) 'KPP TIMER : Name of timer must not exceed ', max_name_length, ' characters: ', name
+    IF (LEN(name) .GT. max_name_length) THEN
+      WRITE(message,*) 'Name of timer must not exceed ', max_name_length, ' characters: ', name
+      CALL mckpp_print_error(routine, message)
       RETURN
     ENDIF
    
