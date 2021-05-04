@@ -74,9 +74,9 @@ CONTAINS
     CHARACTER(LEN=*) :: string
 
 #ifdef MCKPP_CAM3
-    IF (masterproc) THEN WRITE(unit,*) string
+    IF (masterproc) THEN WRITE(unit,*) TRIM(string)
 #else
-    WRITE(unit,*) string
+    WRITE(unit,*) TRIM(string)
 #endif
 
   END SUBROUTINE mckpp_write
