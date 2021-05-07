@@ -28,7 +28,7 @@ SUBROUTINE mckpp_initialize_geography()
   
   ! Local Variables
   REAL :: sumh, hsum, dfac, sk
-  REAL*4, DIMENSION(nz) :: vgrid_in
+  REAL, DIMENSION(nz) :: vgrid_in
   INTEGER :: i, ipt, ncid
   CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_GEOGRAPHY"
   CHARACTER(LEN=max_message_len) :: message
@@ -37,16 +37,13 @@ SUBROUTINE mckpp_initialize_geography()
   IF (kpp_const_fields%L_VGRID_FILE) THEN 
      WRITE(message,*) "Reading vertical grid from file ", kpp_const_fields%vgrid_file
      CALL mckpp_print(routine, message)
-
+     
      CALL mckpp_netcdf_open(routine, kpp_const_fields%vgrid_file, ncid)     
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "d", vgrid_in)
-     kpp_const_fields%dm(1:NZ)=vgrid_in     
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "h", vgrid_in)
-     kpp_const_fields%hm(1:NZ)=vgrid_in
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "z", vgrid_in)
-     kpp_const_fields%zm(1:NZ)=vgrid_in
+     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "d", kpp_const_fields%dm(1:NZ))
+     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "h", kpp_const_fields%hm(1:NZ))
+     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "z", kpp_const_fields%zm(1:NZ))
      CALL mckpp_netcdf_close(routine, kpp_const_fields%vgrid_file, ncid)
-
+     
      kpp_const_fields%DMAX=-1.*(kpp_const_fields%zm(NZ)-kpp_const_fields%hm(NZ))
   ELSE     
      IF (kpp_const_fields%L_STRETCHGRID) THEN
