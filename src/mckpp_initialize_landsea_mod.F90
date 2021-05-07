@@ -20,40 +20,67 @@ SUBROUTINE mckpp_initialize_landsea()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, &
+      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-  USE mckpp_parameters, ONLY: npts
+  USE mckpp_parameters, ONLY: npts, nx, ny
  
   IMPLICIT NONE
  
-#include <netcdf.inc>
 #ifdef MCKPP_CAM3
   REAL(r8) :: landsea(PLON,PLAT)
   REAL(r8) :: ocdepth(PLON,PLAT)
   REAL(r8) :: landsea_chunk(PCOLS,begchunk:endchunk),ocdepth_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk, icol, ncol
 #else
-  REAL :: landsea(npts)
+  REAL, DIMENSION(npts) :: landsea, ocdepth
 #endif
 
-  INTEGER :: ipt,status,ncid_landsea
+  INTEGER :: ncid, offset_lon, offset_lat, i, j, ipt
+  INTEGER, DIMENSION(2) :: start, count
+  REAL, DIMENSION(nx) :: lon_in
+  REAL, DIMENSION(ny) :: lat_in
   CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_LANDSEA"
   CHARACTER(LEN=max_message_len) :: message
   
   IF (kpp_const_fields%L_LANDSEA) THEN
      WRITE(message,*) "Reading", kpp_const_fields%landsea_file
      CALL mckpp_print(routine, message)
-     status=NF_OPEN(kpp_const_fields%landsea_file,0,ncid_landsea)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)    
      
 #ifdef MCKPP_CAM3
-     IF (masterproc) THEN 
-        CALL MCKPP_READ_PAR(ncid_landsea,'lsm',1,1,landsea)        
-        CALL MCKPP_READ_PAR(ncid_landsea,'max_depth',1,1,ocdepth)
+     IF (masterproc) THEN
+#endif      
+       CALL mckpp_netcdf_open(routine, kpp_const_fields%landsea_file, ncid)
+       CALL mckpp_netcdf_determine_boundaries(routine, kpp_const_fields%landsea_file, ncid, &
+           kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat)
+
+#ifndef MCKPP_CAM3       
+       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
+           "longitude", lon_in, offset_lon)
+       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
+           "latitude", lat_in, offset_lat)
+       DO j = 1, ny 
+         DO i =1, nx
+           ipt = (i-1)*nx + j
+            kpp_3d_fields%dlon(ipt) = lon_in(i) 
+            kpp_3d_fields%dlat(ipt) = lat_in(j)
+         ENDDO
+       ENDDO
+#endif      
+       start(1) = offset_lon
+       start(2) = offset_lat
+       count(1) = nx
+       count(2) = ny
+       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
+           "lsm", landsea, start, count)
+       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
+           "maxdepth", ocdepth, start, count)       
+       CALL mckpp_netcdf_close(routine, kpp_const_fields%landsea_file, ncid)
+     
+#ifdef MCKPP_CAM3
      ENDIF
      CALL scatter_field_to_chunk(1,1,1,PLON,ocdepth,ocdepth_chunk(1,begchunk))
      CALL scatter_field_to_chunk(1,1,1,PLON,landsea,landsea_chunk(1,begchunk))
-     WRITE(message,*) ocdepth_chunk(2,begchunk),landsea_chunk(2,begchunk)
-     CALL mckpp_print(routine, message)
      DO ichnk=begchunk,endchunk
         ncol=get_ncols_p(ichnk)
         kpp_3d_fields(ichnk)%ocdepth(:)=ocdepth_chunk(:,ichnk)
@@ -67,19 +94,15 @@ SUBROUTINE mckpp_initialize_landsea()
         ENDDO
      ENDDO
 #else
-     call MCKPP_READ_PAR(ncid_landsea,'lsm',1,1,landsea)
      DO ipt=1,npts
         IF (landsea(ipt) .EQ. 1.0) THEN
            kpp_3d_fields%L_OCEAN(ipt)=.FALSE.
         ELSE
            kpp_3d_fields%L_OCEAN(ipt)=.TRUE.
         ENDIF
-     ENDDO     
-     call MCKPP_READ_PAR(ncid_landsea,'max_depth',1,1,kpp_3d_fields%ocdepth)
+      ENDDO
+      kpp_3d_fields%ocdepth = ocdepth
 #endif     
-     CALL mckpp_print(routine, "Read landsea mask") 
-     status=NF_CLOSE(ncid_landsea)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   ELSE
      DO ipt=1,npts
         kpp_3d_fields%L_OCEAN(ipt)=.FALSE.
