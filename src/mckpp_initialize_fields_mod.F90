@@ -73,19 +73,18 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
      kpp_3d_fields(ichnk)%dlat(:)=clat1*360./kpp_const_fields%twopi
      kpp_3d_fields(ichnk)%dlon(:)=clon1*360./kpp_const_fields%twopi    
   ENDDO
-  IF (kpp_const_fields%L_LANDSEA) THEN
-     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_LANDSEA")
-     CALL MCKPP_INITIALIZE_LANDSEA()
-     CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_LANDSEA")
-  ENDIF
-#elif CFS
-  IF (L_LANDSEA) CALL read_landsea_global()
 #else
+  kpp_3d_fields%dlat(1)=kpp_const_fields%alat
+  kpp_3d_fields%dlon(1)=kpp_const_fields%alon
+#endif
+  
   IF (kpp_const_fields%L_LANDSEA) THEN
      CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_LANDSEA")
-     kpp_3d_fields%dlat(1)=kpp_const_fields%alat
-     kpp_3d_fields%dlon(1)=kpp_const_fields%alon
      CALL MCKPP_INITIALIZE_LANDSEA()
+#ifdef MCKPP_CAM3
+  ENDIF
+#else
+  
   ELSEIF (kpp_const_fields%L_REGGRID) THEN
      DO iy=1,ny
         DO ix=1,nx
