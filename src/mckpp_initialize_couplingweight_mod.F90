@@ -19,7 +19,9 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
-#endif  
+#endif
+  USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, &
+      mckpp_netcdf_get_var
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nx_globe, ny_globe
 
@@ -31,13 +33,8 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
   REAL(r4) :: latitude_in(PLAT),longitude_in(PLON)
 #endif
 
-  INTEGER start(2),count(2)
-  INTEGER ix,jy,ipoint,cplwght_varid,status,ncid_cplwght
-  INTEGER ipoint_globe
-
-#include <netcdf.inc>
-  
-  REAL*4 ixx, jyy, cplwght_in(NX_GLOBE,NY_GLOBE)
+  INTEGER ix, jy, ipoint_globe, ncid 
+  REAL cplwght_in(NX_GLOBE,NY_GLOBE)
   CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_COUPLINGWEIGHT"
   CHARACTER(LEN=max_message_len) :: message
 
@@ -51,36 +48,23 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
-  status=NF_OPEN(kpp_const_fields%cplwght_file,0,ncid_cplwght)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  start(1) = 1
-  start(2) = 1
-  count(1) = NX_GLOBE
-  count(2) = NY_GLOBE
-  CALL mckpp_print(routine, "Reading coupling weight (alpha)")
-  status=NF_INQ_VARID(ncid_cplwght,'alpha',cplwght_varid)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_GET_VARA_REAL(ncid_cplwght,cplwght_varid,start,count,cplwght_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
+    CALL mckpp_print(routine, "Reading coupling weight (alpha)")
+    CALL mckpp_netcdf_open(routine, kpp_const_fields%cplwght_file, ncid)
+    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
+        "alpha", cplwght_in)
+    
 #ifdef MCKPP_CAM3
+    ! Use coupling weight to get global latitude and longitude grid
+    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
+        "latitude", kpp_global_fields%latitude)
+    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
+        "longitude", kpp_global_fields%longitude)
+#endif
 
-  ! Use coupling weight to get global latitude and longitude grid
-  status=NF_INQ_VARID(ncid_cplwght,'latitude',lat_varid)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_GET_VARA_REAL(ncid_cplwght,lat_varid,1,PLAT,latitude_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)  
-  
-  status=NF_INQ_VARID(ncid_cplwght,'longitude',lon_varid)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_GET_VARA_REAL(ncid_cplwght,lon_varid,1,PLON,longitude_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  
-  kpp_global_fields%latitude(:)=latitude_in
-  kpp_global_fields%longitude(:)=longitude_in 
-
-  status=NF_CLOSE(ncid_cplwght)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
+    CALL mckpp_netcdf_close(routine, kpp_const_fields%cplwght_file, ncid)
+#ifdef MCKPP_CAM3  
   ENDIF ! End of masterproc section
+  
   cplwght(:,:)=cplwght_in(:,:)
   CALL scatter_field_to_chunk(1,1,1,PLON,cplwght,cplwght_chunk(1,begchunk))
   DO ichnk=begchunk,endchunk
@@ -94,43 +78,7 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
         kpp_3d_fields%cplwght(ipoint_globe)=cplwght_in(ix,jy)
      ENDDO
   ENDDO  
-  status=NF_CLOSE(ncid_cplwght)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
 #endif
-
-!  ELSE
-!     kpp_3d_fields%cplwght(:) = 2.
-!  ENDIF
-
-  ! Do we even need this code anymore if reading a global coupling weight?
-!!$  DO ix=1,NX_GLOBE
-!!$     DO jy=1,NY_GLOBE
-!!$        ipoint_globe=(jy-1)*NX_GLOBE+ix            
-!!$        ixx=MIN(ix-ifirst,ilast-ix)
-!!$        jyy=MIN(jy-jfirst,jlast-jy)
-!!$        IF (ixx .GE. 0 .AND. jyy .GE. 0) THEN
-!!$           ! Point is inside coupling domain.  
-!!$           ! Set cplwght equal to one (if not already set from NetCDF file) 
-!!$           ! to obtain model SSTs.
-!!$           kpp_3d_fields%cplwght(ipoint_globe) = MIN(kpp_3d_fields%cplwght(ipoint_globe),1.)
-!!$           ipoint=NX*jyy+ixx
-!!$           IF (kpp_3d_fields%L_OCEAN(ipoint) .and. kpp_3d_fields%ocdepth(ipoint) .gt. 100) THEN
-!!$              kpp_3d_fields%L_OCEAN(ipoint)=.FALSE.
-!!$              kpp_3d_fields%cplwght(ipoint_globe)=0
-!!$              CALL mckpp_print(routine, "Overwriting coupling mask at: ")
-!!$              WRITE(message,*) 'ixx=',ixx,'jyy=',jyy,'ipoint_globe=',ipoint_globe,'ipoint=',ipoint,'cplwght=',&
-!!$                   kpp_3d_fields%cplwght(ipoint_globe),'ocdepth=',kpp_3d_fields%ocdepth(ipoint),&
-!!$                   'L_OCEAN=',kpp_3d_fields%L_OCEAN(ipoint)
-!!$              CALL mckpp_print(routine, message) 
-!!$           ENDIF
-!!$        ELSE
-!!$           ! Point is outside coupling domain.
-!!$           ! Set cplwght equal to a negative value to obtain
-!!$           ! climatological SSTs (or persisted SSTs, IF (.NOT. L_UPDCLIM))
-!!$           kpp_3d_fields%cplwght(ipoint_globe) = -1.
-!!$        ENDIF
-!!$     ENDDO
-!!$  ENDDO
   
 END SUBROUTINE mckpp_initialize_couplingweight
 
