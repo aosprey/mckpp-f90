@@ -323,7 +323,8 @@ MODULE mckpp_data_fields
         L_INTERPINIT, & 
         L_NO_ISOTHERM, & 
         L_NO_FREEZE, & 
-        L_DAMP_CURR
+        L_DAMP_CURR, &
+        L_COUPLE
 
     CHARACTER(LEN=max_nc_filename_len) :: & 
         forcing_file, & 

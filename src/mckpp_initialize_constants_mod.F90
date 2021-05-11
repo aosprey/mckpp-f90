@@ -115,6 +115,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%bottom_temp_period=bottom_temp_period
   
   kpp_const_fields%L_OUTKELVIN=L_OUTKELVIN
+  kpp_const_fields%L_COUPLE=L_COUPLE
   kpp_const_fields%ifirst=ifirst
   kpp_const_fields%jfirst=jfirst
   kpp_const_fields%ilast=ilast
