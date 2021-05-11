@@ -17,8 +17,9 @@ MODULE mckpp_netcdf_read
   INTEGER, PARAMETER :: max_nc_filename_len = 200
 
   INTERFACE mckpp_netcdf_get_var
-    MODULE PROCEDURE mckpp_netcdf_get_var_real_1d, mckpp_netcdf_get_var_real_3d, &
-        mckpp_netcdf_get_var_real_3d_to_2d, mckpp_netcdf_get_var_real_2d_to_1d 
+    MODULE PROCEDURE mckpp_netcdf_get_var_real_1d, mckpp_netcdf_get_var_real_2d, &
+        mckpp_netcdf_get_var_real_3d, mckpp_netcdf_get_var_real_2d_to_1d, &
+        mckpp_netcdf_get_var_real_3d_to_2d
   END INTERFACE mckpp_netcdf_get_var
 
 CONTAINS
@@ -139,7 +140,7 @@ CONTAINS
 
 
   ! Read variable - 1D real
-  ! Option to specify starting position. Assuming count is equal to array size
+  ! Option to specify start, derive count from array size
   SUBROUTINE mckpp_netcdf_get_var_real_1d(calling_routine, file_name, &
       ncid, var_name, array, start_in)
 
@@ -151,15 +152,15 @@ CONTAINS
     INTEGER :: varid
     INTEGER, DIMENSION(1) :: start, count
     CHARACTER(LEN=max_message_len) :: context, message
-    CHARACTER(LEN=20) :: routine = "MCKPP_NETCDF_GET_VAR"
+    CHARACTER(LEN=28) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_1D"
 
     context = update_context(calling_routine, routine)
     WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
 
     IF (PRESENT(start_in)) THEN
-      start(1) = start_in
+      start = start_in
     ELSE
-      start(1) = 1
+      start = 1
     END IF
     count(1) = SIZE(array)
 
@@ -169,24 +170,60 @@ CONTAINS
   END SUBROUTINE mckpp_netcdf_get_var_real_1d
 
 
-  ! Read variable - 3D real
-  ! Specify start, derive count from array size.
-  SUBROUTINE mckpp_netcdf_get_var_real_3d(calling_routine, file_name, &
-      ncid, var_name, array, start)
+  ! Read variable - 2D real
+  ! Option to specify start, derive count from array size.
+  SUBROUTINE mckpp_netcdf_get_var_real_2d(calling_routine, file_name, &
+      ncid, var_name, array, start_in)
 
     CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
     INTEGER, INTENT(IN) :: ncid
-    REAL, DIMENSION(:,:,:), INTENT(OUT) :: array
-    INTEGER, DIMENSION(3), INTENT(IN) :: start
+    REAL, DIMENSION(:,:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(2), INTENT(IN), OPTIONAL :: start_in
 
     INTEGER :: varid
-    INTEGER, DIMENSION(3) :: count
+    INTEGER, DIMENSION(2) :: start, count
     CHARACTER(LEN=max_message_len) :: context, message
-    CHARACTER(LEN=20) :: routine = "MCKPP_NETCDF_GET_VAR"
+    CHARACTER(LEN=28) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_2D"
 
     context = update_context(calling_routine, routine)
     WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
 
+    IF (PRESENT(start_in)) THEN
+      start = start_in
+    ELSE
+      start = 1
+    END IF
+    count(1) = SIZE(array,1)
+    count(2) = SIZE(array,2)
+    CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
+    CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
+
+  END SUBROUTINE mckpp_netcdf_get_var_real_2d
+
+
+  ! Read variable - 3D real
+  ! Option to specify start, derive count from array size.
+  SUBROUTINE mckpp_netcdf_get_var_real_3d(calling_routine, file_name, &
+      ncid, var_name, array, start_in)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
+    INTEGER, INTENT(IN) :: ncid
+    REAL, DIMENSION(:,:,:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(3), INTENT(IN), OPTIONAL :: start_in
+
+    INTEGER :: varid
+    INTEGER, DIMENSION(3) :: start, count
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=28) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_3D"
+
+    context = update_context(calling_routine, routine)
+    WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
+
+    IF (PRESENT(start_in)) THEN
+      start = start_in
+    ELSE
+      start = 1
+    END IF
     count(1) = SIZE(array,1)
     count(2) = SIZE(array,2)
     count(3) = SIZE(array,3)
@@ -196,7 +233,7 @@ CONTAINS
   END SUBROUTINE mckpp_netcdf_get_var_real_3d
   
   
-  ! Read variable - 3D real into 2D
+  ! Read variable - 3D real into 2D array
   ! Need to specify start and count
   SUBROUTINE mckpp_netcdf_get_var_real_3d_to_2d(calling_routine, file_name, &
       ncid, var_name, array, start, count)
@@ -208,7 +245,7 @@ CONTAINS
 
     INTEGER :: varid
     CHARACTER(LEN=max_message_len) :: context, message
-    CHARACTER(LEN=20) :: routine = "MCKPP_NETCDF_GET_VAR"
+    CHARACTER(LEN=34) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_3D_TO_2D"
 
     context = update_context(calling_routine, routine)
     WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
@@ -219,7 +256,7 @@ CONTAINS
   END SUBROUTINE mckpp_netcdf_get_var_real_3d_to_2d
 
 
-  ! Read variable - 2D real into 1D
+  ! Read variable - 2D real into 1D array
   ! Need to specify start and count
   SUBROUTINE mckpp_netcdf_get_var_real_2d_to_1d(calling_routine, file_name, &
       ncid, var_name, array, start, count)
@@ -231,7 +268,7 @@ CONTAINS
 
     INTEGER :: varid
     CHARACTER(LEN=max_message_len) :: context, message
-    CHARACTER(LEN=20) :: routine = "MCKPP_NETCDF_GET_VAR"
+    CHARACTER(LEN=34) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_2D_TO_1D"
 
     context = update_context(calling_routine, routine)
     WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
