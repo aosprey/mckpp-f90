@@ -20,11 +20,13 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
-  USE mckpp_parameters, ONLY: npts, maxmodeadv
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
+      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, npts, maxmodeadv
   
   IMPLICIT NONE
-  
-#include <netcdf.inc>
+ 
 
 #ifdef MCKPP_CAM3
   REAL(r8) :: advection_chunk(PCOLS,begchunk:endchunk,2)
@@ -32,30 +34,49 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
        nmodeadv_chunk(PCOLS,begchunk:endchunk,2)
   REAL(r8) :: advection_temp(PLON,PLAT,maxmodeadv,2)
   INTEGER :: ichnk,ncol,icol
-#endif
+#else
+  REAL, DIMENSION(nx, ny, 2) :: nmodeadv_temp
+  REAL, DIMENSION(nx, ny, maxmodeadv, 2) :: modeadv_temp, advection_temp 
+#endif 
 
-  INTEGER nmode(npts)  
-  INTEGER i,ipt,ivar,imode,status,ncid_advec
+  INTEGER, DIMENSION(3) :: start
+  INTEGER, DIMENSION(2) :: shape
+  INTEGER :: i, ipt, ivar, ncid, offset_lon, offset_lat
+  CHARACTER(LEN=max_nc_filename_len) :: file
+  CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_ADVECTION"
+  CHARACTER(LEN=max_message_len) :: message
+ 
   
   IF (kpp_const_fields%L_ADVECT) THEN
 #ifdef MCKPP_CAM3
-     IF (masterproc) THEN
+    IF (masterproc) THEN
 #endif
-        status=NF_OPEN(kpp_const_fields%advect_file,0,ncid_advec)
-        IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
+      file = kpp_const_fields%advect_file
+      WRITE(message,*) "Reading", file
+      CALL mckpp_print(routine, message)
+      CALL mckpp_netcdf_open(routine, file, ncid)
+      
+      CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
+          kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat)
+      start(1) = offset_lon
+      start(2) = offset_lat
+      start(3) = 1
+
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "nmode_tadv", nmodeadv_temp(:,:,1), start(1:2)) 
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "nmode_sadv", nmodeadv_temp(:,:,2), start(1:2))
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "mode_tadv", modeadv_temp(:,:,:,1), start) 
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "mode_sadv", modeadv_temp(:,:,:,2), start)
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "tadv", advection_temp(:,:,:,1), start) 
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "sadv", advection_temp(:,:,:,2), start)
+
+      CALL mckpp_netcdf_close(routine, file, ncid)
 #ifdef MCKPP_CAM3       
-        CALL MCKPP_READ_IPAR(ncid_advec,'nmode_tadv',1,1,nmodeadv_temp(:,:,1))
-        CALL MCKPP_READ_IPAR(ncid_advec,'nmode_sadv',1,1,nmodeadv_temp(:,:,2))
      ENDIF
      CALL scatter_field_to_chunk_int(1,1,2,PLON,nmodeadv_temp,nmodeadv_chunk(1,begchunk,1))
      DO ichnk=begchunk,endchunk
         ncol=get_ncols_p(ichnk)
         kpp_3d_fields(ichnk)%nmodeadv(1:ncol,:)=nmodeadv_chunk(1:ncol,ichnk,:)
      ENDDO
-     IF (masterproc) THEN
-        CALL MCKPP_READ_IPAR(ncid_advec,'mode_tadv',maxmodeadv,1,modeadv_temp(:,:,:,1))
-        CALL MCKPP_READ_IPAR(ncid_advec,'mode_sadv',maxmodeadv,1,modeadv_temp(:,:,:,2))
-     ENDIF
      DO i=1,maxmodeadv 
         CALL scatter_field_to_chunk_int(1,1,2,PLON,modeadv_temp(:,:,i,:),nmodeadv_chunk(1,begchunk,1))
         DO ichnk=begchunk,endchunk
@@ -63,10 +84,6 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
            kpp_3d_fields(ichnk)%modeadv(1:ncol,i,:)=nmodeadv_chunk(1:ncol,ichnk,:)
         ENDDO
      ENDDO
-     IF (masterproc) THEN        
-        CALL MCKPP_READ_PAR(ncid_advec,'tadv',maxmodeadv,1,advection_temp(:,:,:,1))
-        CALL MCKPP_READ_PAR(ncid_advec,'sadv',maxmodeadv,1,advection_temp(:,:,:,2))
-     ENDIF
      DO i=1,maxmodeadv
         CALL scatter_field_to_chunk(1,1,2,PLON,advection_temp(:,:,i,:),advection_chunk(1,begchunk,1))
         DO ichnk=begchunk,endchunk
@@ -75,26 +92,28 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
         ENDDO
      ENDDO
 #else
-     call MCKPP_READ_IPAR(ncid_advec,'nmode_tadv',1,1,kpp_3d_fields%nmodeadv(:,1))
-     call MCKPP_READ_IPAR(ncid_advec,'mode_tadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,1))
-     call MCKPP_READ_PAR(ncid_advec,'tadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,1))
-     call MCKPP_READ_IPAR(ncid_advec,'nmode_sadv',1,1,kpp_3d_fields%nmodeadv(:,2))
-     call MCKPP_READ_IPAR(ncid_advec,'mode_sadv',maxmodeadv,1,kpp_3d_fields%modeadv(:,:,2))
-     call MCKPP_READ_PAR(ncid_advec,'sadv',maxmodeadv,1,kpp_3d_fields%advection(:,:,2))  
+     shape(1) = npts
+     shape(2) = maxmodeadv
+     DO ivar = 1, 2 
+       kpp_3d_fields%nmodeadv(:,ivar) = RESHAPE(nmodeadv_temp(:,:,ivar), shape(1:1)) 
+       kpp_3d_fields%modeadv(:,:,ivar) = RESHAPE(modeadv_temp(:,:,:,ivar), shape) 
+       kpp_3d_fields%advection(:,:,ivar) = RESHAPE(advection_temp(:,:,:,ivar), shape)
+     END DO
 #endif
-     status=NF_CLOSE(ncid_advec)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  ELSE
+
+   ELSE
+     CALL mckpp_print(routine, "No advection has been specified.")
+     
 #ifdef MCKPP_CAM3
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%nmodeadv(1:ncol,:)=0
+     DO ichnk = begchunk, endchunk
+       ncol=get_ncols_p(ichnk)
+       kpp_3d_fields(ichnk)%nmodeadv(1:ncol,:)=0
      ENDDO
 #else
-     DO ipt=1,npts
-        DO ivar=1,2
-           kpp_3d_fields%nmodeadv(ipt,ivar)=0
-        ENDDO
+     DO ipt = 1, npts
+       DO ivar = 1, 2
+         kpp_3d_fields%nmodeadv(ipt,ivar)=0
+       ENDDO
      ENDDO
 #endif
   ENDIF
