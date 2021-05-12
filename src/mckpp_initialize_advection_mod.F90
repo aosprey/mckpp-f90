@@ -43,7 +43,7 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
   INTEGER, DIMENSION(2) :: shape
   INTEGER :: i, ipt, ivar, ncid, offset_lon, offset_lat
   CHARACTER(LEN=max_nc_filename_len) :: file
-  CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_ADVECTION"
+  CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_ADVECTION"
   CHARACTER(LEN=max_message_len) :: message
  
   
