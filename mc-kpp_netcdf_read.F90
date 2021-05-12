@@ -19,7 +19,8 @@ MODULE mckpp_netcdf_read
   INTERFACE mckpp_netcdf_get_var
     MODULE PROCEDURE mckpp_netcdf_get_var_real_1d, mckpp_netcdf_get_var_real_2d, &
         mckpp_netcdf_get_var_real_3d, mckpp_netcdf_get_var_real_2d_to_1d, &
-        mckpp_netcdf_get_var_real_3d_to_2d
+        mckpp_netcdf_get_var_real_3d_to_2d, &
+        mckpp_netcdf_get_var_int_2d
   END INTERFACE mckpp_netcdf_get_var
 
 CONTAINS
@@ -199,6 +200,37 @@ CONTAINS
     CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
 
   END SUBROUTINE mckpp_netcdf_get_var_real_2d
+
+
+  ! Read variable - 2D integer
+  ! Option to specify start, derive count from array size.
+  SUBROUTINE mckpp_netcdf_get_var_int_2d(calling_routine, file_name, &
+      ncid, var_name, array, start_in)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
+    INTEGER, INTENT(IN) :: ncid
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(2), INTENT(IN), OPTIONAL :: start_in
+
+    INTEGER :: varid
+    INTEGER, DIMENSION(2) :: start, count
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=27) :: routine = "MCKPP_NETCDF_GET_VAR_INT_2D"
+
+    context = update_context(calling_routine, routine)
+    WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
+
+    IF (PRESENT(start_in)) THEN
+      start = start_in
+    ELSE
+      start = 1
+    END IF
+    count(1) = SIZE(array,1)
+    count(2) = SIZE(array,2)
+    CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
+    CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
+
+  END SUBROUTINE mckpp_netcdf_get_var_int_2d  
 
 
   ! Read variable - 3D real
