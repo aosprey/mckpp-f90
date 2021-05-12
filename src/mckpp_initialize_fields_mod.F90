@@ -86,23 +86,8 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
 #endif 
   
   ! Initialize advection options
-  IF (kpp_const_fields%L_ADVECT) THEN
-     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
-     CALL MCKPP_INITIALIZE_ADVECTION()
-  ELSE
-#ifdef MCKPP_CAM3
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%nmodeadv(1:ncol,:)=0
-      ENDDO
-#else
-     DO ipt=1,npts
-        kpp_3d_fields%nmodeadv(ipt,1)=0
-        kpp_3d_fields%nmodeadv(ipt,2)=0
-     ENDDO
-#endif 
-     CALL mckpp_print(routine, "No advection has been specified.") 
-   ENDIF
+  CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
+  CALL MCKPP_INITIALIZE_ADVECTION()
 
   ! Initialize relaxation of SST, temperature and/or salinity
   IF (kpp_const_fields%L_RELAX_SST .OR. kpp_const_fields%L_RELAX_SAL &
