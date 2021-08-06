@@ -1,7 +1,13 @@
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
-#endif 
+#endif
+
+MODULE mckpp_read_sst_mod
+
+  
+CONTAINS
+
 
 MODULE mckpp_read_sst_mod
 
