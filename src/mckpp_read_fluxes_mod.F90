@@ -1,134 +1,117 @@
 MODULE mckpp_read_fluxes_mod
 
-  USE mckpp_netcdf_subs
+  IMPLICIT NONE
+  
+  PUBLIC mckpp_initialize_fluxes_file, mckpp_read_fluxes
+
+  PRIVATE
+
+  INTEGER, DIMENSION(3) :: start, count
+  REAL, DIMENSION(:), ALLOCATABLE :: time_in
 
 CONTAINS
+  
+! Work out and store start positions of data in file.
+! Read and store the time dimension.
+SUBROUTINE mckpp_initialize_fluxes_file()
 
-SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
+  USE mckpp_data_fields, ONLY: kpp_const_fields, kpp_3d_fields
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
+       mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
+  USE mckpp_parameters, ONLY: nx, ny
+
+  IMPLICIT NONE
+
+  INTEGER :: ncid, ntime_in
+  CHARACTER(LEN=max_nc_filename_len) :: file
+  
+  CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FLUXES"
+  CHARACTER(LEN=max_message_len) :: message
+
+  file = kpp_const_fields%forcing_file
+  WRITE(message,*) "Initializing ", TRIM(file)
+  CALL mckpp_print(routine, message)
+  CALL mckpp_netcdf_open(routine, file, ncid)
+
+  ! Work out start and count for each time entry
+  CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
+       kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), start(1), start(2))
+  start(3) = 1
+  count = (/nx, ny, 1/)
+
+  ! Read in time field
+  CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", ntime_in)
+  ALLOCATE(time_in(ntime_in)) 
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "time", time_in)
+  
+  CALL mckpp_netcdf_close(routine, file, ncid)
+              
+END SUBROUTINE mckpp_initialize_fluxes_file
+
+
+! Read flux data.
+! This routine is called according to a specific update frequency, which should match spacing of data in
+! the file. 
+SUBROUTINE mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
+       mckpp_netcdf_get_var
   USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_time_control, ONLY: mckpp_get_update_time
 
   IMPLICIT NONE
 
-#include <netcdf.inc>
-
   REAL, DIMENSION(npts), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   
-  REAL*4, DIMENSION(nx,ny) :: var_in
-  REAL*4, DIMENSION(:), ALLOCATABLE :: file_times
-  REAL*4 :: first_timein, last_timein, time, update_time
-  INTEGER :: ipt, ix, iy
-  INTEGER :: status, flx_ncid, time_varid, num_times
-  INTEGER, DIMENSION(3) :: count, start
-
+  CHARACTER(LEN=max_nc_filename_len) :: file  
+  REAL :: time, file_time
+  INTEGER :: ncid, ix, iy, ipt
+  REAL, DIMENSION(nx, ny, 1) :: var_in
+  
   CHARACTER(LEN=17) :: routine = "MCKPP_READ_FLUXES"
   CHARACTER(LEN=max_message_len) :: message
 
-  status=NF_OPEN(kpp_const_fields%forcing_file,0,flx_ncid)
-  IF (status.NE.NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  
-  count = (/nx,ny,1/)
-  start = (/1,1,1/)
-
-  ! Boundaries of data in file
-  CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES")
-  CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(flx_ncid,'fluxes','latitude','longitude','time',kpp_3d_fields%dlon(1),&
-       kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid,num_times)
-
-  ALLOCATE(file_times(num_times))
-  status=NF_GET_VARA_REAL(flx_ncid,time_varid,1,num_times,file_times)
-   
-  ! Work out time to read and check valid
-  CALL mckpp_get_update_time(kpp_const_fields%forcing_file, kpp_const_fields%time, & 
-      kpp_const_fields%ndtocn, file_times, num_times, .FALSE., 0, update_time, start(3))
+  file = kpp_const_fields%forcing_file
+  CALL mckpp_netcdf_open(routine, file, ncid)
+ 
+  ! Work out time to read in from 
+  CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtocn, file_times, num_times, &
+      .FALSE., 0, update_time, start(3))
   WRITE(message,*) 'Reading fluxes for time ', update_time
   CALL mckpp_print(routine, message)
   WRITE(message,*) 'Reading fluxes from time point ',start(3)
   CALL mckpp_print(routine, message)
   
   CALL mckpp_print(routine, "Read taux")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(1),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      taux(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "taux", taux, start, count)
 
   CALL mckpp_print(routine, "Read tauy")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(2),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      tauy(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "tauy", tauy, start, count)   
  
   CALL mckpp_print(routine, "Read swf")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(3),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      swf(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "swf", swf, start, count)   
  
   CALL mckpp_print(routine, "Read lwf")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(4),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      lwf(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "lwf", lwf, start, count)   
 
   CALL mckpp_print(routine, "Read lhf")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(5),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      lhf(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "lhf", lhf, start, count)   
  
   CALL mckpp_print(routine, "Read shf")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(6),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      shf(ipt)=var_in(ix,iy)
-    ENDDO
-  ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "shf", shf, start, count)   
  
   CALL mckpp_print(routine, "Read rain")
-  status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(7),start,count,var_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      rain(ipt)=var_in(ix,iy)
-    ENDDO
- ENDDO
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "precip", rain, start, count)   
  
   CALL mckpp_print(routine, "Set snow to zero")
-  DO iy=1,ny
-    DO ix=1,nx
-      ipt=(iy-1)*nx+ix
-      snow(ipt)=0.0
-    ENDDO
-  ENDDO
+  snow = 0.0
  
-  CALL mckpp_print(routine, "Finished reading fluxes") 
-  
-END SUBROUTINE MCKPP_READ_FLUXES
+  CALL mckpp_netcdf_close(routine, file, ncid)
+  CALL mckpp_print(routine, "Finished reading fluxes")
+
+END SUBROUTINE mckpp_read_fluxes
 
 END MODULE mckpp_read_fluxes_mod

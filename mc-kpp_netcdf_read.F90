@@ -287,6 +287,29 @@ CONTAINS
 
   END SUBROUTINE mckpp_netcdf_get_var_real_3d_to_2d
 
+  
+  ! Read variable - 3D real into 1D array
+  ! Need to specify start and count
+  SUBROUTINE mckpp_netcdf_get_var_real_3d_to_1d(calling_routine, file_name, &
+      ncid, var_name, array, start, count)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
+    INTEGER, INTENT(IN) :: ncid
+    REAL, DIMENSION(:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(3), INTENT(IN) :: start, count
+
+    INTEGER :: varid
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=34) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_3D_TO_1D"
+
+    context = update_context(calling_routine, routine)
+    WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
+
+    CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
+    CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
+
+  END SUBROUTINE mckpp_netcdf_get_var_real_3d_to_1d
+  
 
   ! Read variable - 2D real into 1D array
   ! Need to specify start and count

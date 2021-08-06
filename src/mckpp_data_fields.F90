@@ -237,9 +237,6 @@ MODULE mckpp_data_fields
         iso_bot, & 
         dt_uvdamp, & 
         ndt_per_restart, & 
-        flx_ncid, & 
-        flx_timein_id, & 
-        flx_varin_id(7), &
         ndtupdsst, & 
         climsst_period, & 
         ndtupdice, & 
