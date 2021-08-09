@@ -19,6 +19,7 @@ MODULE mckpp_read_sst_mod
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
        mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe
+  USE mckpp_time_control, ONLY: mckpp_get_update_time
 
   IMPLICIT NONE
 
@@ -26,9 +27,9 @@ MODULE mckpp_read_sst_mod
 
   PRIVATE
 
-  INTEGER :: sst_nx, sst_ny 
+  INTEGER :: sst_nx, sst_ny, num_times
   INTEGER, DIMENSION(3) :: start, count
-  REAL, DIMENSION(:), ALLOCATABLE :: time_in
+  REAL, DIMENSION(:), ALLOCATABLE :: file_times
   REAL :: first_timein, last_timein
   LOGICAL :: file_open = .FALSE.
  
@@ -36,7 +37,7 @@ CONTAINS
 
 SUBROUTINE mckpp_initialize_sst()
 
-  INTEGER :: ncid, ntime_in
+  INTEGER :: ncid
   CHARACTER(LEN=max_nc_filename_len) :: file
 
   CHARACTER(LEN=20) :: routine = "MCKPP_INITIALIZE_SST"
@@ -69,11 +70,11 @@ SUBROUTINE mckpp_initialize_sst()
 #endif
   
   ! Read in time field
-  CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", ntime_in)
-  ALLOCATE(time_in(ntime_in)) 
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "time", time_in)
-  first_timein = time_in(1)
-  last_timein = time_in(ntime_in)
+  CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", num_times)
+  ALLOCATE(file_times(num_times)) 
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
+  first_timein = file_times(1)
+  last_timein = file_times(num_times)
 
 #ifdef MCKPP_CAM3
   ENDIF ! End of masterproc section
@@ -88,10 +89,8 @@ END SUBROUTINE mckpp_initialize_sst
 
 SUBROUTINE mckpp_read_sst()
 
-  IMPLICIT NONE
-
   CHARACTER(LEN=max_nc_filename_len) :: file
-  REAL :: time, file_time, sstclim_time
+  REAL :: update_time
   INTEGER :: ncid, ix, iy, ipt
   REAL :: offset_sst
   REAL, ALLOCATABLE, DIMENSION(:,:,:) :: var_in
@@ -116,37 +115,14 @@ SUBROUTINE mckpp_read_sst()
      file_open = .TRUE. 
   ENDIF 
 
-  ! Work out time to read and check against times in file 
-  sstclim_time = kpp_const_fields%time+0.5*kpp_const_fields%dto/kpp_const_fields%spd*kpp_const_fields%ndtupdsst
-  IF (sstclim_time .gt. last_timein) THEN
-     IF (kpp_const_fields%L_PERIODIC_CLIMSST) THEN
-        DO WHILE (sstclim_time .gt. last_timein)
-           sstclim_time=sstclim_time-kpp_const_fields%climsst_period
-        ENDDO
-     ELSE
-        WRITE(message,*) "Time for which to read SST exceeds the last time in the netCDF file ", & 
-            "and L_PERIODIC_CLIMSST has not been specified."
-        CALL mckpp_print_error(routine, message) 
-        WRITE(message,*) "Attempting to read SST will lead to an error, so aborting now ..."
-        CALL mckpp_print_error(routine, message) 
-        CALL MCKPP_ABORT()
-     ENDIF
-  ENDIF
-  WRITE(message,*) 'Reading climatological SST for time ', sstclim_time
+  ! Work out time to read and check against times in file
+  CALL mckpp_get_update_time(file,  kpp_const_fields%time, kpp_const_fields%ndtupdsst, &
+      file_times, num_times, kpp_const_fields%L_PERIODIC_CLIMSST, kpp_const_fields%climsst_period, &
+      update_time, start(3))
+  WRITE(message,*) 'Reading climatological SST for time ', update_time
   CALL mckpp_print(routine, message)
-  start(3) = NINT((sstclim_time-first_timein)*kpp_const_fields%spd/&
-       (kpp_const_fields%dto*kpp_const_fields%ndtupdsst))+1
   WRITE(message,*) 'Reading climatological SST from position ',start(3)
   CALL mckpp_print(routine, message)
-
-  file_time = time_in(start(3)) 
-  IF (abs(file_time-sstclim_time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-     WRITE(message,*) 'Cannot find time,',  sstclim_time, 'in SST climatology file'
-     CALL mckpp_print_error(routine, message) 
-     WRITE(message,*) 'The closest I came was', file_time
-     CALL mckpp_print_error(routine, message) 
-     CALL MCKPP_ABORT()
-  ENDIF
 
   CALL mckpp_netcdf_get_var(routine, file, ncid, "sst", var_in, start) 
  
