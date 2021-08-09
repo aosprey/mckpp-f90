@@ -3,6 +3,7 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts
+  USE mckpp_time_control, ONLY: mckpp_get_update_time
 
   IMPLICIT NONE
 
@@ -11,9 +12,10 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   REAL, DIMENSION(npts), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   
   REAL*4, DIMENSION(nx,ny) :: var_in
-  REAL*4 :: first_timein, last_timein, time, time_in
+  REAL*4, DIMENSION(:), ALLOCATABLE :: file_times
+  REAL*4 :: first_timein, last_timein, time, update_time
   INTEGER :: ipt, ix, iy
-  INTEGER :: status, flx_ncid, time_varid
+  INTEGER :: status, flx_ncid, time_varid, num_times
   INTEGER, DIMENSION(3) :: count, start
 
   CHARACTER(LEN=17) :: routine = "MCKPP_READ_FLUXES"
@@ -28,30 +30,19 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   ! Boundaries of data in file
   CALL mckpp_print(routine, "Calling MCKPP_DETERMINE_NETCDF_BOUNDARIES")
   CALL MCKPP_DETERMINE_NETCDF_BOUNDARIES(flx_ncid,'fluxes','latitude','longitude','time',kpp_3d_fields%dlon(1),&
-       kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid)
+       kpp_3d_fields%dlat(1),start(1),start(2),first_timein,last_timein,time_varid,num_times)
 
-  ! Work out time and check valid 
-  time=kpp_const_fields%time+0.5*kpp_const_fields%dtsec/kpp_const_fields%spd
-  WRITE(message,*) 'Reading fluxes for time ',&
-       time,kpp_const_fields%time,kpp_const_fields%dtsec,kpp_const_fields%spd
-  CALL mckpp_print(routine, message) 
-
-  start(3)=MAX(NINT((time-first_timein)*kpp_const_fields%spd/kpp_const_fields%dtsec)+1,1)
-  WRITE(message,*) 'Reading time from time point ',start(3)
+  ALLOCATE(file_times(num_times))
+  status=NF_GET_VARA_REAL(flx_ncid,time_varid,1,num_times,file_times)
+   
+  ! Work out time to read and check valid
+  CALL mckpp_get_update_time(kpp_const_fields%forcing_file, kpp_const_fields%time, & 
+      kpp_const_fields%ndtocn, file_times, num_times, .FALSE., 0, update_time, start(3))
+  WRITE(message,*) 'Reading fluxes for time ', update_time
   CALL mckpp_print(routine, message)
-
-  status=NF_GET_VAR1_REAL(flx_ncid,time_varid,start(3),time_in)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  IF (abs(time_in-time) .GT. 0.01*kpp_const_fields%dtsec/kpp_const_fields%spd) THEN
-    WRITE(message,*) 'Cannot find time,',time,'in fluxes file'
-    CALL mckpp_print_error(routine, message)
-    WRITE(message,*) 'The closest I came was',time_in
-    CALL mckpp_print_error(routine, message)
-    CALL MCKPP_ABORT()
-  ENDIF
-
   WRITE(message,*) 'Reading fluxes from time point ',start(3)
-  CALL mckpp_print(routine, message) 
+  CALL mckpp_print(routine, message)
+  
   CALL mckpp_print(routine, "Read taux")
   status=NF_GET_VARA_REAL(flx_ncid,kpp_const_fields%flx_varin_id(1),start,count,var_in)
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
