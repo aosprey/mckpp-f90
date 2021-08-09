@@ -58,8 +58,8 @@ CONTAINS
     ! Check if restart timestep 
     ! - always write restart at end of run 
     CALL mckpp_start_timer("Write restart output") 
-    IF (MOD(kpp_const_fields%ntime,kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
-        kpp_const_fields%ntime .EQ. kpp_const_fields%nend*kpp_const_fields%ndtocn) THEN
+    IF (MOD(kpp_const_fields%ntime, kpp_const_fields%ndt_per_restart) .EQ. 0 .OR. &
+        kpp_const_fields%ntime .EQ. kpp_const_fields%num_timesteps) THEN
 
       ! Set correct time for validity of restart file
       ! (end of this timestep = start of next timestep)

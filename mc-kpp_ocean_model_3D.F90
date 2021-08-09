@@ -28,7 +28,8 @@ IMPLICIT NONE
   ! Main time-stepping loop
   CALL mckpp_print(routine, "Timestepping loop")
 
-  DO ntime = 1, kpp_const_fields%nend*kpp_const_fields%ndtocn
+  DO ntime = 1, kpp_const_fields%num_timesteps
+
      kpp_const_fields%ntime = ntime
      kpp_const_fields%time = kpp_const_fields%startt+(kpp_const_fields%ntime-1)*&
        kpp_const_fields%dto/kpp_const_fields%spd

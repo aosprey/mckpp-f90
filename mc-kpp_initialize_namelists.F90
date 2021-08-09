@@ -161,6 +161,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   
   ! Initialize and read the landsea name list
   L_LANDSEA=.FALSE.
+  landsea_file = ''
   READ(75,NAME_LANDSEA)
   CALL mckpp_print(routine, "Read Namelist LANDSEA")
   
@@ -168,9 +169,11 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_INITDATA= .TRUE.
   L_INTERPINIT= .TRUE.
   L_RESTART= .FALSE.
+  initdata_file = ''
   WRITE(restart_infile,*) 'fort.30'
   READ(75,NAME_START) 
   CALL mckpp_print(routine, "Read Namelist START")
+  WRITE(6,*) "Init file = ", initdata_file
   
   ! Initialize and read the times namelist
   ndtocn=1
@@ -190,7 +193,8 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   kpp_const_fields%dto=kpp_const_fields%dtsec/float(kpp_const_fields%ndtocn)
   kpp_const_fields%nend=int((kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dtsec)
   kpp_const_fields%nstart=nint(kpp_const_fields%startt)/kpp_const_fields%dto
-  IF (float(kpp_const_fields%nend*kpp_const_fields%ndtocn) .NE. &
+  kpp_const_fields%num_timesteps=kpp_const_fields%nend*kpp_const_fields%ndtocn
+  IF (float(kpp_const_fields%num_timesteps) .NE. &
        (kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dto) THEN
      CALL mckpp_print_error(routine, "The integration length is not a multiple of the ocean timestep")
      WRITE(message, *) "dto = ", kpp_const_fields%dto, ", finalt = ", kpp_const_fields%finalt, &
