@@ -161,7 +161,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   
   ! Initialize and read the landsea name list
   L_LANDSEA=.FALSE.
-  landsea_file = ''
   READ(75,NAME_LANDSEA)
   CALL mckpp_print(routine, "Read Namelist LANDSEA")
   
@@ -169,11 +168,9 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_INITDATA= .TRUE.
   L_INTERPINIT= .TRUE.
   L_RESTART= .FALSE.
-  initdata_file = ''
   WRITE(restart_infile,*) 'fort.30'
   READ(75,NAME_START) 
   CALL mckpp_print(routine, "Read Namelist START")
-  WRITE(6,*) "Init file = ", initdata_file
   
   ! Initialize and read the times namelist
   ndtocn=1
