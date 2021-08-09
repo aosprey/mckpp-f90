@@ -232,7 +232,8 @@ MODULE mckpp_data_fields
         nstart, & 
         nend, & 
         ndtocn, & 
-        ntime, & 
+        ntime, &
+        num_timesteps, & 
         iso_bot, & 
         dt_uvdamp, & 
         ndt_per_restart, & 

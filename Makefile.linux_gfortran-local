@@ -49,7 +49,7 @@ EXECUTABLE=KPP_ocean
 
 FORCED_FILES = $(wildcard *.F90)
 FORCED_OBJS = $(FORCED_FILES:.F90=.o)
-FORCED_MODS = mckpp_log_messages.mod mckpp_parameters.mod mckpp_timer.mod mckpp_data_fields.mod mckpp_namelists.mod mckpp_xios_control.mod mckpp_xios_io.mod
+FORCED_MODS = mckpp_log_messages.mod mckpp_parameters.mod mckpp_timer.mod mckpp_data_fields.mod mckpp_namelists.mod mckpp_xios_control.mod mckpp_xios_io.mod mckpp_time_control.mod
 
 FORCED_COMPILE = $(F90) $(F90_FLAGS) $(CPP_FLAGS) $(F90_CPP_FLAG)-DARCHER $(OASIS3_MOD_FLAG) $(XIOS_INC) $(NCDF_INC) 
 FORCED_LINK = $(F90)  $(F90_FLAGS) $(LINK_FLAGS) $(FORCED_OBJS) -o ${EXECUTABLE} ${XIOS_LIB} ${NCDF_LIB}
@@ -79,6 +79,9 @@ mckpp_xios_io.mod : mc-kpp_xios_io.F90 mckpp_timer.mod mckpp_parameters.mod mckp
 	$(FORCED_COMPILE) -c $<
 
 mckpp_xios_control.mod : mc-kpp_xios_control.F90 mckpp_timer.mod mckpp_xios_io.mod mckpp_data_fields.mod
+	$(FORCED_COMPILE) -c $<
+
+mckpp_time_control.mod : mc-kpp_time_control.F90 mckpp_data_fields.mod
 	$(FORCED_COMPILE) -c $<
 
 forced : CPP_FLAGS=$(F90_CPP_FLAG)-DOPENMP

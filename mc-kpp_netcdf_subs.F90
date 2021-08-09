@@ -307,7 +307,7 @@ SUBROUTINE MCKPP_READ_IPAR (ncid,vname,npars,nt,par_out)
 END SUBROUTINE MCKPP_READ_IPAR
 
 SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name,longitude_name,&
-     time_name,start_lon,start_lat,offset_lon,offset_lat,first_time,last_time,time_varid)
+     time_name,start_lon,start_lat,offset_lon,offset_lat,first_time,last_time,time_varid,ntime_file)
 
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
   USE mckpp_parameters, ONLY: nx_globe, ny_globe
@@ -317,11 +317,12 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
 #include <netcdf.inc>
 
   INTEGER ncid,offset_lon,offset_lat,lon_dimid,lon_varid,lat_dimid,lat_varid,time_dimid,time_varid,ix,iy
-  REAL start_lon,start_lat,first_time,last_time      
+  REAL start_lon,start_lat,first_time,last_time
+  INTEGER, OPTIONAL :: ntime_file
   CHARACTER(*) file_description,latitude_name,longitude_name,time_name
   CHARACTER(LEN=30) tmp_name
   
-  INTEGER nlat_file,nlon_file,ntime_file,status
+  INTEGER nlat_file,nlon_file,status
   REAL*4 longitudes(NX_GLOBE),latitudes(NY_GLOBE)
 
   CHARACTER(LEN=33) :: routine = "MCKPP_DETERMINE_NETCDF_BOUNDARIES"

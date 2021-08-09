@@ -190,7 +190,8 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   kpp_const_fields%dto=kpp_const_fields%dtsec/float(kpp_const_fields%ndtocn)
   kpp_const_fields%nend=int((kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dtsec)
   kpp_const_fields%nstart=nint(kpp_const_fields%startt)/kpp_const_fields%dto
-  IF (float(kpp_const_fields%nend*kpp_const_fields%ndtocn) .NE. &
+  kpp_const_fields%num_timesteps=kpp_const_fields%nend*kpp_const_fields%ndtocn
+  IF (float(kpp_const_fields%num_timesteps) .NE. &
        (kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dto) THEN
      CALL mckpp_print_error(routine, "The integration length is not a multiple of the ocean timestep")
      WRITE(message, *) "dto = ", kpp_const_fields%dto, ", finalt = ", kpp_const_fields%finalt, &
