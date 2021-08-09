@@ -32,7 +32,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
   USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
   USE mckpp_read_saltcorrections, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
-  USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
+  USE mckpp_read_sst_mod, ONLY: mckpp_initialize_sst, mckpp_read_sst
   USE mckpp_read_temperatures, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
   USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
 
@@ -112,8 +112,8 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   
   ! Initialize boundary conditions
   IF (kpp_const_fields%L_CLIMSST) THEN     
-     CALL mckpp_print(routine, "Calling MCKPP_READ_SST")
-     CALL MCKPP_READ_SST()
+     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_SST")
+     CALL mckpp_initialize_sst()
   ENDIF
 
   IF (kpp_const_fields%L_CLIMICE) THEN    

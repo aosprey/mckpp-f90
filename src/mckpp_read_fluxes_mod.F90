@@ -26,7 +26,7 @@ SUBROUTINE mckpp_initialize_fluxes_file()
   INTEGER :: ncid, ntime_in
   CHARACTER(LEN=max_nc_filename_len) :: file
   
-  CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FLUXES"
+  CHARACTER(LEN=28) :: routine = "MCKPP_INITIALIZE_FLUXES_FILE"
   CHARACTER(LEN=max_message_len) :: message
 
   file = kpp_const_fields%forcing_file
