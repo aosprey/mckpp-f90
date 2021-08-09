@@ -45,9 +45,9 @@ CONTAINS
     CHARACTER(LEN=*) :: file
     REAL, INTENT(IN) :: time 
     INTEGER, INTENT(IN) :: nupdate, num_times, period
-    REAL*4, DIMENSION(num_times), INTENT(IN) :: file_times
+    REAL, DIMENSION(num_times), INTENT(IN) :: file_times
     LOGICAL, INTENT(IN) :: periodic
-    REAL*4, INTENT(OUT) :: update_time
+    REAL, INTENT(OUT) :: update_time
     INTEGER, INTENT(OUT) :: update_time_pos
 
     REAL :: first_file_time, last_file_time, file_update_time

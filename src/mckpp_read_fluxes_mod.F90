@@ -6,8 +6,9 @@ MODULE mckpp_read_fluxes_mod
 
   PRIVATE
 
+  INTEGER :: num_times
   INTEGER, DIMENSION(3) :: start, count
-  REAL, DIMENSION(:), ALLOCATABLE :: time_in
+  REAL, DIMENSION(:), ALLOCATABLE :: file_times
 
 CONTAINS
   
@@ -23,7 +24,7 @@ SUBROUTINE mckpp_initialize_fluxes_file()
 
   IMPLICIT NONE
 
-  INTEGER :: ncid, ntime_in
+  INTEGER :: ncid
   CHARACTER(LEN=max_nc_filename_len) :: file
   
   CHARACTER(LEN=28) :: routine = "MCKPP_INITIALIZE_FLUXES_FILE"
@@ -41,9 +42,9 @@ SUBROUTINE mckpp_initialize_fluxes_file()
   count = (/nx, ny, 1/)
 
   ! Read in time field
-  CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", ntime_in)
-  ALLOCATE(time_in(ntime_in)) 
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "time", time_in)
+  CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", num_times)
+  ALLOCATE(file_times(num_times)) 
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
   
   CALL mckpp_netcdf_close(routine, file, ncid)
               
@@ -67,9 +68,8 @@ SUBROUTINE mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   REAL, DIMENSION(npts), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
   
   CHARACTER(LEN=max_nc_filename_len) :: file  
-  REAL :: time, file_time
-  INTEGER :: ncid, ix, iy, ipt
-  REAL, DIMENSION(nx, ny, 1) :: var_in
+  REAL :: update_time
+  INTEGER :: ncid
   
   CHARACTER(LEN=17) :: routine = "MCKPP_READ_FLUXES"
   CHARACTER(LEN=max_message_len) :: message
