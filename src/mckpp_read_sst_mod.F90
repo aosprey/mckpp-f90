@@ -104,7 +104,7 @@ CONTAINS
       ! Work out time to read and check against times in file
       CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdsst, &
           file_times, num_times, kpp_const_fields%L_PERIODIC_CLIMSST, kpp_const_fields%climsst_period, &
-          update_time, start(3))
+          update_time, start(3), method=1)
       WRITE(message,*) 'Reading climatological SST for time ', update_time
       CALL mckpp_print(routine, message)
       WRITE(message,*) 'Reading climatological SST from position ',start(3)

@@ -72,7 +72,7 @@ SUBROUTINE mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
  
   ! Work out time to read in from 
   CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtocn, file_times, num_times, &
-      .FALSE., 0, update_time, start(3))
+      .FALSE., 0, update_time, start(3), method=1)
   WRITE(message,*) 'Reading fluxes for time ', update_time
   CALL mckpp_print(routine, message)
   WRITE(message,*) 'Reading fluxes from time point ',start(3)

@@ -7,11 +7,13 @@ MODULE mckpp_time_control
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_data_fields, ONLY: kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
-  
-IMPLICIT NONE
 
-PUBLIC
-  
+  IMPLICIT NONE
+
+  PUBLIC mckpp_update_time, mckpp_get_time, mckpp_get_update_time
+
+  PRIVATE 
+
 CONTAINS
 
   ! Update ntime and time in kpp_const_fields
@@ -23,7 +25,7 @@ CONTAINS
     kpp_const_fields%time = mckpp_get_time(ntime)
 
   END SUBROUTINE mckpp_update_time
-  
+
 
   ! Return time for a given timestep
   REAL FUNCTION mckpp_get_time(ntime)
@@ -31,20 +33,21 @@ CONTAINS
     INTEGER, INTENT(IN) :: ntime ! timestep
 
     mckpp_get_time = kpp_const_fields%startt + (ntime-1) * &
-       kpp_const_fields%dto / kpp_const_fields%spd
-  
+        kpp_const_fields%dto / kpp_const_fields%spd
+
   END FUNCTION mckpp_get_time
 
 
   ! Work out time for ancil data reads, based on current model time, udpate freq,
-  ! and time dim from file. 
-  ! Return time to read in, and position in time dimension in file. 
-  SUBROUTINE mckpp_get_update_time(file, time, nupdate, file_times, num_times, periodic, period, &
-      update_time, update_time_pos)
+  ! and time dim from file.
+  ! Return time to read in, and position in time dimension in file.
+  ! Work out time based on method 1 or 2 - see get_update_time_[12] functions below. 
+  SUBROUTINE mckpp_get_update_time(file, time, ndt_update, file_times, num_times, & 
+      periodic, period, update_time, update_time_pos, method)
 
     CHARACTER(LEN=*) :: file
     REAL, INTENT(IN) :: time 
-    INTEGER, INTENT(IN) :: nupdate, num_times, period
+    INTEGER, INTENT(IN) :: ndt_update, num_times, period, method
     REAL, DIMENSION(num_times), INTENT(IN) :: file_times
     LOGICAL, INTENT(IN) :: periodic
     REAL, INTENT(OUT) :: update_time
@@ -57,15 +60,19 @@ CONTAINS
     first_file_time = file_times(1)
     last_file_time = file_times(num_times)
 
-    update_time = time + 0.5 * (kpp_const_fields%dto / kpp_const_fields%spd) * nupdate
-    update_time_pos = NINT( (update_time-first_file_time)*kpp_const_fields%spd / &
-        (kpp_const_fields%dto*nupdate) ) + 1
+    IF (method .EQ. 2) THEN 
+      update_time = get_update_time_2(time, ndt_update) 
+    ELSE 
+      update_time = get_update_time_1(time, ndt_update)
+    END IF 
+      
+    update_time_pos = get_update_pos(time, ndt_update, first_file_time) 
 
     ! Check if ancil is periodic 
     IF (update_time .GT. last_file_time) THEN
       IF (periodic) THEN
-         DO WHILE (update_time .GT. last_file_time) 
-           update_time = update_time - period
+        DO WHILE (update_time .GT. last_file_time) 
+          update_time = update_time - period
         END DO
       ELSE
         WRITE(message,*) "Time to read exceeds the last time in the netCDF file", &
@@ -76,7 +83,7 @@ CONTAINS
         CALL mckpp_abort()
       END IF
     END IF
-    
+
     ! Check this matches time entry in file 
     file_update_time = file_times(update_time_pos)
     IF ( ABS(file_update_time - update_time) .GT. & 
@@ -88,7 +95,46 @@ CONTAINS
       CALL mckpp_abort()
     END IF
 
-  END SUBROUTINE mckpp_get_update_time 
+  END SUBROUTINE mckpp_get_update_time
 
+
+  ! Calculate time to read data:
+  ! Method 1: time + half update frequency 
+  REAL FUNCTION get_update_time_1(time, ndt_update)
+
+    REAL, INTENT(IN) :: time
+    INTEGER, INTENT(IN) :: ndt_update 
+
+    get_update_time_1 = time + 0.5 * (kpp_const_fields%dto / kpp_const_fields%spd) * ndt_update
+
+  END FUNCTION get_update_time_1
+
+
+  ! Calculate time to read data:
+  ! Method 2: ?
+  REAL FUNCTION get_update_time_2(time, ndt_update)
+
+    REAL, INTENT(IN) :: time
+    INTEGER, INTENT(IN) :: ndt_update 
+    REAL :: ndays_upd
+
+    ndays_upd = ndt_update * kpp_const_fields%dto / kpp_const_fields%spd
+    get_update_time_2 = (ndays_upd)*(FLOOR(time,8)*NINT(kpp_const_fields%spd,8)/&
+        (ndt_update*NINT(kpp_const_fields%dto,8)))+&
+        (0.5*kpp_const_fields%dto/kpp_const_fields%spd*ndt_update)
+
+  END FUNCTION get_update_time_2
+
+
+  ! Given a time value, work out position in time array 
+  REAL FUNCTION get_update_pos(update_time, ndt_update, first_file_time)
+
+    REAL, INTENT(IN) :: update_time, first_file_time
+    INTEGER, INTENT(IN) :: ndt_update
+
+    get_update_pos = NINT( (update_time-first_file_time)*kpp_const_fields%spd / &
+        (kpp_const_fields%dto*ndt_update) ) + 1
+
+  END FUNCTION get_update_pos
 
 END MODULE mckpp_time_control
