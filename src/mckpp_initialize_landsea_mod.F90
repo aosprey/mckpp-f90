@@ -74,9 +74,9 @@ SUBROUTINE mckpp_initialize_landsea()
        count(1) = nx
        count(2) = ny
        CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "lsm", landsea, start, count)
+           "lsm", landsea, start, count, 2)
        CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "maxdepth", ocdepth, start, count)       
+           "maxdepth", ocdepth, start, count, 2)       
        CALL mckpp_netcdf_close(routine, kpp_const_fields%landsea_file, ncid)
        
 #ifdef MCKPP_CAM3

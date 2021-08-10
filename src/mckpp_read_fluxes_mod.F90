@@ -86,13 +86,13 @@ SUBROUTINE mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   CALL mckpp_print(routine, message)
 
   ! Read fileds
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "taux", taux, start, count)
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "tauy", tauy, start, count)   
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "swf", swf, start, count)   
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "lwf", lwf, start, count)   
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "lhf", lhf, start, count)   
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "shf", shf, start, count)   
-  CALL mckpp_netcdf_get_var(routine, file, ncid, "precip", rain, start, count)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "taux", taux, start, count, 3)
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "tauy", tauy, start, count, 3)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "swf", swf, start, count, 3)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "lwf", lwf, start, count, 3)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "lhf", lhf, start, count, 3)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "shf", shf, start, count, 3)   
+  CALL mckpp_netcdf_get_var(routine, file, ncid, "precip", rain, start, count, 3)   
   snow = 0.0
  
   CALL mckpp_netcdf_close(routine, file, ncid)
