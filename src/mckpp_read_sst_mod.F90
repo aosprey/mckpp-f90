@@ -61,11 +61,10 @@ CONTAINS
       start=(/1,1,1/)
 #ifndef MCKPP_COUPLE
       CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
-          kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), start(1), start(2))
+          kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), start(1), start(2), num_times)
 #endif
-
+      
       ! Read in time field
-      CALL mckpp_netcdf_get_coord(routine, file, ncid, "time", num_times)
       ALLOCATE(file_times(num_times)) 
       CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
 

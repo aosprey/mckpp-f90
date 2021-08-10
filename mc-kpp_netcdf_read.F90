@@ -58,20 +58,21 @@ CONTAINS
   END SUBROUTINE mckpp_netcdf_close
 
 
-  ! Return bounds of the dimensions, and the starting lats and lons that match model grid.
+  ! Return the starting lats and lons that match model grid.
+  ! Optionally return the size of time dimension. 
   ! Assume dimensions are named "latitude", "longitude", and "time", but these could be
   ! optional arguments. 
   SUBROUTINE mckpp_netcdf_determine_boundaries(calling_routine, file_name, ncid, &
-      start_lon, start_lat, offset_lon, offset_lat, first_time, last_time) 
+      start_lon, start_lat, offset_lon, offset_lat, num_times) 
 
     CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name
     INTEGER, INTENT(IN) :: ncid
     REAL, INTENT(IN) :: start_lon, start_lat
     INTEGER, INTENT(OUT) :: offset_lon, offset_lat
-    REAL, INTENT(OUT), OPTIONAL :: first_time, last_time
+    INTEGER, INTENT(OUT), OPTIONAL :: num_times
 
     CHARACTER(LEN=max_message_len) :: context, message
-    INTEGER :: nlon, nlat, ntime, lon_varid, lat_varid, time_varid
+    INTEGER :: nlon, nlat, lon_varid, lat_varid
     REAL, DIMENSION(:), ALLOCATABLE :: longitudes, latitudes
 
     CHARACTER(LEN=33) :: routine = "MCKPP_NETCDF_DETERMINE_BOUNDARIES"
@@ -106,11 +107,9 @@ CONTAINS
       CALL mckpp_abort()
     END IF
 
-    IF ( PRESENT(first_time) .AND. PRESENT(last_time) ) THEN 
+    IF ( PRESENT(num_times) ) THEN 
       WRITE(message, *) "Reading time from file ", TRIM(file_name)
-      CALL mckpp_netcdf_get_coord(context, file_name, ncid, time_name, ntime, time_varid)
-      CALL check( context, message, NF90_get_var(ncid, time_varid, first_time, (/1/)) )
-      CALL check( context, message, NF90_get_var(ncid, time_varid, last_time, (/ntime/)) )
+      CALL mckpp_netcdf_get_coord(context, file_name, ncid, time_name, num_times)
     END IF
     
   END SUBROUTINE mckpp_netcdf_determine_boundaries
