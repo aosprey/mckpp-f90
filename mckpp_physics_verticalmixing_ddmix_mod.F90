@@ -1,4 +1,4 @@
-MODULE mckpp_physics_verticalmixing_ddmix
+MODULE mckpp_physics_verticalmixing_ddmix_mod
 
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type
@@ -55,4 +55,4 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fi
   
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX
 
-END MODULE mckpp_physics_verticalmixing_ddmix
+END MODULE mckpp_physics_verticalmixing_ddmix_mod

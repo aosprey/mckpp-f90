@@ -8,7 +8,7 @@ MODULE mckpp_physics_ocnstep_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax
   USE mckpp_physics_ocnint_mod, ONLY: mckpp_physics_ocnint
-  USE mckpp_physics_verticalmixing, ONLY: mckpp_physics_verticalmixing_mod
+  USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
   
   IMPLICIT NONE
 

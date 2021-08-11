@@ -1,7 +1,7 @@
 MODULE mckpp_xios_io
 
 #ifdef MCKPP_CAM3
-  USE mckpp_data_types, ONLY: kpp_3d_fields, kpp_const_fields
+  USE mckpp_types, ONLY: kpp_3d_fields, kpp_const_fields
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif

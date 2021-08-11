@@ -1,4 +1,4 @@
-MODULE physics_state_equations
+MODULE mckpp_physics_state_equations
 
   IMPLICIT NONE
   
@@ -475,4 +475,4 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
   RETURN
 END Subroutine MCKPP_Sig80
 
-END MODULE physics_state_equations
+END MODULE mckpp_physics_state_equations

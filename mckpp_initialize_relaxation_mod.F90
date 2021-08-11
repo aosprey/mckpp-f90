@@ -20,7 +20,8 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
 #endif
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, ny_globe
-  USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_sst
+  USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_sst0
+  
 
 ! Re-write logic to allow for relaxing either SST or
 ! salinity - NPK 24/08/11

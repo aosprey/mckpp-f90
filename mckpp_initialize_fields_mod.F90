@@ -28,12 +28,12 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
-  USE mckpp_read_heatcorrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
+  USE mckpp_read_heatcorrections, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
   USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
-  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
-  USE mckpp_read_saltcorrections_mod, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
+  USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_saltcorrections, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
   USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
-  USE mckpp_read_temperatures_mod, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
+  USE mckpp_read_temperatures, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
   USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
 
   IMPLICIT NONE

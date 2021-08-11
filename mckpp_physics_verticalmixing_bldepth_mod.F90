@@ -6,7 +6,7 @@ MODULE mckpp_physics_verticalmixing_bldepth_mod
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
   USE mckpp_physics_swfrac_mod, ONLY: mckpp_physics_swfrac, mckpp_physics_swfrac_opt
-  USE mckpp_physics_verticalmixing_scale_mod, ONLY: mckpp_physics_verticalmixing_scale
+  USE mckpp_physics_verticalmixing_wscale_mod, ONLY: mckpp_physics_verticalmixing_wscale
 
   IMPLICIT NONE
 
