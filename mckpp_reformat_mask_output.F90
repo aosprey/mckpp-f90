@@ -43,7 +43,8 @@ SUBROUTINE mckpp_reformat_mask_input_2d(threed_in,nz_in,mask,missval,twod_out)
   IMPLICIT NONE
 
   INTEGER, intent(in) :: nz_in
-  REAL*4,intent(in) :: threed_in(NX,NY,nz_in),missval
+  REAL*4,intent(in) :: threed_in(NX,NY,nz_in)
+  REAL*8 :: missval
   REAL*4,intent(out) :: twod_out(NPTS,nz_in)
   LOGICAL,intent(in) :: mask(NPTS)
   INTEGER :: ix,iy,ipt
@@ -68,7 +69,8 @@ SUBROUTINE mckpp_reformat_mask_input_1d(twod_in,mask,missval,oned_out)
 
   IMPLICIT NONE
 
-  REAL*4,intent(in) :: twod_in(NX,NY),missval
+  REAL*4,intent(in) :: twod_in(NX,NY)
+  REAL*8 :: missval
   REAL*4,intent(out) :: oned_out(NPTS)
   LOGICAL,intent(in) :: mask(NPTS)
   INTEGER :: ix,iy,ipt
@@ -94,7 +96,8 @@ SUBROUTINE mckpp_reformat_mask_output_1d(oned_in,mask,missval,twod_out)
 
   IMPLICIT NONE
 
-  REAL*4,intent(in) :: oned_in(NPTS),missval
+  REAL*4,intent(in) :: oned_in(NPTS)
+  REAL*8, INTENT(IN) :: missval
   REAL*4,intent(out) :: twod_out(NX,NY)
   LOGICAL,intent(in) :: mask(NPTS)
   INTEGER :: i,j,ipt
@@ -120,7 +123,8 @@ SUBROUTINE mckpp_reformat_mask_output_2d(twod_in,nz_in,mask,missval,threed_out)
   IMPLICIT NONE
   
   INTEGER,intent(in) :: nz_in
-  REAL*4,intent(in) :: twod_in(NPTS,nz_in),missval
+  REAL*4,intent(in) :: twod_in(NPTS,nz_in)
+  REAL*8, INTENT(IN) :: missval
   REAL*4,intent(out) :: threed_out(NX,NY,nz_in)
   LOGICAL,intent(in) :: mask(NPTS)
   INTEGER :: i,j,ipt

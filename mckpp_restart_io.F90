@@ -135,7 +135,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   REAL*4, allocatable, dimension(:,:) :: temp_twod
   !REAL*4,dimension(NPTS,1:NZP1tmax+1) :: temp_twod_large
   REAL*4, allocatable :: lon_out(:),lat_out(:),z_out(:)
-  REAL*4 :: delta
+  REAL*4:: delta
 
   CHARACTER(LEN=29) :: routine = "MCKPP_RESTART_IO_WRITE_NETCDF"
   CHARACTER(LEN=max_message_len) :: message
@@ -162,7 +162,7 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   WRITE(netcdf_restart_outfile,'(A17,A3)') kpp_const_fields%restart_outfile,'.nc'
 
   status=NF_CREATE(netcdf_restart_outfile,NF_CLOBBER,ncid)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR
+  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   WRITE(message,*) 'Created file ', netcdf_restart_outfile
   CALL mckpp_print(routine, message)
 #ifdef MCKPP_CAM3
@@ -177,10 +177,10 @@ SUBROUTINE MCKPP_RESTART_IO_WRITE_NETCDF()
   IF (my_ny .gt. 1) delta=kpp_3d_fields%dlat(NX+1)-kpp_3d_fields%dlat(1)
 #endif
   CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(2),my_ny,dim_varids(2),'latitude','deg',delta,' ')
-  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(3),NZP1,dim_varids(3),'z','m',0.0,' ')
-  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(4),NZP1tmax+1,dim_varids(4),'z_1','number_of_gridpoint',0.0,' ')
-  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(5),1,dim_varids(5),'t','days',0.0,' ')
-  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(6),2,dim_varids(6),'intcnt','unitless',0.0,' ')
+  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(3),NZP1,dim_varids(3),'z','m',REAL(0.0,4),' ')
+  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(4),NZP1tmax+1,dim_varids(4),'z_1','number_of_gridpoint',REAL(0.0,4),' ')
+  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(5),1,dim_varids(5),'t','days',REAL(0.0,4),' ')
+  CALL MCKPP_NCDF_DEF_DIM(ncid,dim_dimids(6),2,dim_varids(6),'intcnt','unitless',REAL(0.0,4),' ')
 
   DO ivar=1,nvars
      SELECT CASE(ivar)

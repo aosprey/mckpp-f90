@@ -323,7 +323,8 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
 #include <netcdf.inc>
 
   INTEGER ncid,offset_lon,offset_lat,lon_dimid,lon_varid,lat_dimid,lat_varid,time_dimid,time_varid,ix,iy
-  REAL start_lon,start_lat,first_time,last_time
+  REAL start_lon,start_lat
+  REAL*4 first_time,last_time
   INTEGER, OPTIONAL :: ntime_file
   CHARACTER(*) file_description,latitude_name,longitude_name,time_name
   CHARACTER(LEN=30) tmp_name
