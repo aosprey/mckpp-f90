@@ -85,8 +85,6 @@ END SUBROUTINE MCKPP_FLUXES
 SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)
   
   INTEGER k
-  REAL MCKPP_FLUXES_SWDK
-  EXTERNAL MCKPP_FLUXES_SWDK
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields
   CHARACTER(LEN=31) :: routine = "MCKPP_FLUXES_NTFLUX"
@@ -125,5 +123,6 @@ REAL FUNCTION MCKPP_FLUXES_SWDK(z,jerlov)
   MCKPP_FLUXES_SWDK = Rfac(j) * dexp(dble(z/a1(j))) + (1.0-Rfac(j)) * dexp(dble(z/a2(j)))
 
 END FUNCTION MCKPP_FLUXES_SWDK
+
 
 END MODULE mckpp_fluxes_mod

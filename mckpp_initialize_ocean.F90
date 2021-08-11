@@ -19,7 +19,8 @@ MODULE mckpp_initialize_ocean
   USE mckpp_netcdf_subs
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
-
+  USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
+  
   IMPLICIT NONE
 #include <netcdf.inc>  
 

@@ -19,7 +19,7 @@ MODULE mckpp_initialize_fields_mod
 #endif
   USE mckpp_initialize_advection_mod, ONLY: mckpp_initialize_advection
   USE mckpp_initialize_couplingweight_mod, ONLY: mckpp_initialize_couplingweight
-  USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_fields, mckpp_initialize_fluxes_variables
+  USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_file, mckpp_initialize_fluxes_variables
   USE mckpp_initialize_geography_mod, ONLY: mckpp_initialize_geography  
   USE mckpp_initialize_landsea_mod, ONLY: mckpp_initialize_landsea
   USE mckpp_initialize_ocean, ONLY: mckpp_initialize_ocean_model, mckpp_initialize_ocean_profiles

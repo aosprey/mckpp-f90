@@ -7,7 +7,7 @@ MODULE mckpp_physics_verticalmixing_mod
 #endif
   USE mckpp_fluxes_mod, ONLY: mckpp_fluxes, mckpp_fluxes_ntflux
   USE mckpp_parameters, ONLY: nz, nzp1, nsp1
-  USE mckpp_physics_state_equations, ONLY: mckpp_abk80
+  USE mckpp_physics_state_equations, ONLY: mckpp_abk80, mckpp_cpsw
   USE mckpp_physics_verticalmixing_kppmix_mod, ONLY: mckpp_physics_verticalmixing_kppmix
 
   IMPLICIT NONE
@@ -35,7 +35,6 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
   real epsilon,epsln
   real alpha,beta,exppr
   real sigma,sigma0
-  real MCKPP_CPSW
   real tau
   real zref,wz,bref
   integer k,n,kl
