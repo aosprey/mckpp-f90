@@ -1,18 +1,21 @@
 MODULE mckpp_physics_verticalmixing_mod
 
-CONTAINS 
-
-SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
-
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
+  USE mckpp_fluxes_mod, ONLY: mckpp_fluxes, mckpp_fluxes_ntflux
   USE mckpp_parameters, ONLY: nz, nzp1, nsp1
+  USE mckpp_physics_state_equations, ONLY: mckpp_abk80
+  USE mckpp_physics_verticalmixing_kppmix_mod, ONLY: mckpp_physics_verticalmixing_kppmix
 
-  !  Interface between 1-d model and vertical mixing
   IMPLICIT NONE
+
+CONTAINS 
+
+!  Interface between 1-d model and vertical mixing
+SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
 
 ! inputs 
   type(kpp_1d_type) :: kpp_1d_fields

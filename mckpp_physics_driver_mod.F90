@@ -5,10 +5,6 @@
 
 MODULE mckpp_physics_driver_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_driver()
-  
 #ifdef MCKPP_CAM3
   USE mckpp_parameters
   USE mckpp_types, only: kpp_3d_fields,kpp_1d_type,kpp_const_fields
@@ -19,9 +15,16 @@ SUBROUTINE mckpp_physics_driver()
   USE mckpp_timer, ONLY: mckpp_define_new_timer, mckpp_start_timer, mckpp_stop_timer
 #endif
   USE mckpp_parameters
+  USE mckpp_physics_ocnstep_mod, ONLY: mckpp_physics_ocnstep
+  USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_bottomtemp, mckpp_physics_overrides_check_profile
+  USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   
   IMPLICIT NONE
 
+CONTAINS
+
+SUBROUTINE mckpp_physics_driver()
+  
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
 #endif

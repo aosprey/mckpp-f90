@@ -1,19 +1,20 @@
 MODULE mckpp_physics_verticalmixing_rimix_mod
 
-CONTAINS
-
-SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fields)
-
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
+  USE mckpp_physics_verticalmixing_z121_mod, ONLY: mckpp_physics_verticalmixing_z121
  
   IMPLICIT NONE     
-  ! compute interior viscosity diffusivity coefficients due to
-  ! shear instability (dependent on a local richardson number)
-  ! and due to background internal wave activity.
+
+CONTAINS
+
+! compute interior viscosity diffusivity coefficients due to
+! shear instability (dependent on a local richardson number)
+! and due to background internal wave activity.
+SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fields)
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

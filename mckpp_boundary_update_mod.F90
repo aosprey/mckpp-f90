@@ -1,20 +1,28 @@
 MODULE mckpp_boundary_update_mod
 
-CONTAINS
-
-SUBROUTINE MCKPP_BOUNDARY_UPDATE()
-
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_const_fields
 #else
   USE mckpp_data_fields, ONLY: kpp_const_fields
 #endif
+  USE mckpp_boundary_interpolate, ONLY: mckpp_boundary_interpolate_temp, &
+      mckpp_boundary_interpolate_sal
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-
-  ! Update all boundary conditions that are read from netCDF files,
-  ! except for surface fluxes, which are handled in MCKPP_UPDATE_FLUXES or coupling routines.
-
+  USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_sst
+  USE mckpp_read_heatcorrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
+  USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
+  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_saltcorrections_mod, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
+  USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
+  USE mckpp_read_temperatures_mod, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
+ 
   IMPLICIT NONE
+ 
+CONTAINS
+
+! Update all boundary conditions that are read from netCDF files,
+! except for surface fluxes, which are handled in MCKPP_UPDATE_FLUXES or coupling routines.
+SUBROUTINE MCKPP_BOUNDARY_UPDATE()
   
   CHARACTER(LEN=21) :: routine = "MCKPP_BOUNDARY_UPDATE"
   CHARACTER(LEN=max_message_len) :: message

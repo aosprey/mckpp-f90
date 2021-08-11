@@ -5,10 +5,6 @@
 
 MODULE mckpp_initialize_fields_mod
 
-CONTAINS
-
-SUBROUTINE MCKPP_INITIALIZE_FIELDS()
-  
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only : r8=>shr_kind_r8
   USE mckpp_types, only : kpp_global_fields,kpp_3d_fields,kpp_const_fields
@@ -16,14 +12,36 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   USE ppgrid, only : pcols,begchunk,endchunk
   USE pmgrid, only : masterproc
 #else
+  USE mckpp_boundary_interpolate, ONLY: mckpp_boundary_interpolate_temp, &
+      mckpp_boundary_interpolate_sal
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, &
       mckpp_allocate_3d_fields
 #endif
+  USE mckpp_initialize_advection_mod, ONLY: mckpp_initialize_advection
+  USE mckpp_initialize_couplingweight_mod, ONLY: mckpp_initialize_couplingweight
+  USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_fields, mckpp_initialize_fluxes_variables
+  USE mckpp_initialize_geography_mod, ONLY: mckpp_initialize_geography  
+  USE mckpp_initialize_landsea_mod, ONLY: mckpp_initialize_landsea
+  USE mckpp_initialize_ocean, ONLY: mckpp_initialize_ocean_model, mckpp_initialize_ocean_profiles
+  USE mckpp_initialize_optics_mod, ONLY: mckpp_initialize_optics
+  USE mckpp_initialize_relaxtion_mod, ONLY: mckpp_initialize_relaxation
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts
+  USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
+  USE mckpp_read_heatcorrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
+  USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
+  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_saltcorrections_mod, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
+  USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
+  USE mckpp_read_temperatures_mod, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
+  USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
 
   IMPLICIT NONE
 
+CONTAINS
+
+SUBROUTINE MCKPP_INITIALIZE_FIELDS()
+  
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
   REAL(r8) :: clat1(pcols),clon1(pcols)

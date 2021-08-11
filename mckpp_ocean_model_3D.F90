@@ -1,7 +1,12 @@
 PROGRAM mckpp_ocean_model_3d
 
+  USE mckpp_boundary_update_mod, ONLY: mckpp_boundary_update
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_fluxes_mod, ONLY: mckpp_fluxes
+  USE mckpp_initialize_fields_mod, ONLY: mckpp_initialize_fields
+  USE mckpp_initialize_namelist_mod, ONLY: mckpp_initialize_namelist
+  USE mckpp_physics_driver_mod, ONLY: mckpp_physics_driver
   USE mckpp_time_control, ONLY: mckpp_update_time
   USE mckpp_timer, ONLY: mckpp_initialize_timers, mckpp_start_timer, &
       mckpp_stop_timer, mckpp_print_timers

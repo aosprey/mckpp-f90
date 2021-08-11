@@ -5,6 +5,8 @@
 
 MODULE mckpp_initialize_landsea_mod
 
+  USE mckpp_netcdf_subs
+
 CONTAINS
 
 SUBROUTINE mckpp_initialize_landsea()

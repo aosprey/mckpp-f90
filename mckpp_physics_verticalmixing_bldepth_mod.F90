@@ -1,40 +1,40 @@
 MODULE mckpp_physics_verticalmixing_bldepth_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, Bo, Bosol, hbl, & 
-    bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_Type,kpp_const_type
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
+  USE mckpp_physics_swfrac_mod, ONLY: mckpp_physics_swfrac, mckpp_physics_swfrac_opt
+  USE mckpp_physics_verticalmixing_scale_mod, ONLY: mckpp_physics_verticalmixing_scale
 
   IMPLICIT NONE
-  
-  !     the oceanic planetray boundary layer depth, hbl, is determined as
-  !     the shallowest depth where the bulk richardson number is
-  !     equal to the critical value, Ricr.
-  !     
-  !     bulk richardson numbers are evaluated by computing velocity and
-  !     buoyancy differences between values at zgrid(kl) < 0 and surface
-  !     reference values.
-  !     in this configuration, the reference values are equal to the
-  !     values in the surface layer.  
-  !     when using a very fine vertical grid, these values should be 
-  !     computed as the vertical average of velocity and buoyancy from 
-  !     the surface down to epsilon*zgrid(kl).
-  !
-  !     when the bulk richardson number at k exceeds Ricr, hbl is
-  !     linearly interpolated between grid levels zgrid(k) and zgrid(k-1).
-  !
-  !     The water column and the surface forcing are diagnosed for 
-  !     stable/ustable forcing conditions, and where hbl is relative 
-  !     to grid points (caseA), so that conditional branches can be 
-  !     avoided in later subroutines.
 
-  ! Necessary for IMPLICIT NONE
+CONTAINS
+
+!     the oceanic planetray boundary layer depth, hbl, is determined as
+!     the shallowest depth where the bulk richardson number is
+!     equal to the critical value, Ricr.
+!     
+!     bulk richardson numbers are evaluated by computing velocity and
+!     buoyancy differences between values at zgrid(kl) < 0 and surface
+!     reference values.
+!     in this configuration, the reference values are equal to the
+!     values in the surface layer.  
+!     when using a very fine vertical grid, these values should be 
+!     computed as the vertical average of velocity and buoyancy from 
+!     the surface down to epsilon*zgrid(kl).
+!
+!     when the bulk richardson number at k exceeds Ricr, hbl is
+!     linearly interpolated between grid levels zgrid(k) and zgrid(k-1).
+!
+!     The water column and the surface forcing are diagnosed for 
+!     stable/ustable forcing conditions, and where hbl is relative 
+!     to grid points (caseA), so that conditional branches can be 
+!     avoided in later subroutines.
+SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, Bo, Bosol, hbl, & 
+    bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
+    
   real bvsq,cekman,cmonob,cs,cv,epsilon,fekman,fmonob,&
        hbf,hekman,hmin,hmin2,hmonob,hri,Ricr,vtc,vtsq,epsln
   integer ka,ksave,ku,kl

@@ -5,6 +5,9 @@
 
 MODULE mckpp_read_heatcorrections
 
+USE mckpp_abort_mod, ONLY: mckpp_abort
+USE mckpp_netcdf_subs
+
 CONTAINS 
 
 SUBROUTINE MCKPP_READ_FCORR_2D()

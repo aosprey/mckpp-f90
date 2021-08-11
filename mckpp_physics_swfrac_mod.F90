@@ -1,22 +1,21 @@
 MODULE mckpp_physics_swfrac_mod
 
-CONTAINS 
-
-subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
-
 #ifdef MCKPP_CAM3
   USE mckpp_types, only : kpp_1d_type, kpp_const_type
 #else
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
   USE mckpp_parameters, ONLY: nzp1
-
-  ! compute fraction of solar short-wave flux penetrating to specified
-  ! depth (times fact) due to exponential decay in  Jerlov water type
-  ! reference : two band solar absorption model of simpson and 
-  ! paulson (1977)
       
   IMPLICIT NONE
+
+CONTAINS 
+
+! compute fraction of solar short-wave flux penetrating to specified
+! depth (times fact) due to exponential decay in  Jerlov water type
+! reference : two band solar absorption model of simpson and 
+! paulson (1977)
+subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
   
   integer nwtype
   parameter(nwtype=5) ! max number of different water types 
@@ -48,13 +47,10 @@ subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
 end subroutine MCKPP_PHYSICS_SWFRAC_OPT
 
 
-subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
-
 ! compute fraction of solar short-wave flux penetrating to specified
 ! depth (times fact) due to exponential decay in  Jerlov water type
 ! reference : two band solar absorption model of simpson and paulson (1977)
-
-  IMPLICIT NONE
+subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
   
   integer nwtype
   parameter(nwtype=5) ! max number of different water types 

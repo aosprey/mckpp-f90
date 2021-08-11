@@ -5,6 +5,8 @@
 
 MODULE mckpp_initialize_advection_mod
 
+  USE mckpp_netcdf_subs  
+
 CONTAINS 
 
 SUBROUTINE MCKPP_INITIALIZE_ADVECTION()

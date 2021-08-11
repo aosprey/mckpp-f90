@@ -18,6 +18,8 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
 #endif
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nzp1
+  USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_temperatures, ONLY: mckpp_read_temperatures_3d
 
   IMPLICIT NONE
 

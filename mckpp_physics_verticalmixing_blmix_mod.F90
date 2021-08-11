@@ -1,21 +1,21 @@
 MODULE mckpp_physics_verticalmixing_blmix_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stable, caseA, kbl, &
-    gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
   USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
 #endif
-
-  ! mixing coefficients within boundary layer depend on surface
-  ! forcing and the magnitude and gradient of interior mixing below
-  ! the boundary layer ("matching").
+  USE mckpp_physics_verticalmixing_wscale_mod, ONLY: mckpp_physics_verticalmixing_wscale
 
   IMPLICIT NONE
+
+CONTAINS
+
+! mixing coefficients within boundary layer depend on surface
+! forcing and the magnitude and gradient of interior mixing below
+! the boundary layer ("matching").
+SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stable, caseA, kbl, &
+    gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
 
   ! CAUTION if mixing bottoms out at hbl = -zgrid(km) THEN
   ! fictious layer kmp1 is needed with small but finite width (eg. 1.e-10)

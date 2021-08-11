@@ -1,5 +1,7 @@
 MODULE mckpp_initialize_geography_mod
 
+  USE mckpp_netcdf_subs
+
 CONTAINS
 
 SUBROUTINE mckpp_initialize_geography()

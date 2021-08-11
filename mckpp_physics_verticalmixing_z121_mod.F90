@@ -1,12 +1,11 @@
 MODULE mckpp_physics_verticalmixing_z121_mod
 
+  IMPLICIT NONE
+
 CONTAINS
 
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_Z121 (kmp1,vlo,vhi,V,w)
   
-  IMPLICIT NONE
-
-  ! Necessary for IMPLICIT NONE (NPK 11/2/13)
   INTEGER kmp1
   REAL vlo,vhi,tmp,wait
   INTEGER k,km

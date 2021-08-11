@@ -1,26 +1,26 @@
 MODULE mckpp_physics_overrides
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_overrides_bottomtemp()
-
-  ! Written by NPK 10/4/08
-
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
+  USE mckpp_types, only: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
   USE ppgrid, only: begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p
 #else 
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
 #endif
-  USE mckpp_parameters, ONLY: npts, nzp1
+  USE mckpp_log_messages, ONLY: mckpp_print_warning, max_message_len
+  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
   
   IMPLICIT NONE
   
+CONTAINS
+
+! Written by NPK 10/4/08
+SUBROUTINE mckpp_physics_overrides_bottomtemp()
+
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
-#endif  
+ #endif  
   INTEGER ipt,z
   
 #ifdef MCKPP_CAM3
@@ -45,22 +45,9 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp()
 END SUBROUTINE mckpp_physics_overrides_bottomtemp
 
 
+! Written by NPK 27/8/07
 SUBROUTINE mckpp_physics_overrides_sst0()
   
-  ! Written by NPK 27/8/07
-
-#ifdef MCKPP_CAM3
-  USE shr_kind_mod,only: r8=>shr_kind_r8
-  USE mckpp_types, only: kpp_3d_fields
-  USE ppgrid, only: begchunk,endchunk,pcols
-  USE phys_grid, only: get_ncols_p
-#else
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
-#endif
-  USE mckpp_parameters, ONLY: nx, ny
-
-  IMPLICIT NONE
-
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
 #endif
@@ -85,16 +72,6 @@ END SUBROUTINE mckpp_physics_overrides_sst0
 
 
 SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
-
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else 
-  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
-#endif
-  USE mckpp_log_messages, ONLY: mckpp_print_warning, max_message_len
-  USE mckpp_parameters, ONLY: nzp1
-
-  IMPLICIT NONE
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

@@ -5,6 +5,8 @@
 
 MODULE mckpp_netcdf_subs
 
+USE mckpp_abort_mod, ONLY: mckpp_abort
+
 CONTAINS
 
 SUBROUTINE MCKPP_NCDF_DEF_DIM (ncid,dimid,dimlen,varid,name,units,delta,long_name)

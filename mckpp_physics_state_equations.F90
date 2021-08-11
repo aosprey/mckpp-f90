@@ -1,9 +1,10 @@
 MODULE physics_state_equations
 
+  IMPLICIT NONE
+  
 CONTAINS 
 
 REAL FUNCTION MCKPP_CPSW(S,T1,P0)
-  IMPLICIT NONE
 
   REAL :: s, t1, p0
   REAL :: t, p, sr, a, b, c, cp0, cp1, cp2
@@ -132,7 +133,6 @@ END FUNCTION MCKPP_CPSW
 Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig) 
   !    *,Exp. Coeff. of SeaWater 1980 <870330.1557> 
   ! 
-  Implicit None 
   Real P,P0,T,S,SR,Sig,Sig0,R1,R2,R3,R4,T1 
   Real PK,A,B,Alpha,Beta,Kappa  
   Real A1,B1,C,D,E,K
@@ -205,7 +205,6 @@ End Subroutine MCKPP_ABK80
 
 Subroutine MCKPP_Bet80(S,T,P,Beta,&
      R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)   
-  Implicit None 
   
   Real P,P0,T,S,SR,R1,R2,R3,R4 
   Real Beta,PK,A,B,SR5
@@ -263,7 +262,6 @@ Subroutine MCKPP_Alf80(S,T,P,Alpha,&
   ! 
   ! John L. Lillibridge @ URI/GSO: March 24, 1987
   !
-  Implicit None 
   Real P,P0,PK                             
   !Pressure Related Terms
   Real T,S,SR                              
@@ -338,7 +336,6 @@ END Subroutine MCKPP_Alf80
 Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa,&
      R1,R2,R3,R4,A,B,C,D,E,A1,B1,K,SR,P0,PK,Rho,Rho0,ABFac,ABFlg)  
   !    *,Compressibility of Sea Water <870330.1553> 
-  Implicit None
  
   Real P,P0,T,S,SR,R1,R2,R3,R4 
   Real PK,A,B,Kappa 
@@ -390,7 +387,6 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
 ! 
 ! John L. Lillibridge @ URI/GSO: March 24 1987
 !
-  Implicit None 
   Real P,P0,PK                             
   !Pressure Related Terms
   Real T,S,SR                              

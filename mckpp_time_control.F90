@@ -4,6 +4,7 @@ MODULE mckpp_time_control
   ! deriving validity times for I/O routines.
   ! Time variables all stored in kpp_const_fields 
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_data_fields, ONLY: kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   

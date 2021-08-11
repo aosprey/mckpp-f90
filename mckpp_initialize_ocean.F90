@@ -5,25 +5,28 @@
 
 MODULE mckpp_initialize_ocean
 
-CONTAINS
-
-SUBROUTINE mckpp_initialize_ocean_profiles()
-  
 #ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
-  USE shr_kind_mod, only: r8=>shr_kind_r8
+  USE mckpp_types, only: kpp_global_fields,kpp_3d_fields,kpp_const_fields,kpp_1d_type
+  USE shr_kind_mod, only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE pmgrid, only: masterproc
-  USE ppgrid, only: pcols,begchunk,endchunk
+  USE ppgrid, only: pcols,begchunk,endchunk,pcols
   USE phys_grid, only: get_ncols_p, scatter_field_to_chunk
 #else
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
 #endif
+  USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
-  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
+  USE mckpp_netcdf_subs
+  USE mckpp_parameters
+  USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
 
   IMPLICIT NONE
 #include <netcdf.inc>  
 
+CONTAINS
+
+SUBROUTINE mckpp_initialize_ocean_profiles()
+  
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
@@ -314,14 +317,7 @@ END SUBROUTINE mckpp_initialize_ocean_profiles
 
 
 SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,var_out)
-  
-#ifdef MCKPP_CAM3
-  USE shr_kind_mod, only : r8=>shr_kind_r8, r4=>shr_kind_r4
-#endif  
-  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
-  
-  IMPLICIT NONE
-  
+ 
   INTEGER, intent(in) :: nz_in
 
 #ifdef MCKPP_CAM3
@@ -382,25 +378,12 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
 END SUBROUTINE mckpp_initialize_ocean_profiles_vinterp
 
 
+! Initialize ocean model:
+! Set coefficients for tridiagonal matrix solver.
+! Compute hmix and diffusivity profiles for initial profile.
+! Prepare for first time step.
 SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
   
-#ifdef MCKPP_CAM3  
-  USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_types, only: kpp_3d_fields,kpp_const_fields,kpp_1d_type
-  USE ppgrid, only: begchunk,endchunk,pcols
-  USE phys_grid, only: get_ncols_p  
-#else
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
-#endif
-  USE mckpp_parameters 
-
-  ! Initialize ocean model:
-  ! Set coefficients for tridiagonal matrix solver.
-  ! Compute hmix and diffusivity profiles for initial profile.
-  ! Prepare for first time step.
-  
-  IMPLICIT NONE
-
 #ifdef MCKPP_CAM3
   INTEGER :: icol,ncol,ichnk
 #endif

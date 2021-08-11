@@ -1,9 +1,5 @@
 MODULE mckpp_physics_lookup_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only : kpp_const_type
 #else 
@@ -12,6 +8,10 @@ SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
 
   IMPLICIT NONE
 
+CONTAINS
+
+SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
+  
   TYPE(kpp_const_type) :: kpp_const_fields
   
   real zmin,zmax,umin,umax,usta,zeta,zehat,epsln,&

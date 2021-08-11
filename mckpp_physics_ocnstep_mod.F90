@@ -1,9 +1,5 @@
 MODULE mckpp_physics_ocnstep_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else
@@ -11,38 +7,43 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
 #endif
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax
-  
-  !-----------------------------------------------------------------------
-  ! Note in this version:
-  !   -  ADVECTIVE CORRECTIONS AVAILABLE
-  !   - read forcing, but compute SW from okta model   (fread in atmrad.f)
-  !   - use okta model for PAPA          (use cloudpapa in solar in bio.f)
-  !   - Jerlov water type II                            (SWDK in fluxes.f)
-  !   - albedo for ocean is set to 0.06, which is used for QSW from fcomp
-  !        or fread when rad/conv is not running:
-  !        albocn=0.06                             (init cnsts in input.f)
-  !   - no net fresh water flux into ocean when forcing with state
-  !        variables (laflx >= 1):
-  !        sflux(7,2,jptr) = - sflux(6,2,jptr)        (atmflx in fluxes.f)
-  !   - use psnow flux data to input observed SST, 
-  !                                                    (fread in atmrad.f)
-  !  ALSO :
-  !         General ability to read large scale forcing from euc and doc LES
-  ! ----------------------------------------------------------------------
-  ! Originally ~/KPP/LARGE/ocn.f (from Bill Large)
-  !  Modified by SJW to remove those bits which a specific to Bill's 
-  ! work and just leave the bit we need
-  ! Started 18/03/02
-  !-----------------------------------------------------------------------
-  
-  !     Main driver for ocean module.
-  !     Integration is performed only on the permanent grid
-  !     Written   3 Mar 1991 - WGL
-  !     Modified  5 Jun 1992 - jan : implicit scheme
-  !              16 Nov      - jan : latest version
-  !              16 Nov 1994 - wgl : new KPP codes no temporary grid
+  USE mckpp_physics_ocnint_mod, ONLY: mckpp_physics_ocnint
+  USE mckpp_physics_verticalmixing, ONLY: mckpp_physics_verticalmixing_mod
   
   IMPLICIT NONE
+
+CONTAINS
+
+!-----------------------------------------------------------------------
+! Note in this version:
+!   -  ADVECTIVE CORRECTIONS AVAILABLE
+!   - read forcing, but compute SW from okta model   (fread in atmrad.f)
+!   - use okta model for PAPA          (use cloudpapa in solar in bio.f)
+!   - Jerlov water type II                            (SWDK in fluxes.f)
+!   - albedo for ocean is set to 0.06, which is used for QSW from fcomp
+!        or fread when rad/conv is not running:
+!        albocn=0.06                             (init cnsts in input.f)
+!   - no net fresh water flux into ocean when forcing with state
+!        variables (laflx >= 1):
+!        sflux(7,2,jptr) = - sflux(6,2,jptr)        (atmflx in fluxes.f)
+!   - use psnow flux data to input observed SST, 
+!                                                    (fread in atmrad.f)
+!  ALSO :
+!         General ability to read large scale forcing from euc and doc LES
+! ----------------------------------------------------------------------
+! Originally ~/KPP/LARGE/ocn.f (from Bill Large)
+!  Modified by SJW to remove those bits which a specific to Bill's 
+! work and just leave the bit we need
+! Started 18/03/02
+!-----------------------------------------------------------------------
+  
+!     Main driver for ocean module.
+!     Integration is performed only on the permanent grid
+!     Written   3 Mar 1991 - WGL
+!     Modified  5 Jun 1992 - jan : implicit scheme
+!              16 Nov      - jan : latest version
+!              16 Nov 1994 - wgl : new KPP codes no temporary grid
+SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)  
   
   TYPE(kpp_1d_type) :: kpp_1d_fields
   TYPE(kpp_const_type) :: kpp_const_fields

@@ -1,10 +1,5 @@
 MODULE mckpp_physics_verticalmixing_enhance_mod
 
-CONTAINS 
-
-SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA, blmc,&
-    kpp_1d_fields, kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
@@ -13,9 +8,12 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA,
 
   IMPLICIT NONE
 
-  ! enhance the diffusivity at the kbl-.5 interface
+CONTAINS 
 
-  !     Necessary for IMPLICIT NONE (NPK 11/2/13)
+! enhance the diffusivity at the kbl-.5 interface
+SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA, blmc,&
+    kpp_1d_fields, kpp_const_fields)
+ 
   real dkmp5,dstar
   integer ki
   integer km                !,kmp1           ! number of vertical levels  

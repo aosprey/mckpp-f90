@@ -1,9 +1,5 @@
 MODULE mckpp_types_transfer
 
-CONTAINS
-
-SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_3d_type,kpp_1d_type
 #else 
@@ -15,10 +11,13 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   
   IMPLICIT NONE
 
-!     Accepts a 3D variable of the KPP derived type.
-!     Returns a 1D variable of the KPP derived type, extraced from the 3D variable
-!     at a specified point.
+CONTAINS
 
+! Accepts a 3D variable of the KPP derived type.
+! Returns a 1D variable of the KPP derived type, extraced from the 3D variable
+! at a specified point.
+SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
+  
   TYPE(kpp_3d_type),intent(in)  :: kpp_3d_fields
   TYPE(kpp_1d_type),intent(out) :: kpp_1d_fields
   INTEGER,intent(in) :: point
@@ -198,22 +197,11 @@ SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
 END SUBROUTINE mckpp_fields_3dto1d
 
 
+! Accepts a 1D and a 3D variable of the KPP derived type.
+! Returns the 3D variable, updated at a specified point with the 
+! values from the 1D variable.
 SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
   
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_3d_type
-#else 
-  USE mckpp_data_fields, ONLY: kpp_3d_type, kpp_1d_type
-#endif
-  USE mckpp_parameters, ONLY: nz, nzp1, nztmax, nzp1tmax, &
-      nvel, nsclr, nvp1, nsp1
-
-  IMPLICIT NONE
-  
-  ! Accepts a 1D and a 3D variable of the KPP derived type.
-  ! Returns the 3D variable, updated at a specified point with the 
-  ! values from the 1D variable.
-
   TYPE(kpp_3d_type),intent(inout)  :: kpp_3d_fields
   TYPE(kpp_1d_type),intent(in) :: kpp_1d_fields
   INTEGER,intent(in) :: point

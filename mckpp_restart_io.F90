@@ -1,5 +1,9 @@
 MODULE mckpp_restart_io
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_netcdf_subs
+  USE mckpp_reformat_mask_output
+
 CONTAINS
 
 #ifndef MCKPP_CAM3

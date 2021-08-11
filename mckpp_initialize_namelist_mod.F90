@@ -5,21 +5,23 @@
 
 MODULE mckpp_initialize_namelist_mod
 
-CONTAINS
-
-SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
-  
 #ifdef MCKPP_CAM3  
   USE mckpp_types, only: kpp_const_fields
 #else
   USE mckpp_data_fields, ONLY: kpp_const_fields, mckpp_allocate_const_fields
 #endif
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_initialize_constants_mod, ONLY: mckpp_initialize_constants
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   USE mckpp_namelists
   USE mckpp_parameters 
 
   IMPLICIT NONE
-  
+
+CONTAINS
+
+SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
+    
   ! Local variables    
   INTEGER :: i,j,k,l,ipt,ix,iy
   CHARACTER(LEN=25) :: routine = "MCKPP_INITIALIZE_NAMELIST"

@@ -5,20 +5,22 @@
 
 MODULE mckpp_physics_solvers
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
-
 #ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_const_type
+  USE mckpp_types, only: kpp_1d_type, kpp_const_type
 #else 
-  USE mckpp_data_fields, ONLY: kpp_const_type
+  USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
-
-  ! Compute coefficients for tridiagonal matrix (dimension=nzi).
-  !     Note: cu(1) = 0. and cl(nzi) = 0. are necessary conditions.
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
+  USE mckpp_parameters, ONLY: nztmax
   
   IMPLICIT NONE
+
+CONTAINS
+
+! Compute coefficients for tridiagonal matrix (dimension=nzi).
+!     Note: cu(1) = 0. and cl(nzi) = 0. are necessary conditions.
+SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
 
   ! Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -51,23 +53,14 @@ SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
 end SUBROUTINE mckpp_physics_solvers_tridcof
 
 
+! Compute right hand side of tridiagonal matrix for scalar fields:
+!  =  yo (old field) 
+!     + flux-divergence of ghat
+!     + flux-divergence of non-turbulant fluxes
+! Note: surface layer needs +dto/h(1) * surfaceflux
+! bottom  ..... ..... +dto/h(nzi)*diff(nzi)/dzb(nzi)*yo(nzi+1)
 SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghatflux,&
      dto,nzi,ind,rhs,kpp_const_fields)
-
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_const_type
-#else 
-  USE mckpp_data_fields, ONLY: kpp_const_type
-#endif
-
-  ! Compute right hand side of tridiagonal matrix for scalar fields:
-  !  =  yo (old field) 
-  !     + flux-divergence of ghat
-  !     + flux-divergence of non-turbulant fluxes
-  ! Note: surface layer needs +dto/h(1) * surfaceflux
-  ! bottom  ..... ..... +dto/h(nzi)*diff(nzi)/dzb(nzi)*yo(nzi+1)
-
-  IMPLICIT NONE
   
   !  Input
   TYPE(kpp_const_type) :: kpp_const_fields
@@ -123,14 +116,9 @@ SUBROUTINE mckpp_physics_solvers_tridrhs(npd,h,yo,ntflux,diff,ghat,sturflux,ghat
 END SUBROUTINE mckpp_physics_solvers_tridrhs
 
 
+! Solve tridiagonal matrix for new vector yn, given right hand side
+! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
 SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
-
-  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
-  USE mckpp_parameters, ONLY: nztmax
-
-  ! Solve tridiagonal matrix for new vector yn, given right hand side
-  ! vector rhs. Note: yn(nzi+1) = yo(nzi+1).
-  IMPLICIT NONE
 
   ! Input
   integer nzi               ! dimension of matrix
@@ -182,15 +170,6 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
 END SUBROUTINE mckpp_physics_solvers_tridmat
 
 
-subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fields,kpp_const_fields)
-  
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else
-  USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
-#endif
-  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
-
 !     Modify rhs to correct scalar, jsclr, 
 !     for advection according to mode
 ! mode = 1 : Steady upper layer horizontal advection
@@ -203,8 +182,8 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        5 : Steady bottom diffusion
 !        6 : Seasonal mixed layer horizontal advection to dm
 !        7 : Seasonal thermocline horizontal advection to 1.5 dm
-  IMPLICIT NONE
-
+subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fields,kpp_const_fields)
+ 
   ! Input
   integer nzi,&              ! vertical dimension of field
        km,&                  ! index of gridpoint just below h

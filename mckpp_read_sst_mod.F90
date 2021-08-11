@@ -5,6 +5,9 @@
 
 MODULE mckpp_read_sst_mod
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_netcdf_subs
+
 CONTAINS
 
 SUBROUTINE MCKPP_READ_SST()

@@ -5,6 +5,9 @@
 
 MODULE mckpp_read_saltcorrections
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_netcdf_subs
+
 CONTAINS 
 
 SUBROUTINE MCKPP_READ_SFCORR_2D()

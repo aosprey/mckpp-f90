@@ -12,7 +12,9 @@ SUBROUTINE MCKPP_COUPLING_CAM3_STEP(srf_state,srfflx)
   USE physconst,    only: latvap
   USE mckpp_types,  only: kpp_3d_fields,kpp_1d_fields,kpp_const_fields
   USE pmgrid,       only: masterproc
+  USE mckpp_boundary_update_mod, ONLY: mckpp_boundary_update
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_physics_driver_mod, ONLY: mckpp_physics_driver
 
   IMPLICIT NONE
 

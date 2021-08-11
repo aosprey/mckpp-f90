@@ -1,9 +1,5 @@
 MODULE mckpp_physics_verticalmixing_wscale_mod
 
-CONTAINS
-  
-SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_const_type
 #else 
@@ -11,12 +7,14 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws,
 #endif
 
   IMPLICIT NONE
-  
-  ! compute turbulent velocity scales.
-  ! use a 2D-lookup table for wm and ws as functions of ustar and
-  ! zetahat (=vonk*sigma*hbl*bfsfc).
 
-  ! Necessary for IMPLICIT NONE (NPK 11/2/13)
+CONTAINS
+
+! compute turbulent velocity scales.
+! use a 2D-lookup table for wm and ws as functions of ustar and
+! zetahat (=vonk*sigma*hbl*bfsfc).
+SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
+  
   INTEGER ni,nj,i,iz,izp1,j,ju,jup1
   REAL am,as,c1,c2,c3,cm,cs,epsln,fzfrac,ucube,udiff,ufrac,&
        usta,wam,was,wbm,wbs,zdiff,zetas,zfrac,zetam

@@ -1,26 +1,27 @@
 MODULE mckpp_physics_ocnint_mod
 
-CONTAINS
-
-SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo)
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
 #endif
-  USE mckpp_parameters, ONLY: nz, nztmax, nzp1, nsclr, nvel 
+  USE mckpp_parameters, ONLY: nz, nztmax, nzp1, nsclr, nvel
+  USE mckpp_physics_solvers, ONLY: mckpp_physics_solvers_tridcof, mckpp_physics_solvers_tridrhs, &
+      mckpp_physics_solvers_tridmat, mckpp_physics_solvers_rhsmod
   
   IMPLICIT NONE
 
-  ! Integrate the ocn model by backwards Euler(implicit)discretization
-  ! On input : Un,Xn are estimated profiles which are used
-  !            to estimate diffusivity profiles at new time.
-  !          : Updated diffusivities from Un Xn are in common
-  ! On output: Un,Xn are new profiles after integration.
+CONTAINS
 
-  ! Written  19 March 1991 - jan
+! Integrate the ocn model by backwards Euler(implicit)discretization
+! On input : Un,Xn are estimated profiles which are used
+!            to estimate diffusivity profiles at new time.
+!          : Updated diffusivities from Un Xn are in common
+! On output: Un,Xn are new profiles after integration.
 
+! Written  19 March 1991 - jan
+SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo)
+  
   ! Input
   integer intri             ! index for tri.diag. coeff
   REAL Uo(NZP1,NVEL),Xo(NZP1,NSCLR)

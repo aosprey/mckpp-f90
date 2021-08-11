@@ -1,5 +1,7 @@
 MODULE mckpp_read_fluxes_mod
 
+  USE mckpp_netcdf_subs
+
 CONTAINS
 
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
