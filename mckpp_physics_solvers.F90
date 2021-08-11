@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_physics_solvers
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_solvers_tridcof(diff,nzi,ind,cu,cc,cl,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
@@ -359,3 +363,5 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
   endif
   
 end subroutine mckpp_physics_solvers_rhsmod
+
+END MODULE mckpp_physics_solvers

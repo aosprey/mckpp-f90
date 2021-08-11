@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_ocean
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_ocean_profiles()
   
 #ifdef MCKPP_CAM3
@@ -510,3 +514,5 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
   ENDIF
 
 END SUBROUTINE mckpp_initialize_ocean_model
+
+END MODULE mckpp_initialize_ocean

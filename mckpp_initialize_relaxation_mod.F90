@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_relaxtion_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
   
 #ifdef MCKPP_CAM3
@@ -152,3 +156,5 @@ SUBROUTINE MCKPP_INITIALIZE_RELAXATION()
   CALL mckpp_print(routine, "Calculated SST0, fcorr and scorr")
 
 END SUBROUTINE mckpp_initialize_relaxation
+
+END MODULE mckpp_initialize_relaxtion_mod

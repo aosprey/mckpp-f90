@@ -1,3 +1,7 @@
+MODULE mckpp_physics_swfrac_mod
+
+CONTAINS 
+
 subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
 
 #ifdef MCKPP_CAM3
@@ -81,3 +85,5 @@ subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
   swdk = rfac(jwtype)  * exp(r1) + (1.-rfac(jwtype)) * exp(r2)
 
 END SUBROUTINE MCKPP_PHYSICS_SWFRAC
+
+END MODULE mckpp_physics_swfrac_mod

@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_wscale_mod
+
+CONTAINS
+  
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
   
 #ifdef MCKPP_CAM3
@@ -90,3 +94,5 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws,
   ENDIF
   
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE
+
+END MODULE mckpp_physics_verticalmixing_wscale_mod

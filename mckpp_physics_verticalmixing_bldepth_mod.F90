@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_bldepth_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, Bo, Bosol, hbl, & 
     bfsfc, stable, caseA, kbl, Rib, sigma, wm, ws, kpp_1d_fields, kpp_const_fields)
   
@@ -200,3 +204,5 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
   caseA  = 0.5 + SIGN( 0.5,-kpp_const_fields%zm(kbl) -0.5 * kpp_const_fields%hm(kbl) -hbl)
 
 end SUBROUTINE mckpp_physics_verticalmixing_bldepth
+
+END MODULE mckpp_physics_verticalmixing_bldepth_mod

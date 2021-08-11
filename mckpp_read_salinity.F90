@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_read_salinity
+
+CONTAINS
+
 SUBROUTINE MCKPP_READ_SALINITY_3D()
 
 #ifdef MCKPP_CAM3 
@@ -171,3 +175,5 @@ SUBROUTINE MCKPP_READ_SALINITY_3D()
 #endif  
 
 END SUBROUTINE MCKPP_READ_SALINITY_3D
+
+END MODULE mckpp_read_salinity

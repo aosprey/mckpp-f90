@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_z121_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_Z121 (kmp1,vlo,vhi,V,w)
   
   IMPLICIT NONE
@@ -40,3 +44,5 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_Z121 (kmp1,vlo,vhi,V,w)
   enddo
   
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_Z121
+
+END MODULE mckpp_physics_verticalmixing_z121_mod

@@ -1,3 +1,7 @@
+MODULE mckpp_reformat_mask_output
+
+CONTAINS 
+
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
@@ -134,3 +138,5 @@ SUBROUTINE mckpp_reformat_mask_output_2d(twod_in,nz_in,mask,missval,threed_out)
   
 END SUBROUTINE mckpp_reformat_mask_output_2d
 #endif
+
+END MODULE mckpp_reformat_mask_output

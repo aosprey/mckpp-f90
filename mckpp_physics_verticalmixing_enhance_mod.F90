@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_enhance_mod
+
+CONTAINS 
+
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA, blmc,&
     kpp_1d_fields, kpp_const_fields)
   
@@ -51,3 +55,5 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE(km, mdiff, dkm1, hbl, kbl,caseA,
   enddo
   
 end SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_ENHANCE
+
+END MODULE mckpp_physics_verticalmixing_enhance_mod

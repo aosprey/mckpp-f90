@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_physics_driver_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_driver()
   
 #ifdef MCKPP_CAM3
@@ -98,3 +102,5 @@ SUBROUTINE mckpp_physics_driver()
   ENDIF
 
 END SUBROUTINE mckpp_physics_driver
+
+END MODULE mckpp_physics_driver_mod

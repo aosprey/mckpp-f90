@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_couplingweight_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
   
 #ifdef MCKPP_CAM3
@@ -127,3 +131,5 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 !!$  ENDDO
   
 END SUBROUTINE mckpp_initialize_couplingweight
+
+END MODULE mckpp_initialize_couplingweight_mod

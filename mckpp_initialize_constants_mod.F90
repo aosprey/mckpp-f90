@@ -1,3 +1,7 @@
+MODULE mckpp_initialize_constants_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
 
   ! This should be called after *ALL* constants have been read in
@@ -150,3 +154,5 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%L_DAMP_CURR=L_DAMP_CURR
 
 END SUBROUTINE mckpp_initialize_constants
+
+END MODULE mckpp_initialize_constants_mod

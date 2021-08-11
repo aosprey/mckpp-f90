@@ -1,3 +1,7 @@
+MODULE mckpp_physics_lookup_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
   
 #ifdef MCKPP_CAM3
@@ -51,3 +55,5 @@ SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
   ENDDO
       
 END SUBROUTINE mckpp_physics_lookup
+
+END MODULE mckpp_physics_lookup_mod

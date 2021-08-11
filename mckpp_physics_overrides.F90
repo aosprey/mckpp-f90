@@ -1,3 +1,7 @@
+MODULE mckpp_physics_overrides
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_overrides_bottomtemp()
 
   ! Written by NPK 10/4/08
@@ -175,3 +179,4 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
   
 END SUBROUTINE mckpp_physics_overrides_check_profile
 
+END MODULE mckpp_physics_overrides

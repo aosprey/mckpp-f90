@@ -1,3 +1,7 @@
+MODULE physics_state_equations
+
+CONTAINS 
+
 REAL FUNCTION MCKPP_CPSW(S,T1,P0)
   IMPLICIT NONE
 
@@ -474,3 +478,5 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
   Rho=1000.0 + Sig  
   RETURN
 END Subroutine MCKPP_Sig80
+
+END MODULE physics_state_equations

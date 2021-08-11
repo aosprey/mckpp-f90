@@ -1,3 +1,7 @@
+MODULE mckpp_physics_ocnint_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo)
   
 #ifdef MCKPP_CAM3
@@ -218,3 +222,5 @@ SUBROUTINE mckpp_physics_ocnint(kpp_1d_fields,kpp_const_fields,intri,kmixe,Uo,Xo
   ENDDO
 
 END SUBROUTINE mckpp_physics_ocnint
+
+END MODULE mckpp_physics_ocnint_mod

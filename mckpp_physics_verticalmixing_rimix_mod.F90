@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_rimix_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fields)
 
 #ifdef MCKPP_CAM3
@@ -103,3 +107,5 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fi
   kpp_1d_fields%difs(0) = c0      
   
 end SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX
+
+END MODULE mckpp_physics_verticalmixing_rimix_mod

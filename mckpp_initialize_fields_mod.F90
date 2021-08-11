@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_fields_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   
 #ifdef MCKPP_CAM3
@@ -245,3 +249,5 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_OCEAN_MODEL")
 
 END SUBROUTINE MCKPP_INITIALIZE_FIELDS
+
+END MODULE mckpp_initialize_fields_mod

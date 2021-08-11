@@ -1,3 +1,7 @@
+MODULE mckpp_read_fluxes_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
@@ -124,3 +128,5 @@ SUBROUTINE MCKPP_READ_FLUXES(taux, tauy, swf, lwf, lhf, shf, rain, snow)
   CALL mckpp_print(routine, "Finished reading fluxes") 
   
 END SUBROUTINE MCKPP_READ_FLUXES
+
+END MODULE mckpp_read_fluxes_mod

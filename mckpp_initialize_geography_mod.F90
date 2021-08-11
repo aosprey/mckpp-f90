@@ -1,3 +1,7 @@
+MODULE mckpp_initialize_geography_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_geography()
 
 #ifdef MCKPP_CAM3
@@ -110,3 +114,5 @@ SUBROUTINE mckpp_initialize_geography()
 #endif
   
 END SUBROUTINE mckpp_initialize_geography
+
+END MODULE mckpp_initialize_geography_mod

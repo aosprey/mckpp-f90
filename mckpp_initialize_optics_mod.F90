@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_optics_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_optics()
   
 #ifdef MCKPP_CAM3
@@ -62,3 +66,5 @@ SUBROUTINE mckpp_initialize_optics()
   ENDIF
   
 END SUBROUTINE mckpp_initialize_optics
+
+END MODULE mckpp_initialize_optics_mod

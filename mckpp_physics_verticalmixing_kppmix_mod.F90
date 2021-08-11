@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_kppmix_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(km,kmp1,dVsq,ustar,Bo,Bosol,alphaDT,betaDS,&
     Ritop, hbl , kbl, kpp_1d_fields,kpp_const_fields)
   
@@ -122,5 +126,4 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX(km,kmp1,dVsq,ustar,Bo,Bosol,alpha
       
 end SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_KPPMIX
 
-
-
+END MODULE mckpp_physics_verticalmixing_kppmix_mod

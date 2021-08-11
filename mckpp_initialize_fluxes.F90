@@ -1,3 +1,7 @@
+MODULE mckpp_initialize_fluxes
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_fluxes_variables()
   
 #ifdef MCKPP_CAM3
@@ -90,3 +94,5 @@ SUBROUTINE mckpp_initialize_fluxes_file()
             
 END SUBROUTINE mckpp_initialize_fluxes_file
 #endif
+
+END MODULE mckpp_initialize_fluxes

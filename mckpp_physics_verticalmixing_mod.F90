@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_mod
+
+CONTAINS 
+
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmixn)
 
 #ifdef MCKPP_CAM3
@@ -157,3 +161,5 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmixn,kmi
   kpp_1d_fields%ghat(nz) = 0.0
 
 END SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING
+
+END MODULE mckpp_physics_verticalmixing_mod

@@ -3,6 +3,10 @@
 #include <params.h>
 #endif 
 
+MODULE mckpp_read_sst_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_READ_SST()
 
 #ifdef MCKPP_CAM3  
@@ -151,3 +155,5 @@ SUBROUTINE MCKPP_READ_SST()
 #endif
   
 END SUBROUTINE mckpp_read_sst
+
+END MODULE mckpp_read_sst_mod

@@ -1,3 +1,7 @@
+MODULE mckpp_physics_verticalmixing_blmix_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stable, caseA, kbl, &
     gat1, dat1, dkm1, blmc, sigma, wm, ws, kpp_1d_fields,kpp_const_fields)
   
@@ -143,3 +147,5 @@ SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stab
   dkm1(3) = hbl * ws * sig * (1. + sig * Gt)
   
 END SUBROUTINE mckpp_physics_verticalmixing_blmix
+
+END MODULE mckpp_physics_verticalmixing_blmix_mod

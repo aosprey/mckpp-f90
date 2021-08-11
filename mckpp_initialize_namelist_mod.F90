@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_namelist_mod
+
+CONTAINS
+
 SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   
 #ifdef MCKPP_CAM3  
@@ -309,3 +313,5 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   CALL mckpp_initialize_constants(kpp_const_fields)    
   
 END SUBROUTINE MCKPP_INITIALIZE_NAMELIST
+
+END MODULE mckpp_initialize_namelist_mod

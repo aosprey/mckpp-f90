@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_read_temperatures
+
+CONTAINS
+
 SUBROUTINE MCKPP_READ_TEMPERATURES_3D()
 
 #ifdef MCKPP_CAM3  
@@ -295,3 +299,5 @@ SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM()
 #endif
   
 END SUBROUTINE MCKPP_READ_TEMPERATURES_BOTTOM
+
+END MODULE mckpp_read_temperatures

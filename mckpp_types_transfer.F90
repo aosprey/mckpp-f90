@@ -1,3 +1,7 @@
+MODULE mckpp_types_transfer
+
+CONTAINS
+
 SUBROUTINE mckpp_fields_3dto1d(kpp_3d_fields,point,kpp_1d_fields)
   
 #ifdef MCKPP_CAM3
@@ -337,3 +341,5 @@ SUBROUTINE mckpp_fields_1dto3d(kpp_1d_fields,point,kpp_3d_fields)
   kpp_3d_fields%dampv_flag(point)=temp
   
 END SUBROUTINE mckpp_fields_1dto3d
+
+END MODULE mckpp_types_transfer

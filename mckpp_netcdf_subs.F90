@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_netcdf_subs
+
+CONTAINS
+
 SUBROUTINE MCKPP_NCDF_DEF_DIM (ncid,dimid,dimlen,varid,name,units,delta,long_name)
   
   IMPLICIT NONE
@@ -381,3 +385,5 @@ SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES(ncid,file_description,latitude_name
   IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
   
 END SUBROUTINE MCKPP_DETERMINE_NETCDF_BOUNDARIES
+
+END MODULE mckpp_netcdf_subs

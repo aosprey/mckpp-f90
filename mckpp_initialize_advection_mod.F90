@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_advection_mod
+
+CONTAINS 
+
 SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
   
 #ifdef MCKPP_CAM3
@@ -94,3 +98,5 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
   ENDIF
 
 END SUBROUTINE mckpp_initialize_advection
+
+END MODULE mckpp_initialize_advection_mod

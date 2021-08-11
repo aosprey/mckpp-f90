@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_boundary_interpolate
+
+CONTAINS
+
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   
 #ifdef MCKPP_CAM3
@@ -181,3 +185,5 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   deallocate(next_sal)
   
 END SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL
+
+END MODULE mckpp_boundary_interpolate

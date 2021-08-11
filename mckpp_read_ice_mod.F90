@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_read_ice_mod
+
+CONTAINS 
+
 SUBROUTINE mckpp_read_ice()
 
 #ifdef MCKPP_CAM3
@@ -199,3 +203,5 @@ SUBROUTINE mckpp_read_ice()
 #endif
   
 END SUBROUTINE mckpp_read_ice
+
+END MODULE mckpp_read_ice_mod

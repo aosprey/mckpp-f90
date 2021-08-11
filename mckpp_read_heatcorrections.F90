@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_read_heatcorrections
+
+CONTAINS 
+
 SUBROUTINE MCKPP_READ_FCORR_2D()
 
 #ifdef MCKPP_CAM3
@@ -308,3 +312,5 @@ SUBROUTINE MCKPP_READ_FCORR_3D()
 #endif  
 
 END SUBROUTINE MCKPP_READ_FCORR_3D
+
+END MODULE mckpp_read_heatcorrections

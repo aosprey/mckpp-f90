@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_read_saltcorrections
+
+CONTAINS 
+
 SUBROUTINE MCKPP_READ_SFCORR_2D()
 
 #ifdef MCKPP_CAM3  
@@ -308,3 +312,5 @@ SUBROUTINE MCKPP_READ_SFCORR_3D()
 #endif
   
 END SUBROUTINE MCKPP_READ_SFCORR_3D
+
+END MODULE mckpp_read_saltcorrections

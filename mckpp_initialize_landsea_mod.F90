@@ -3,6 +3,10 @@
 #include <params.h>
 #endif
 
+MODULE mckpp_initialize_landsea_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_initialize_landsea()
 
 #ifdef MCKPP_CAM3 
@@ -81,3 +85,6 @@ SUBROUTINE mckpp_initialize_landsea()
   ENDIF
   
 END SUBROUTINE mckpp_initialize_landsea
+
+END MODULE mckpp_initialize_landsea_mod
+

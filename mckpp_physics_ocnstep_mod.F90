@@ -1,3 +1,7 @@
+MODULE mckpp_physics_ocnstep_mod
+
+CONTAINS
+
 SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   
 #ifdef MCKPP_CAM3
@@ -352,3 +356,5 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   ! close(40+ntime)
 
 end SUBROUTINE mckpp_physics_ocnstep
+
+END MODULE mckpp_physics_ocnstep_mod
