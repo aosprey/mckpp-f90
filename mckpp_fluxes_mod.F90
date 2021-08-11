@@ -4,6 +4,7 @@ MODULE mckpp_fluxes_mod
   USE mckpp_types, only: kpp_1d_type,kpp_const_type
 #else 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
+#endif
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nz
   USE mckpp_read_fluxes_mod, ONLY: mckpp_read_fluxes
@@ -109,14 +110,16 @@ END SUBROUTINE mckpp_fluxes_ntflux
 
 
 REAL FUNCTION MCKPP_FLUXES_SWDK(z,jerlov)
-
-  parameter(max=5)
+  REAL :: z
+  INTEGER :: j, jerlov
+  
+  INTEGER, PARAMETER :: max=5
   real Rfac(max),a1(max),a2(max)
 !         types =  I       IA      IB      II      III
 !             j =  1       2       3       4       5
-  data Rfac /  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /
-  data a1   /  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /
-  data a2   / 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /
+  Rfac = (/  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /)
+  a1 = (/  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /)
+  a2 = (/ 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /)
   
   j = jerlov
   MCKPP_FLUXES_SWDK = Rfac(j) * dexp(dble(z/a1(j))) + (1.0-Rfac(j)) * dexp(dble(z/a2(j)))
