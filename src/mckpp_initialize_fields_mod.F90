@@ -28,7 +28,8 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
-  USE mckpp_read_heatcorrections, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
+  USE mckpp_read_fluxes_mod, ONLY: mckpp_initialize_fluxes_file
+  USE mckpp_read_heat_corrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d
   USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
   USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
   USE mckpp_read_saltcorrections, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
