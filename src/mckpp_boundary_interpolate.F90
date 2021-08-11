@@ -109,7 +109,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
 #endif
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nzp1
-  USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
 
   IMPLICIT NONE
 
