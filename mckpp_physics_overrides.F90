@@ -20,7 +20,7 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp()
 
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol,icol
- #endif  
+#endif  
   INTEGER ipt,z
   
 #ifdef MCKPP_CAM3
