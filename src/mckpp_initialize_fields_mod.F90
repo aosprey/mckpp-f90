@@ -32,7 +32,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_read_heat_corrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d
   USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
   USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
-  USE mckpp_read_saltcorrections, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
+  USE mckpp_read_salt_corrections_mod, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d
   USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
   USE mckpp_read_temperatures, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
   USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
