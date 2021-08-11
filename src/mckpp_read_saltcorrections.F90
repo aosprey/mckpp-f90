@@ -16,7 +16,10 @@ MODULE mckpp_read_salt_corrections_mod
 #endif
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
+      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
+  USE mckpp_time_control, ONLY: mckpp_get_update_time
 
   IMPLICIT NONE
 
@@ -31,14 +34,14 @@ MODULE mckpp_read_salt_corrections_mod
 
 CONTAINS
 
-  SUBROUTINE mckpp_initialize_sfcorr(file, ncid, ndims)
+  SUBROUTINE initialize_sfcorr(file, ncid, ndims)
 
     CHARACTER(LEN=max_nc_filename_len), INTENT(IN) :: file
     INTEGER, INTENT(IN) :: ncid, ndims
 
     REAL :: start_lat, start_lon
     INTEGER :: nz_in
-    CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_SFCORR"
+    CHARACTER(LEN=17) :: routine = "INITIALIZE_SFCORR"
     CHARACTER(LEN=max_message_len) :: message
 
     ! num_dims must be 2 or 3
@@ -84,7 +87,7 @@ CONTAINS
 
       ! Read in time field
       ALLOCATE(file_times(num_times)) 
-      CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "t", file_times)
 
       ! Check vertical levels
       IF (ndims .EQ. 3) THEN
@@ -103,7 +106,7 @@ CONTAINS
 #endif
     l_initialized = .TRUE.
 
-  END SUBROUTINE mckpp_initialize_sfcorr
+  END SUBROUTINE initialize_sfcorr
 
 
   ! Read in a NetCDF file containing a time-varying salinity correction
@@ -203,7 +206,7 @@ CONTAINS
           update_time, start(4), method=1)
       WRITE(message,*) 'Reading salinity correction for time ', update_time
       CALL mckpp_print(routine, message)
-      WRITE(message,*) 'Reading salinity correction from position ',start(3)
+      WRITE(message,*) 'Reading salinity correction from position ',start(4)
       CALL mckpp_print(routine, message)
 
       ! Read data 

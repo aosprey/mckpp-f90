@@ -41,7 +41,7 @@ CONTAINS
 
     REAL :: start_lat, start_lon
     INTEGER :: nz_in
-    CHARACTER(LEN=22) :: routine = "MCKPP_INITIALIZE_FCORR"
+    CHARACTER(LEN=16) :: routine = "INITIALIZE_FCORR"
     CHARACTER(LEN=max_message_len) :: message
 
     ! num_dims must be 2 or 3
@@ -87,7 +87,7 @@ CONTAINS
 
       ! Read in time field
       ALLOCATE(file_times(num_times)) 
-      CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "t", file_times)
 
       ! Check vertical levels
       IF (ndims .EQ. 3) THEN
@@ -187,7 +187,7 @@ CONTAINS
     INTEGER :: ncid, ix, iy, iz, ipt
     REAL, ALLOCATABLE, DIMENSION(:,:,:,:) :: var_in
 
-    CHARACTER(LEN=19) :: routine = "MCKPP_READ_FCORR_2D"
+    CHARACTER(LEN=19) :: routine = "MCKPP_READ_FCORR_3D"
     CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
@@ -206,7 +206,7 @@ CONTAINS
           update_time, start(4), method=1)
       WRITE(message,*) 'Reading heat correction for time ', update_time
       CALL mckpp_print(routine, message)
-      WRITE(message,*) 'Reading heat correction from position ',start(3)
+      WRITE(message,*) 'Reading heat correction from position ',start(4)
       CALL mckpp_print(routine, message)
 
       ! Read data 

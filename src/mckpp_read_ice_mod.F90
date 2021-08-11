@@ -40,7 +40,7 @@ CONTAINS
     CHARACTER(LEN=max_nc_filename_len), INTENT(IN) :: file
     INTEGER, INTENT(IN) :: ncid
 
-    CHARACTER(LEN=20) :: routine = "MCKPP_INITIALIZE_ICE"
+    CHARACTER(LEN=14) :: routine = "INITIALIZE_ICE"
     CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
@@ -67,7 +67,7 @@ CONTAINS
 
       ! Read in time field
       ALLOCATE(file_times(num_times)) 
-      CALL mckpp_netcdf_get_var(routine, file, ncid, "time", file_times)
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "t", file_times)
 
 #ifdef MCKPP_CAM3
     ENDIF ! End of masterproc section
