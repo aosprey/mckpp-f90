@@ -26,7 +26,6 @@ SUBROUTINE mckpp_initialize_optics()
   USE mckpp_parameters, ONLY: nx, ny, npts
 
   IMPLICIT NONE
-#include <netcdf.inc>
 
 #ifdef MCKPP_CAM3
   INTEGER :: jerlov_temp(PLON,PLAT),jerlov_chunk(PCOLS,begchunk:endchunk)
