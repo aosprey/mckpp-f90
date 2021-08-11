@@ -23,9 +23,7 @@ SUBROUTINE mckpp_initialize_geography()
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,icol,ncol
 #endif  
-  
-#include <netcdf.inc>
-  
+    
   ! Local Variables
   REAL :: sumh, hsum, dfac, sk
   REAL, DIMENSION(nz) :: vgrid_in
