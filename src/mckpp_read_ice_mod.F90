@@ -102,7 +102,7 @@ CONTAINS
 #ifdef MCKPP_CAM3
     IF (masterproc) THEN
 #endif
-      file = kpp_const_fields%sst_file
+      file = kpp_const_fields%ice_file
       CALL mckpp_netcdf_open(routine, file, ncid)
 
       ! On first call, get file dimensions
@@ -110,8 +110,8 @@ CONTAINS
       ALLOCATE( var_in(ice_nx,ice_ny,1) )
 
       ! Work out time to read and check against times in file
-      CALL mckpp_get_update_time(file,  kpp_const_fields%time, kpp_const_fields%ndtupdsst, &
-          file_times, num_times, kpp_const_fields%L_PERIODIC_CLIMSST, kpp_const_fields%climsst_period, &
+      CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdice, &
+          file_times, num_times, kpp_const_fields%L_PERIODIC_CLIMICE, kpp_const_fields%climice_period, &
           update_time, start(3), method=1)
       WRITE(message,*) 'Reading climatological ice concentration for time ', update_time
       CALL mckpp_print(routine, message)

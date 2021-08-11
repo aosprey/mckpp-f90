@@ -41,12 +41,12 @@ CONTAINS
 
     REAL :: start_lat, start_lon
     INTEGER :: nz_in
-    CHARACTER(LEN=25) :: routine = "MCKPP_INITIALIZE_FCORR_2D"
+    CHARACTER(LEN=22) :: routine = "MCKPP_INITIALIZE_FCORR"
     CHARACTER(LEN=max_message_len) :: message
 
     ! num_dims must be 2 or 3
     IF (ndims .LT. 2 .OR. ndims .GT. 3) THEN
-      WRITE(message,*) "Initialize_fcorr only suppors 2d or 3d, but num_dims = ", ndims
+      WRITE(message,*) "Correction must be 2d or 3d, but num_dims = ", ndims
       CALL mckpp_print_error(routine, message)
       CALL MCKPP_ABORT
     END IF
@@ -93,7 +93,7 @@ CONTAINS
       IF (ndims .EQ. 3) THEN
         CALL mckpp_netcdf_get_coord(routine, file, ncid, "z", nz_in)
         IF (nz_in .NE. nzp1) THEN
-          WRITE(message,*) "Flux corrections file does not have the correct ", &
+          WRITE(message,*) "Heat corrections file does not have the correct ", &
               "number of vertical levels."
           CALL mckpp_print_error(routine, message)
           WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_in
@@ -142,9 +142,9 @@ CONTAINS
       CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdfcorr, &
           file_times, num_times, kpp_const_fields%l_periodic_fcorr, kpp_const_fields%fcorr_period, &
           update_time, start(3), method=2)
-      WRITE(message,*) 'Reading flux correction for time ', update_time
+      WRITE(message,*) 'Reading heat correction for time ', update_time
       CALL mckpp_print(routine, message)
-      WRITE(message,*) 'Reading flux correction from position ',start(3)
+      WRITE(message,*) 'Reading heat correction from position ',start(3)
       CALL mckpp_print(routine, message)
 
       ! Read data 
@@ -160,7 +160,7 @@ CONTAINS
       kpp_3d_fields(ichnk)%fcorr_twod(1:ncol)=fcorr_chunk(1:ncol,ichnk)
     ENDDO
 #else    
-    !    Put all (NX,NY) points into one long array with dimension NPTS.         
+    ! Put all (NX,NY) points into one long array with dimension NPTS.         
     DO ix = 1,NX
       DO iy = 1,NY
         ipt = (iy-1)*nx+ix
@@ -182,7 +182,6 @@ CONTAINS
     REAL(r8) :: fcorr_temp(PLON,PLAT,NZP1), fcorr_chunk(PCOLS,begchunk:endchunk,NZP1)
     INTEGER :: icol,ncol,ichnk
 #endif
-
     CHARACTER(LEN=max_nc_filename_len) :: file
     REAL :: update_time
     INTEGER :: ncid, ix, iy, iz, ipt
@@ -190,11 +189,6 @@ CONTAINS
 
     CHARACTER(LEN=19) :: routine = "MCKPP_READ_FCORR_2D"
     CHARACTER(LEN=max_message_len) :: message
-
-    ! Read in a NetCDF file containing a 
-    ! time-varying flux correction at every model vertical level.
-    ! Frequency of read is controlled by ndtupdfcorr in the namelist
-    ! NPK 12/02/08
 
 #ifdef MCKPP_CAM3
     IF (masterproc) THEN
@@ -210,9 +204,9 @@ CONTAINS
       CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdfcorr, &
           file_times, num_times, kpp_const_fields%l_periodic_fcorr, kpp_const_fields%fcorr_period, &
           update_time, start(4), method=1)
-      WRITE(message,*) 'Reading flux correction for time ', update_time
+      WRITE(message,*) 'Reading heat correction for time ', update_time
       CALL mckpp_print(routine, message)
-      WRITE(message,*) 'Reading flux correction from position ',start(3)
+      WRITE(message,*) 'Reading heat correction from position ',start(3)
       CALL mckpp_print(routine, message)
 
       ! Read data 
