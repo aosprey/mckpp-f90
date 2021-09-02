@@ -5,12 +5,6 @@
 
 MODULE mckpp_initialize_advection_mod
 
-  USE mckpp_netcdf_subs  
-
-CONTAINS 
-
-SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
-  
 #ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
   USE mckpp_types,only: kpp_3d_fields,kpp_const_fields
@@ -26,8 +20,11 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
   USE mckpp_parameters, ONLY: nx, ny, npts, maxmodeadv
   
   IMPLICIT NONE
- 
 
+CONTAINS 
+
+SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
+  
 #ifdef MCKPP_CAM3
   REAL(r8) :: advection_chunk(PCOLS,begchunk:endchunk,2)
   INTEGER :: nmodeadv_temp(PLON,PLAT,2),modeadv_temp(PLON,PLAT,maxmodeadv,2),&
@@ -45,7 +42,6 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
   CHARACTER(LEN=max_nc_filename_len) :: file
   CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_ADVECTION"
   CHARACTER(LEN=max_message_len) :: message
- 
   
   IF (kpp_const_fields%L_ADVECT) THEN
 #ifdef MCKPP_CAM3

@@ -18,7 +18,6 @@ MODULE mckpp_initialize_ocean
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
       mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
-  USE mckpp_netcdf_subs
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing

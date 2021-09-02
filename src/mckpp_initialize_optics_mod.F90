@@ -4,12 +4,6 @@
 #endif
 
 MODULE mckpp_initialize_optics_mod
-
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE mckpp_initialize_optics()
   
 #ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8
@@ -27,6 +21,10 @@ SUBROUTINE mckpp_initialize_optics()
 
   IMPLICIT NONE
 
+CONTAINS
+
+SUBROUTINE mckpp_initialize_optics()
+  
 #ifdef MCKPP_CAM3
   INTEGER :: jerlov_temp(PLON,PLAT),jerlov_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: ichnk,ncol,icol

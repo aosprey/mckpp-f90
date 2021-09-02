@@ -5,12 +5,6 @@
 
 MODULE mckpp_initialize_couplingweight_mod
 
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
-  
 #ifdef MCKPP_CAM3
   USE shr_kind_mod,only: r8=>shr_kind_r8, r4=>shr_kind_r4
   USE pmgrid, only: masterproc
@@ -27,6 +21,10 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 
   IMPLICIT NONE
 
+CONTAINS
+
+SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
+  
 #ifdef MCKPP_CAM3
   REAL(r8) :: cplwght(PLON,PLAT),cplwght_chunk(PCOLS,begchunk:endchunk)
   INTEGER :: icol,ncol,ichnk,lat_varid,lon_varid

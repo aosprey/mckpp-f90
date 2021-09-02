@@ -1,11 +1,5 @@
 MODULE mckpp_initialize_geography_mod
 
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE mckpp_initialize_geography()
-
 #ifdef MCKPP_CAM3
   USE shr_kind_mod, only: r8=>shr_kind_r8
   USE mckpp_types, only: kpp_const_fields,kpp_3d_fields
@@ -19,6 +13,10 @@ SUBROUTINE mckpp_initialize_geography()
   USE mckpp_parameters, ONLY: nz, nzp1, npts
 
   IMPLICIT NONE
+
+CONTAINS
+
+SUBROUTINE mckpp_initialize_geography()
 
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,icol,ncol

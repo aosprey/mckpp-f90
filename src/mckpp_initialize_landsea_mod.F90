@@ -5,12 +5,6 @@
 
 MODULE mckpp_initialize_landsea_mod
 
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE mckpp_initialize_landsea()
-
 #ifdef MCKPP_CAM3 
   USE shr_kind_mod, only : r8=>shr_kind_r8
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
@@ -26,6 +20,10 @@ SUBROUTINE mckpp_initialize_landsea()
   USE mckpp_parameters, ONLY: npts, nx, ny
  
   IMPLICIT NONE
+
+CONTAINS
+
+SUBROUTINE mckpp_initialize_landsea()
  
 #ifdef MCKPP_CAM3
   REAL(r8) :: landsea(PLON,PLAT)

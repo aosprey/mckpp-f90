@@ -237,4 +237,3 @@ CONTAINS
   END SUBROUTINE mckpp_read_fcorr_3d
 
 END MODULE mckpp_read_heat_corrections_mod
->>>>>>> Rewrite read_heatcorrections module.:mc-kpp_read_heatcorrections.F90

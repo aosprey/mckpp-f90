@@ -1,11 +1,5 @@
 MODULE mckpp_initialize_fluxes
 
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE mckpp_initialize_fluxes_variables()
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
@@ -15,10 +9,14 @@ SUBROUTINE mckpp_initialize_fluxes_variables()
 #endif  
   USE mckpp_parameters, ONLY: npts, nsflxs
 
+  IMPLICIT NONE
+
+CONTAINS
+
 ! Set up parameters for calculating fluxes and initialize fluxes.
 ! intermediate values computed every ndtld
-  IMPLICIT NONE
-  
+SUBROUTINE mckpp_initialize_fluxes_variables()
+    
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol
 #endif
