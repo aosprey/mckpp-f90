@@ -2,19 +2,21 @@
 ! With eror handling. 
 MODULE mckpp_netcdf_read
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
   
   USE netcdf
 
   IMPLICIT NONE
 
-  PUBLIC :: max_nc_filename_len
+  PUBLIC :: max_nc_filename_len, max_restart_filename_len
   PUBLIC :: mckpp_netcdf_open, mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, &
       mckpp_netcdf_get_coord, mckpp_netcdf_get_var
 
   PRIVATE 
 
-  INTEGER, PARAMETER :: max_nc_filename_len = 200
+  INTEGER, PARAMETER :: max_nc_filename_len = 200, &
+      max_restart_filename_len = 50
 
   INTERFACE mckpp_netcdf_get_var
     MODULE PROCEDURE mckpp_netcdf_get_var_real_1d, mckpp_netcdf_get_var_real_2d, &
