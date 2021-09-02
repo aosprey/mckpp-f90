@@ -185,10 +185,11 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
            endif
         endif
         if( iter.gt.(itermax+1) ) then
-           write(message,1009) kpp_const_fields%ntime,& ! comment out for hmix data
-                kpp_1d_fields%dlon,kpp_1d_fields%dlat,hmixe,hmixn,hmixn-hmixe,kmixn,iter
-1009       format('  long iteration at',i6,' steps',/,' location=(',f7.2,',',f6.2,')',/,&
-               '  hmixest=',f7.2,' hmixnew=',f7.2,' diff=',f6.1,' kmixn=',i3,' iteration=',i3)
+           WRITE(message,*) 'long iteration at timestep', kpp_const_fields%ntime, &
+                ' location = (', kpp_1d_fields%dlon, ',', kpp_1d_fields%dlat, ')'
+           CALL mckpp_print_warning(routine, message)
+           WRITE(message,*) 'hmixest = ', hmixe, ', hmixnew=', hmixn, &
+                ', diff = ', hmixn-hmixe, ', kmixn = ', kmixn, ', iteration = ', iter
            CALL mckpp_print_warning(routine, message) 
         endif
      ENDIF
