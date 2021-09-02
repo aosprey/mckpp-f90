@@ -33,3 +33,14 @@
 
 # Preprocessed files
 *.i
+
+# FCM files
+fcm-make.log
+fcm-make-on-success.cfg
+fcm-make-as-parsed.cfg
+.fcm-make/
+build/
+
+# Editors
+*~
+*.swp
