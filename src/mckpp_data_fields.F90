@@ -1,5 +1,6 @@
 MODULE mckpp_data_fields
 
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, max_restart_filename_len
   USE mckpp_parameters
 
   IMPLICIT NONE
