@@ -15,7 +15,7 @@ MODULE mckpp_initialize_couplingweight_mod
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
   USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, &
-      mckpp_netcdf_get_var
+      mckpp_netcdf_get_var, max_nc_filename_len
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nx_globe, ny_globe
 
@@ -33,6 +33,7 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 
   INTEGER ix, jy, ipoint_globe, ncid 
   REAL cplwght_in(NX_GLOBE,NY_GLOBE)
+  CHARACTER(LEN=max_nc_filename_len) :: file
   CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_COUPLINGWEIGHT"
   CHARACTER(LEN=max_message_len) :: message
 
@@ -46,20 +47,19 @@ SUBROUTINE MCKPP_INITIALIZE_COUPLINGWEIGHT()
 #ifdef MCKPP_CAM3
   IF (masterproc) THEN
 #endif
-    CALL mckpp_print(routine, "Reading coupling weight (alpha)")
-    CALL mckpp_netcdf_open(routine, kpp_const_fields%cplwght_file, ncid)
-    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
-        "alpha", cplwght_in)
+    file = kpp_const_fields%cplwght_file
+    WRITE(message,*) "Reading coupling weight (alpha) from file ", TRIM(file)
+    CALL mckpp_print(routine, message)
+    CALL mckpp_netcdf_open(routine, file, ncid)
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "alpha", cplwght_in)
     
 #ifdef MCKPP_CAM3
     ! Use coupling weight to get global latitude and longitude grid
-    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
-        "latitude", kpp_global_fields%latitude)
-    CALL mckpp_netcdf_get_var(routine, kpp_const_fields%cplwght_file, ncid, &
-        "longitude", kpp_global_fields%longitude)
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "latitude", kpp_global_fields%latitude)
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "longitude", kpp_global_fields%longitude)
 #endif
 
-    CALL mckpp_netcdf_close(routine, kpp_const_fields%cplwght_file, ncid)
+    CALL mckpp_netcdf_close(routine, file, ncid)
 #ifdef MCKPP_CAM3  
   ENDIF ! End of masterproc section
   

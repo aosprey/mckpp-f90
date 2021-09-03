@@ -15,7 +15,7 @@ MODULE mckpp_initialize_landsea_mod
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
   USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, &
-      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var
+      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var, max_nc_filename_len
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: npts, nx, ny
  
@@ -38,6 +38,7 @@ SUBROUTINE mckpp_initialize_landsea()
   INTEGER, DIMENSION(2) :: start, count
   REAL, DIMENSION(nx) :: lon_in
   REAL, DIMENSION(ny) :: lat_in
+  CHARACTER(LEN=max_nc_filename_len) :: file
   CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_LANDSEA"
   CHARACTER(LEN=max_message_len) :: message
 
@@ -58,24 +59,21 @@ SUBROUTINE mckpp_initialize_landsea()
 #ifdef MCKPP_CAM3
      IF (masterproc) THEN
 #endif
-       WRITE(message,*) "Reading", kpp_const_fields%landsea_file
+       file = kpp_const_fields%landsea_file
+       WRITE(message,*) "Reading land sea mask from file ", TRIM(file)
        CALL mckpp_print(routine, message)
-       CALL mckpp_netcdf_open(routine, kpp_const_fields%landsea_file, ncid)
-       CALL mckpp_netcdf_determine_boundaries(routine, kpp_const_fields%landsea_file, ncid, &
+       CALL mckpp_netcdf_open(routine, file, ncid)
+       CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
            kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat)
-       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "longitude", lon_in, offset_lon)
-       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "latitude", lat_in, offset_lat)
+       CALL mckpp_netcdf_get_var(routine, file, ncid, "longitude", lon_in, offset_lon)
+       CALL mckpp_netcdf_get_var(routine, file, ncid, "latitude", lat_in, offset_lat)
        start(1) = offset_lon
        start(2) = offset_lat
        count(1) = nx
        count(2) = ny
-       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "lsm", landsea, start, count, 2)
-       CALL mckpp_netcdf_get_var(routine, kpp_const_fields%landsea_file, ncid, &
-           "maxdepth", ocdepth, start, count, 2)       
-       CALL mckpp_netcdf_close(routine, kpp_const_fields%landsea_file, ncid)
+       CALL mckpp_netcdf_get_var(routine, file, ncid, "lsm", landsea, start, count, 2)
+       CALL mckpp_netcdf_get_var(routine, file, ncid, "maxdepth", ocdepth, start, count, 2)       
+       CALL mckpp_netcdf_close(routine, file, ncid)
        
 #ifdef MCKPP_CAM3
      ENDIF    

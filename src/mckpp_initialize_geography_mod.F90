@@ -8,7 +8,8 @@ MODULE mckpp_initialize_geography_mod
 #else
   USE mckpp_data_fields, ONLY: kpp_const_fields, kpp_3d_fields
 #endif /*MCKPP_CAM3*/
-  USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, mckpp_netcdf_get_var
+  USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, mckpp_netcdf_get_var, &
+      max_nc_filename_len
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: nz, nzp1, npts
 
@@ -26,19 +27,21 @@ SUBROUTINE mckpp_initialize_geography()
   REAL :: sumh, hsum, dfac, sk
   REAL, DIMENSION(nz) :: vgrid_in
   INTEGER :: i, ipt, ncid
+  CHARACTER(LEN=max_nc_filename_len) :: file
   CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_GEOGRAPHY"
   CHARACTER(LEN=max_message_len) :: message
 
   ! Read vertical grid fields
-  IF (kpp_const_fields%L_VGRID_FILE) THEN 
-     WRITE(message,*) "Reading vertical grid from file ", kpp_const_fields%vgrid_file
+  IF (kpp_const_fields%L_VGRID_FILE) THEN
+     file = kpp_const_fields%vgrid_file
+     WRITE(message,*) "Reading vertical grid from file ", TRIM(file)
      CALL mckpp_print(routine, message)
      
-     CALL mckpp_netcdf_open(routine, kpp_const_fields%vgrid_file, ncid)     
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "d", kpp_const_fields%dm(1:NZ))
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "h", kpp_const_fields%hm(1:NZ))
-     CALL mckpp_netcdf_get_var(routine, kpp_const_fields%vgrid_file, ncid, "z", kpp_const_fields%zm(1:NZ))
-     CALL mckpp_netcdf_close(routine, kpp_const_fields%vgrid_file, ncid)
+     CALL mckpp_netcdf_open(routine, file, ncid)     
+     CALL mckpp_netcdf_get_var(routine, file, ncid, "d", kpp_const_fields%dm(1:NZ))
+     CALL mckpp_netcdf_get_var(routine, file, ncid, "h", kpp_const_fields%hm(1:NZ))
+     CALL mckpp_netcdf_get_var(routine, file, ncid, "z", kpp_const_fields%zm(1:NZ))
+     CALL mckpp_netcdf_close(routine, file, ncid)
      
      kpp_const_fields%DMAX=-1.*(kpp_const_fields%zm(NZ)-kpp_const_fields%hm(NZ))
   ELSE     

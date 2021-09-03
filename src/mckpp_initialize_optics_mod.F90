@@ -35,7 +35,7 @@ SUBROUTINE mckpp_initialize_optics()
   INTEGER, DIMENSION(2) :: start
   INTEGER, DIMENSION(1) :: shape
   CHARACTER(LEN=max_nc_filename_len) :: file
-  CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_ADVECTION"
+  CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_OPTICS"
   CHARACTER(LEN=max_message_len) :: message
   
   IF (kpp_const_fields%L_JERLOV) THEN
@@ -43,7 +43,7 @@ SUBROUTINE mckpp_initialize_optics()
     IF (masterproc) THEN
 #endif
       file = kpp_const_fields%paras_file
-      WRITE(message,*) "Reading", file
+      WRITE(message,*) "Reading optical properties of seawater from ", TRIM(file)
       CALL mckpp_print(routine, message)
       
       CALL mckpp_netcdf_open(routine, file, ncid)

@@ -48,7 +48,7 @@ SUBROUTINE MCKPP_INITIALIZE_ADVECTION()
     IF (masterproc) THEN
 #endif
       file = kpp_const_fields%advect_file
-      WRITE(message,*) "Reading", file
+      WRITE(message,*) "Reading advection from file ", TRIM(file)
       CALL mckpp_print(routine, message)
       CALL mckpp_netcdf_open(routine, file, ncid)
       
