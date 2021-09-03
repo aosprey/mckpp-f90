@@ -5,10 +5,6 @@
 
 MODULE mckpp_boundary_interpolate
 
-CONTAINS
-
-SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
   USE ppgrid, only: begchunk,endchunk,pcols
@@ -19,9 +15,14 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nzp1
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
+  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
 
   IMPLICIT NONE
+  
+CONTAINS
 
+SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
+  
   INTEGER prev_time,next_time,true_time
   REAL prev_weight,next_weight,ndays_upd_ocnT
   CHARACTER(LEN=31) :: routine = "MCKPP_BOUNDARY_INTERPOLATE_TEMP"
@@ -100,19 +101,6 @@ END SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP
 
 SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_3d_fields,kpp_const_fields
-  USE ppgrid, only: begchunk,endchunk,pcols
-  USE phys_grid,only: get_ncols_p
-#else
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
-#endif
-  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-  USE mckpp_parameters, ONLY: npts, nzp1
-  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
-
-  IMPLICIT NONE
-
   INTEGER prev_time,next_time,true_time
   REAL prev_weight,next_weight,ndays_upd_sal
   CHARACTER(LEN=31) :: routine = "mckpp_boundary_interpolate_temp"
