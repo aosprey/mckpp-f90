@@ -3,7 +3,7 @@
 MODULE mckpp_netcdf_read
 
   USE mckpp_abort_mod, ONLY: mckpp_abort
-  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, update_context
   
   USE netcdf
 
@@ -366,17 +366,6 @@ CONTAINS
     ENDDO
     
   END SUBROUTINE get_start_position
-
-
-  ! Update call tree with current routine
-  FUNCTION update_context(calling_routine, routine) RESULT(context)
-
-    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, routine
-    CHARACTER(LEN=max_message_len) :: context
-    
-    WRITE(context,*) TRIM(ADJUSTL(calling_routine)), " -> ", TRIM(ADJUSTL(routine))
-
-  END FUNCTION update_context
 
 
   ! Check netcdf routine error codes.

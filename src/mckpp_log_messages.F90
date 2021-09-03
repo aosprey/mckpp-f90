@@ -15,7 +15,7 @@ MODULE mckpp_log_messages
  
   IMPLICIT NONE 
 
-  PUBLIC :: mckpp_print, mckpp_print_error, mckpp_print_warning
+  PUBLIC :: mckpp_print, mckpp_print_error, mckpp_print_warning, update_context
   PUBLIC :: max_message_len
 
   PRIVATE
@@ -67,7 +67,19 @@ CONTAINS
     CALL mckpp_write(nuerr, print_message)
     
   END SUBROUTINE mckpp_print_warning
-  
+
+
+  ! Sometimes it is useful to have the call path of routines for log messages.
+  ! This function updates string with current routine
+  FUNCTION update_context(calling_routine, routine) RESULT(context)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, routine
+    CHARACTER(LEN=max_message_len) :: context
+    
+    WRITE(context,*) TRIM(ADJUSTL(calling_routine)), " -> ", TRIM(ADJUSTL(routine))
+
+  END FUNCTION update_context
+
 
   ! Internal : call write
   SUBROUTINE mckpp_write(unit, string)
