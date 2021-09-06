@@ -10,8 +10,8 @@ PROGRAM mckpp_ocean_model_3d
   USE mckpp_time_control, ONLY: mckpp_update_time
   USE mckpp_timer, ONLY: mckpp_initialize_timers, mckpp_start_timer, &
       mckpp_stop_timer, mckpp_print_timers
-  USE mckpp_xios_control, ONLY: mckpp_initialize_output, mckpp_output_control, &
-      mckpp_restart_control, mckpp_finalize_output
+  USE mckpp_xios_control, ONLY: mckpp_initialize_xios, mckpp_initialize_output, &
+      mckpp_output_control, mckpp_restart_control, mckpp_finalize_xios
 
   IMPLICIT NONE
 
@@ -25,6 +25,7 @@ PROGRAM mckpp_ocean_model_3d
   CALL mckpp_initialize_timers()
   CALL mckpp_start_timer('Initialization')
 
+  CALL mckpp_initialize_xios() 
   CALL mckpp_initialize_namelist()
   CALL mckpp_initialize_fields()
   CALL mckpp_initialize_output()
@@ -72,7 +73,7 @@ PROGRAM mckpp_ocean_model_3d
 
   ! Finalise
   CALL mckpp_print(routine, "Finalisation")
-  CALL mckpp_finalize_output() 
+  CALL mckpp_finalize_xios() 
   CALL mckpp_print_timers()
 
 END PROGRAM mckpp_ocean_model_3d

@@ -11,7 +11,7 @@ MODULE mckpp_xios_io
 
   IMPLICIT NONE
 
-  PUBLIC :: xios_comm, ctx_hdl_diags
+  PUBLIC :: xios_comm
   PUBLIC :: mckpp_xios_diagnostic_definition, mckpp_xios_restart_definition, &
        mckpp_xios_diagnostic_output, mckpp_xios_write_restart
 
