@@ -36,7 +36,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_temperatures_bottom_mod, ONLY: mckpp_read_temperatures_bottom
-  USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
+  USE mckpp_xios_control, ONLY: mckpp_read_restart
 
   IMPLICIT NONE
 
@@ -104,9 +104,9 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
 
   ! Initialize ocean profiles
   IF (kpp_const_fields%L_RESTART) THEN     
-     CALL mckpp_print(routine, "Calling MCKPP_RESTART_IO_READ")
+     CALL mckpp_print(routine, "Calling MCKPP_READ_RESTART")
      ! Still needs scattering code
-     CALL MCKPP_RESTART_IO_READ_NETCDF()
+     CALL mckpp_read_restart()
   ELSE
      CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OCEAN_PROFILES")
      CALL MCKPP_INITIALIZE_OCEAN_PROFILES()

@@ -3,11 +3,12 @@ MODULE mckpp_xios_control
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields,kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len
   USE mckpp_time_control, ONLY: mckpp_get_time
   USE mckpp_timer, ONLY: mckpp_start_timer, mckpp_stop_timer
   USE mckpp_xios_io, ONLY: xios_comm, &
       mckpp_xios_diagnostic_definition, mckpp_xios_diagnostic_output, &
-      mckpp_xios_restart_definition, mckpp_xios_write_restart
+      mckpp_xios_restart_definition, mckpp_xios_write_restart, mckpp_xios_read_restart
 
   USE mpi 
   USE xios 
@@ -80,5 +81,22 @@ CONTAINS
     CALL mckpp_stop_timer("Write restart output") 
 
   END SUBROUTINE mckpp_restart_control
+  
+
+  ! Restart input
+  ! XIOS will check file dimensions and validity date. 
+  SUBROUTINE mckpp_read_restart()
+
+    CHARACTER(LEN=18) :: routine = "MCKPP_READ_RESTART"
+    CHARACTER(LEN=max_message_len) :: message
+    CHARACTER(LEN=max_nc_filename_len) :: file
+    
+    file = kpp_const_fields%restart_infile
+    WRITE(message,*) "Read restart file ", TRIM(file)//".nc"
+    CALL mckpp_print(routine, message)
+    CALL mckpp_xios_read_restart(file)
+    
+  END SUBROUTINE mckpp_read_restart
+  
 
 END MODULE mckpp_xios_control
