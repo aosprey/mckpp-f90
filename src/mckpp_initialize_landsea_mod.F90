@@ -72,7 +72,7 @@ SUBROUTINE mckpp_initialize_landsea()
        count(1) = nx
        count(2) = ny
        CALL mckpp_netcdf_get_var(routine, file, ncid, "lsm", landsea, start, count, 2)
-       CALL mckpp_netcdf_get_var(routine, file, ncid, "maxdepth", ocdepth, start, count, 2)       
+       CALL mckpp_netcdf_get_var(routine, file, ncid, "max_depth", ocdepth, start, count, 2)       
        CALL mckpp_netcdf_close(routine, file, ncid)
        
 #ifdef MCKPP_CAM3
