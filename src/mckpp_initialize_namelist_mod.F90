@@ -211,7 +211,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   CALL mckpp_print(routine, "Read Namelist TIMES") 
   
   ! Initialize and read the couple namelist
-#ifdef MCKPP_COUPLE
+#if defined MCKPP_COUPLE || defined MCKPP_CAM3
   L_COUPLE=.TRUE.
 #else
   L_COUPLE=.FALSE.
