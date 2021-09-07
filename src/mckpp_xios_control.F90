@@ -6,8 +6,7 @@ MODULE mckpp_xios_control
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len
   USE mckpp_time_control, ONLY: mckpp_get_time, ntime
   USE mckpp_timer, ONLY: mckpp_start_timer, mckpp_stop_timer
-  USE mckpp_xios_io, ONLY: xios_comm, &
-      mckpp_xios_diagnostic_definition, mckpp_xios_diagnostic_output, &
+  USE mckpp_xios_io, ONLY: mckpp_xios_diagnostic_definition, mckpp_xios_diagnostic_output, &
       mckpp_xios_restart_definition, mckpp_xios_write_restart, mckpp_xios_read_restart
 
   USE mpi 
@@ -17,17 +16,6 @@ MODULE mckpp_xios_control
 
 CONTAINS 
 
-  ! Start MPI and XIOS
-  SUBROUTINE mckpp_initialize_xios()
-
-    INTEGER :: ierr
-
-    CALL mpi_init(ierr)
-    CALL xios_initialize("client", return_comm=xios_comm)    
-
-  END SUBROUTINE mckpp_initialize_xios
-
-
   ! Initialize diagnostic output
   SUBROUTINE mckpp_initialize_output()
 
@@ -36,14 +24,13 @@ CONTAINS
   END SUBROUTINE mckpp_initialize_output
   
 
-  ! Shutdown MPI and XIOS
+  ! Shutdown XIOS
   SUBROUTINE mckpp_finalize_xios() 
 
     INTEGER :: ierr
 
     CALL xios_context_finalize()
     CALL xios_finalize()
-    CALL mpi_finalize(ierr)
 
   END SUBROUTINE mckpp_finalize_xios
 

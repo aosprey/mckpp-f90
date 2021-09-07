@@ -5,6 +5,7 @@ MODULE mckpp_xios_io
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, update_context
+  USE mckpp_mpi_control, ONLY: comm
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
   USE mckpp_time_control, ONLY: ntime, time
 
@@ -12,7 +13,6 @@ MODULE mckpp_xios_io
 
   IMPLICIT NONE
 
-  PUBLIC :: xios_comm
   PUBLIC :: mckpp_xios_diagnostic_definition, mckpp_xios_restart_definition, &
        mckpp_xios_diagnostic_output, mckpp_xios_write_restart, mckpp_xios_read_restart
 
@@ -25,7 +25,6 @@ MODULE mckpp_xios_io
   TYPE(xios_duration) :: dtime
   TYPE(xios_date) :: start_date
   
-  INTEGER :: xios_comm
   TYPE(xios_context) :: ctx_hdl_diags
 
 CONTAINS 
@@ -34,7 +33,7 @@ CONTAINS
   
   SUBROUTINE mckpp_xios_diagnostic_definition()
 
-    CALL xios_context_initialize("kpp", xios_comm)
+    CALL xios_context_initialize("kpp", comm)
     CALL xios_get_handle("kpp", ctx_hdl_diags)
     CALL xios_set_current_context(ctx_hdl_diags)
 
@@ -227,7 +226,7 @@ CONTAINS
     context_name = "ctx_restart_"//TRIM(ADJUSTL(restart_time_str))
 
     ! Define a new context for this restart file 
-    CALL xios_context_initialize(context_name, xios_comm)
+    CALL xios_context_initialize(context_name, comm)
     CALL xios_get_handle(context_name, ctx_hdl_restart)
     CALL xios_set_current_context(ctx_hdl_restart)
 
@@ -254,7 +253,7 @@ CONTAINS
 
 
     ! Define a new context for this restart file 
-    CALL xios_context_initialize(context_name, xios_comm)
+    CALL xios_context_initialize(context_name, comm)
     CALL xios_get_handle(context_name, ctx_hdl_restart)
     CALL xios_set_current_context(ctx_hdl_restart)
 

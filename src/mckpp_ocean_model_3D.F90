@@ -3,6 +3,7 @@ PROGRAM mckpp_ocean_model_3d
   USE mckpp_boundary_update_mod, ONLY: mckpp_boundary_update
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_mpi_control, ONLY: mckpp_initialize_mpi, mckpp_finalize_mpi
   USE mckpp_fluxes_mod, ONLY: mckpp_fluxes
   USE mckpp_initialize_fields_mod, ONLY: mckpp_initialize_fields
   USE mckpp_initialize_namelist_mod, ONLY: mckpp_initialize_namelist
@@ -10,7 +11,7 @@ PROGRAM mckpp_ocean_model_3d
   USE mckpp_time_control, ONLY: mckpp_update_time, mckpp_initialize_time
   USE mckpp_timer, ONLY: mckpp_initialize_timers, mckpp_start_timer, &
       mckpp_stop_timer, mckpp_print_timers
-  USE mckpp_xios_control, ONLY: mckpp_initialize_xios, mckpp_initialize_output, &
+  USE mckpp_xios_control, ONLY: mckpp_initialize_output, &
       mckpp_output_control, mckpp_restart_control, mckpp_finalize_xios
 
   IMPLICIT NONE
@@ -24,7 +25,7 @@ PROGRAM mckpp_ocean_model_3d
   CALL mckpp_initialize_timers()
   CALL mckpp_start_timer('Initialization')
 
-  CALL mckpp_initialize_xios() 
+  CALL mckpp_initialize_mpi() 
   CALL mckpp_initialize_namelist()
   CALL mckpp_initialize_time()
   CALL mckpp_initialize_fields()
@@ -71,7 +72,8 @@ PROGRAM mckpp_ocean_model_3d
 
   ! Finalize
   CALL mckpp_print(routine, "Finalization")
-  CALL mckpp_finalize_xios() 
   CALL mckpp_print_timers()
+  CALL mckpp_finalize_xios()
+  CALL mckpp_finalize_mpi()
 
 END PROGRAM mckpp_ocean_model_3d
