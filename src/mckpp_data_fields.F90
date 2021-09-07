@@ -1,5 +1,6 @@
 MODULE mckpp_data_fields
 
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, max_restart_filename_len
   USE mckpp_parameters
 
   IMPLICIT NONE
@@ -237,9 +238,6 @@ MODULE mckpp_data_fields
         iso_bot, & 
         dt_uvdamp, & 
         ndt_per_restart, & 
-        flx_ncid, & 
-        flx_timein_id, & 
-        flx_varin_id(7), &
         ndtupdsst, & 
         climsst_period, & 
         ndtupdice, & 
@@ -323,7 +321,8 @@ MODULE mckpp_data_fields
         L_INTERPINIT, & 
         L_NO_ISOTHERM, & 
         L_NO_FREEZE, & 
-        L_DAMP_CURR
+        L_DAMP_CURR, &
+        L_COUPLE
 
     CHARACTER(LEN=max_nc_filename_len) :: & 
         forcing_file, & 

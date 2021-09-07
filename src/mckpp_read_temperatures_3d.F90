@@ -3,14 +3,14 @@
 #include <params.h>
 #endif
 
-MODULE mckpp_read_salinity_mod
+MODULE mckpp_read_temperatures_3d_mod
 
-#ifdef MCKPP_CAM3 
+#ifdef MCKPP_CAM3  
   USE shr_kind_mod,only: r8=>shr_kind_r8
   USE mckpp_types,only: kpp_global_fields,kpp_3d_fields,kpp_const_fields
   USE pmgrid, only: masterproc
   USE ppgrid, only: begchunk, endchunk, pcols
-  USE phys_grid, only: scatter_field_to_chunk, get_ncols_p
+  USE phys_grid, only: scatter_field_to_chunk, scatter_field_to_chunk_int, get_ncols_p
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
@@ -18,12 +18,12 @@ MODULE mckpp_read_salinity_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
       mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
-  USE mckpp_parameters, ONLY: nx, ny, nzp1, nx_globe, ny_globe
+  USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, nzp1
   USE mckpp_time_control, ONLY: mckpp_get_update_time
 
   IMPLICIT NONE
 
-  PUBLIC mckpp_read_salinity_3d
+  PUBLIC mckpp_read_temperatures_3d
 
   PRIVATE
 
@@ -34,14 +34,14 @@ MODULE mckpp_read_salinity_mod
 
 CONTAINS
 
-  SUBROUTINE initialize_salinity(file, ncid)
+  SUBROUTINE initialize_temperatures(file, ncid)
 
     CHARACTER(LEN=max_nc_filename_len), INTENT(IN) :: file
     INTEGER, INTENT(IN) :: ncid
 
     REAL :: start_lat, start_lon
     INTEGER :: nz_in
-    CHARACTER(LEN=19) :: routine = "INITIALIZE_SALINITY"
+    CHARACTER(LEN=23) :: routine = "INITIALIZE_TEMPERATURES"
     CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
@@ -78,7 +78,7 @@ CONTAINS
       ! Check vertical levels
       CALL mckpp_netcdf_get_coord(routine, file, ncid, "z", nz_in)
       IF (nz_in .NE. nzp1) THEN
-        WRITE(message,*) "Salinity climatology file does not have the correct ", &
+        WRITE(message,*) "Ocean temperature climatology file does not have the correct ", &
             "number of vertical levels."
         CALL mckpp_print_error(routine, message)
         WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_in
@@ -90,40 +90,36 @@ CONTAINS
 #endif
     l_initialized = .TRUE.
 
-  END SUBROUTINE initialize_salinity
+  END SUBROUTINE initialize_temperatures
 
 
-  ! Read in a NetCDF file containing a 
-  ! time-varying salinity field at every model vertical level.
-  ! Frequency of read is controlled by ndtupdsal in the namelist
-  ! NPK 12/02/08
-  SUBROUTINE mckpp_read_salinity_3d()
+  SUBROUTINE mckpp_read_temperatures_3d()
 
 #ifdef MCKPP_CAM3
-    REAL(r8) :: sal_temp(PLON,PLAT,NZP1), sal_chunk(PCOLS,begchunk:endchunk,NZP1)
+    REAL(r8) :: ocnT_temp(PLON,PLAT,NZP1), ocnT_chunk(PCOLS,begchunk:endchunk,NZP1)
     INTEGER :: ichnk,icol,ncol
 #endif
     CHARACTER(LEN=max_nc_filename_len) :: file
     REAL :: update_time
     INTEGER :: ncid, ix, iy, iz, ipt
     REAL, ALLOCATABLE, DIMENSION(:,:,:,:) :: var_in
-
-    CHARACTER(LEN=22) :: routine = "MCKPP_READ_SALINITY_3D"
+    
+    CHARACTER(LEN=26) :: routine = "MCKPP_READ_TEMPERATURES_3D"
     CHARACTER(LEN=max_message_len) :: message
 
 #ifdef MCKPP_CAM3
     IF (masterproc) THEN
 #endif
-      file = kpp_const_fields%sal_file
+      file = kpp_const_fields%ocnt_file
       CALL mckpp_netcdf_open(routine, file, ncid)
 
       ! On first call, get file dimensions
-      IF (.NOT. l_initialized) CALL initialize_salinity(file, ncid)
+      IF (.NOT. l_initialized) CALL initialize_temperatures(file, ncid)
       ALLOCATE( var_in(my_nx,my_ny,nzp1,1) )
 
       ! Work out time to read and check against times in file
-      CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdsal, &
-          file_times, num_times, kpp_const_fields%L_PERIODIC_SAL, kpp_const_fields%sal_period, &
+      CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdocnT, &
+          file_times, num_times, kpp_const_fields%L_PERIODIC_OCNT, kpp_const_fields%ocnT_period, &
           update_time, start(4), method=2)
       WRITE(message,*) 'Reading ocean temperature for time ', update_time
       CALL mckpp_print(routine, message)
@@ -131,37 +127,30 @@ CONTAINS
       CALL mckpp_print(routine, message)
 
       ! Read data 
-      CALL mckpp_netcdf_get_var(routine, file, ncid, "salinity", var_in, start) 
+      CALL mckpp_netcdf_get_var(routine, file, ncid, "temperature", var_in, start) 
       CALL mckpp_netcdf_close(routine, file, ncid)
-     
+
 #ifdef MCKPP_CAM3
-      sal_temp = var_in(:,:,:,1)
+      ocnT_temp = var_in(:,:,:,1)
     ENDIF ! End of masterproc section
-    CALL scatter_field_to_chunk(1,1,NZP1,PLON,sal_temp,sal_chunk(1,begchunk,1))
+    CALL scatter_field_to_chunk(1,1,NZP1,PLON,ocnT_temp,ocnT_chunk(1,begchunk,1))
     DO ichnk=begchunk,endchunk
-      ncol=get_ncols_p(ichnk)     
-      ! Subtract reference salinity from climatology, for compatability with
-      ! salinity values stored in main model.
-      DO k=1,NZP1
-        kpp_3d_fields(ichnk)%sal_clim(1:ncol,k)=sal_chunk(1:ncol,ichnk,k)-&
-            kpp_3d_fields(ichnk)%Sref(1:ncol)
-      ENDDO
+      ncol=get_ncols_p(ichnk)
+      kpp_3d_fields(ichnk)%ocnT_clim(1:ncol,1:NZP1)=ocnT_chunk(1:ncol,ichnk,1:NZP1)
     ENDDO
 #else
-    ! Put all (NX,NY) points into one long array with dimension NPTS.      
+    ! Put all (NX,NY) points into one long array with dimension NPTS.       
     DO ix = 1,NX
       DO iy = 1,NY
         ipt = (iy-1)*nx+ix
         DO iz = 1,NZP1
-          ! Subtract reference salinity from climatology, for compatability with
-          ! salinity values stored in main model.  
-          kpp_3d_fields%sal_clim(ipt,iz) = var_in(ix,iy,iz,1) - kpp_3d_fields%Sref(ipt)
+          kpp_3d_fields%ocnT_clim(ipt,iz) = var_in(ix,iy,iz,1)
         ENDDO
       ENDDO
     ENDDO
 #endif
     DEALLOCATE(var_in)
+    
+  END SUBROUTINE mckpp_read_temperatures_3d
 
-  END SUBROUTINE mckpp_read_salinity_3d
-
-END MODULE mckpp_read_salinity_mod
+END MODULE mckpp_read_temperatures_3d_mod

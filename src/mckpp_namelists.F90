@@ -1,6 +1,7 @@
 MODULE mckpp_namelists
 
-  USE mckpp_parameters 
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, max_restart_filename_len
+  USE mckpp_parameters
 
   IMPLICIT NONE 
 

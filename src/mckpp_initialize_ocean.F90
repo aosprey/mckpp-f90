@@ -15,14 +15,14 @@ MODULE mckpp_initialize_ocean
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
 #endif
   USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
+      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
-  USE mckpp_netcdf_subs
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
   
   IMPLICIT NONE
-#include <netcdf.inc>  
 
 CONTAINS
 
@@ -33,19 +33,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
   REAL(r8) :: temp_init(PLON,PLAT,NZP1),init_chunk(PCOLS,begchunk:endchunk,NZP1)
 #endif
 
-! local
-  INTEGER :: my_nx, my_ny
-  INTEGER n,i,ipt,ichnk
-  INTEGER status,ncid
-  REAL*4, allocatable :: var_in(:,:,:),z_in(:),x_in(:),y_in(:)
+  ! local
+  REAL, ALLOCATABLE, DIMENSION(:) :: z_in
+  REAL, ALLOCATABLE, DIMENSION(:,:,:) :: var_in
+  INTEGER :: my_nx, my_ny, i, ichnk, ix, iy
+  INTEGER :: ncid, offset_lat, offset_lon, nz_in
+  INTEGER, DIMENSION(3) :: start, count
+  REAL :: offset_sst
   
-  INTEGER varid,dimid
-  INTEGER nz_in,nx_in,ny_in
-  
-  INTEGER ix,iy,count(3),start(3)
-  INTEGER kin,k
-  REAL deltaz,deltavar,offset_sst
-  
+  CHARACTER(LEN=max_nc_filename_len) :: file
   CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_OCEAN_PROFILES"
   CHARACTER(LEN=max_message_len) :: message
 
@@ -55,262 +51,171 @@ SUBROUTINE mckpp_initialize_ocean_profiles()
 #else
   my_nx = nx
   my_ny = ny 
-#endif
+#endif  
 
-  IF ( kpp_const_fields%L_INITDATA ) THEN
-#ifdef MCKPP_CAM3
-     IF (masterproc) THEN
-#endif
-     allocate(var_in(my_nx,my_ny,200))
-     allocate(z_in(200))
-     allocate(x_in(NX_GLOBE))
-     allocate(y_in(NY_GLOBE))
-     
-     status=NF_OPEN(kpp_const_fields%initdata_file,0,ncid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)     
-     status=NF_INQ_DIMID(ncid,'longitude',dimid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_DIMLEN (ncid,dimid,nx_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_VARID(ncid,'longitude',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VAR_REAL(ncid,varid,x_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     ix=1
-#ifdef MCKPP_CAM3
-     DO WHILE (abs(x_in(ix)-kpp_global_fields%longitude(1)) .GT. 1e-3)
-#else
-     DO WHILE (abs(x_in(ix)-kpp_3d_fields%dlon(1)) .GT. 1.e-3)
-#endif
-        ix=ix+1
-        IF (ix .GE. nx_in) THEN
-           CALL mckpp_print_error(routine, "Error reading initial conditions") 
-#ifdef MCKPP_CAM3
-           WRITE(message,*) 'Cannot find longitude ', & 
-               kpp_global_fields%longitude(1),' in range ',x_in(1),x_in(nx_in)
-#else
-           WRITE(message,*) 'Cannot find longitude ', &
-               kpp_3d_fields%dlon(1),' in range ',x_in(1),x_in(nx_in)
-#endif
-           CALL mckpp_print_error(routine, message)
-           CALL MCKPP_ABORT()
-        ENDIF
-     ENDDO
-     start(1)=ix
-     count(1)=my_nx
-
-     status=NF_INQ_DIMID(ncid,'latitude',dimid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_DIMLEN (ncid,dimid,ny_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_VARID(ncid,'latitude',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VAR_REAL(ncid,varid,y_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     iy=1
-#ifdef MCKPP_CAM3
-     DO WHILE (abs(y_in(iy)-kpp_global_fields%latitude(1)) .GT. 1e-3)
-#else
-     DO WHILE (abs(y_in(iy)-kpp_3d_fields%dlat(1)) .GT. 1.e-3)
-#endif
-        iy=iy+1
-        IF (iy .GE. ny_in) THEN
-           CALL mckpp_print_error(routine, "Error reading initial conditions") 
-#ifdef MCKPP_CAM3
-           WRITE(message,*) 'Cannot find latitude ', &
-               kpp_global_fields%latitude(1),' in range ',y_in(1),y_in(ny_in)
-#else
-           WRITE(message,*) 'Cannot find latitude ',&
-               kpp_3d_fields%dlat(1),' in range ',y_in(1),y_in(ny_in)
-#endif
-           CALL mckpp_print_error(routine, message)
-           CALL MCKPP_ABORT()
-        ENDIF
-     ENDDO
-     start(2)=iy
-     count(2)=my_ny
-     
-     status=NF_INQ_DIMID(ncid,'zvel',dimid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_DIMLEN (ncid,dimid,nz_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     start(3)=1
-     count(3)=nz_in
-     
-     status=NF_INQ_VARID(ncid,'zvel',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VAR_REAL(ncid,varid,z_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_VARID(ncid,'u',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     
-     IF (kpp_const_fields%L_INTERPINIT) THEN
-#ifdef MCKPP_CAM3
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
-#else
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,1))
-#endif
-     ELSE
-       CALL mckpp_print_error(routine, "You have to interpolate") 
-     ENDIF
-#ifdef MCKPP_CAM3
-     ENDIF ! End of masterproc section
-     CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
-        kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)        
-     ENDDO
-     CALL mckpp_print(routine, "Initialized zonal velocity")
-#endif
-     status=NF_INQ_VARID(ncid,'v',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-
-     IF (kpp_const_fields%L_INTERPINIT) THEN
-#ifdef MCKPP_CAM3
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
-#else
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,2))
-#endif
-     ELSE
-       CALL mckpp_print_error(routine, "You have to interpolate") 
-     ENDIF
-#ifdef MCKPP_CAM3
-     ENDIF ! End of masterproc section
-     CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
-        kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)        
-     ENDDO     
-     CALL mckpp_print(routine, "Initialized meridional velocity") 
-#else
-     ! Save initial currents in case they are needed to reinitalise
-     ! dodgy profiles (see resetting routines in mc-kpp_physics_overrides)
-     kpp_3d_fields%U_init=kpp_3d_fields%U
-#endif     
-     status=NF_INQ_DIMID(ncid,'ztemp',dimid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_DIMLEN (ncid,dimid,nz_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     start(3)=1
-     count(3)=nz_in
-     
-     status=NF_INQ_VARID(ncid,'ztemp',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VAR_REAL(ncid,varid,z_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_VARID(ncid,'temp',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     
-     IF (kpp_const_fields%L_INTERPINIT) THEN
-#ifdef MCKPP_CAM3
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
-#else
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,1))
-#endif
-     ELSE
-        CALL mckpp_print_error(routine, "You have to interpolate") 
-     ENDIF
-
-     ! KPP requires temperatures in CELSIUS.  If initial conditions
-     ! are in Kelvin, subtract 273.15
-     offset_sst = 0.
-     DO ix=1,nx
-        DO iy=1,ny
-           IF (var_in(ix,iy,1) .gt. 200 .and. var_in(ix,iy,1) .lt. 400) offset_sst = kpp_const_fields%TK0
-        END DO
-     END DO
-#ifdef MCKPP_CAM3
-     temp_init=temp_init-offset_sst
-     ENDIF ! End of masterproc section
-     CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
-     ENDDO
-#else
-     kpp_3d_fields%X(:,:,1) = kpp_3d_fields%X(:,:,1) - offset_sst
-#endif
-     CALL mckpp_print(routine, "Initialized temperature") 
-          
-#ifdef MCKPP_CAM3
-     IF (masterproc) THEN
-#endif
-     status=NF_INQ_DIMID(ncid,'zsal',dimid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_DIMLEN (ncid,dimid,nz_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     start(3)=1
-     count(3)=nz_in
-     
-     status=NF_INQ_VARID(ncid,'zsal',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VAR_REAL(ncid,varid,z_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_INQ_VARID(ncid,'sal',varid)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     status=NF_GET_VARA_REAL(ncid,varid,start,count,var_in)
-     IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-     
-     IF (kpp_const_fields%L_INTERPINIT) THEN
-#ifdef MCKPP_CAM3
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
-#else
-        CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,2))
-#endif
-     ELSE
-        CALL mckpp_print_error(routine, "You have to interpolate")
-     ENDIF
-#ifdef MCKPP_CAM3
-     ENDIF ! End of masterproc section
-     CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
-     ENDDO
-     CALL mckpp_print(routine, "Initialized salinity") 
-#endif
-  ELSE
-     CALL mckpp_print_error(routine, "No code for L_INITDATA=.FALSE.")
-     CALL MCKPP_ABORT()
+  IF (.NOT. kpp_const_fields%L_INITDATA) THEN
+    CALL mckpp_print_error(routine, "No code for L_INITDATA=.FALSE.")
+    CALL MCKPP_ABORT()
+  ENDIF   
+  IF (.NOT. kpp_const_fields%L_INTERPINIT) THEN
+    CALL mckpp_print_error(routine, "You have to interpolate initial profiles")
+    CALL mckpp_abort()
   ENDIF
+    
+#ifdef MCKPP_CAM3
+  IF (masterproc) THEN
+#endif
+    file = kpp_const_fields%initdata_file
+    WRITE(message,*) "Reading ", TRIM(file)
+    CALL mckpp_print(routine, message)
+      
+    CALL mckpp_netcdf_open(routine, file, ncid)
+    CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
+           kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat)     
+    start(1) = offset_lon
+    start(2) = offset_lat
+    start(3) = 1
+      
+    CALL mckpp_netcdf_get_coord(routine, file, ncid, "zvel", nz_in)
+    ALLOCATE(z_in(nz_in))
+    ALLOCATE(var_in(my_nx, my_ny, nz_in))
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "zvel", z_in)     
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "u", var_in, start)
+    
+#ifdef MCKPP_CAM3
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
+#else
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,1))
+#endif
+#ifdef MCKPP_CAM3
+  ENDIF ! End of masterproc section
+  CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
+  DO ichnk=begchunk,endchunk
+    ncol=get_ncols_p(ichnk)
+    kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
+    kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)        
+  ENDDO
+#endif
+  CALL mckpp_print(routine, "Initialized zonal velocity")
 
-  ! Calculate and remove reference salinity      
+#ifdef MCKPP_CAM3
+  IF (masterproc) THEN
+#endif
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "v", var_in, start)
+#ifdef MCKPP_CAM3
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
+#else
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%U(:,:,2))
+#endif
+#ifdef MCKPP_CAM3
+  ENDIF ! End of masterproc section
+  CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
+  DO ichnk=begchunk,endchunk
+    ncol=get_ncols_p(ichnk)
+    kpp_3d_fields(ichnk)%U(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
+    kpp_3d_fields(ichnk)%U_init(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)        
+  ENDDO     
+#else
+  ! Save initial currents in case they are needed to reinitalise
+  ! dodgy profiles (see resetting routines in mc-kpp_physics_overrides)
+  kpp_3d_fields%U_init = kpp_3d_fields%U
+#endif
+  CALL mckpp_print(routine, "Initialized meridional velocity") 
 
+#ifdef MCKPP_CAM3
+  IF (masterproc) THEN
+#endif
+    DEALLOCATE(z_in)
+    DEALLOCATE(var_in)     
+    CALL mckpp_netcdf_get_coord(routine, file, ncid, "ztemp", nz_in)
+    ALLOCATE(z_in(nz_in))
+    ALLOCATE(var_in(my_nx, my_ny, nz_in))
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "ztemp", z_in)
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "temp", var_in, start)
+    
+#ifdef MCKPP_CAM3
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
+#else
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,1))
+#endif
+ 
+    ! KPP requires temperatures in CELSIUS.  If initial conditions
+    ! are in Kelvin, subtract 273.15
+    offset_sst = 0.
+    DO ix=1,nx
+      DO iy=1,ny
+        IF (var_in(ix,iy,1) .gt. 200 .and. var_in(ix,iy,1) .lt. 400) offset_sst = kpp_const_fields%TK0
+      END DO
+    END DO
+#ifdef MCKPP_CAM3
+    temp_init=temp_init-offset_sst
+  ENDIF ! End of masterproc section
+  CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
+  DO ichnk=begchunk,endchunk
+    ncol=get_ncols_p(ichnk)
+    kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,1)=init_chunk(1:ncol,ichnk,1:NZP1)
+  ENDDO
+#else
+  kpp_3d_fields%X(:,:,1) = kpp_3d_fields%X(:,:,1) - offset_sst
+#endif
+  CALL mckpp_print(routine, "Initialized temperature") 
+
+#ifdef MCKPP_CAM3
+  IF (masterproc) THEN
+#endif
+    DEALLOCATE(z_in)
+    DEALLOCATE(var_in)     
+    CALL mckpp_netcdf_get_coord(routine, file, ncid, "zsal", nz_in)
+    ALLOCATE(z_in(nz_in))
+    ALLOCATE(var_in(my_nx, my_ny, nz_in))
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "zsal", z_in)
+    CALL mckpp_netcdf_get_var(routine, file, ncid, "sal", var_in, start)
+    CALL mckpp_netcdf_close(routine, file, ncid)
+  
+#ifdef MCKPP_CAM3
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,temp_init(:,:,:))
+#else
+    CALL MCKPP_INITIALIZE_OCEAN_PROFILES_VINTERP(var_in,z_in,nz_in,kpp_const_fields%zm,kpp_3d_fields%X(:,:,2))
+#endif
+#ifdef MCKPP_CAM3
+  ENDIF ! End of masterproc section
+  CALL scatter_field_to_chunk(1,1,NZP1,PLON,temp_init,init_chunk(1,begchunk,1))
+  DO ichnk=begchunk,endchunk
+    ncol=get_ncols_p(ichnk)
+    kpp_3d_fields(ichnk)%X(1:ncol,1:NZP1,2)=init_chunk(1:ncol,ichnk,1:NZP1)
+  ENDDO
+#endif
+  CALL mckpp_print(routine, "Initialized salinity") 
+ 
+  ! Calculate and remove reference salinity
+  
 #ifdef MCKPP_CAM3
   DO ichnk=begchunk,endchunk
-     kpp_3d_fields(ichnk)%Sref(:)=(kpp_3d_fields(ichnk)%X(:,1,2)+kpp_3d_fields(ichnk)%X(:,nzp1,2))/2.
-     kpp_3d_fields(ichnk)%Ssref(:)=kpp_3d_fields(ichnk)%Sref(:)
-     do i=1,nzp1
-        kpp_3d_fields(ichnk)%X(:,i,2)=kpp_3d_fields(ichnk)%X(:,i,2)-kpp_3d_fields(ichnk)%Sref(:)
-     enddo
-     ! Initial surface temp
-     kpp_3d_fields(ichnk)%Tref(:) = kpp_3d_fields(ichnk)%X(:,1,1)
-     IF (kpp_const_fields%L_SSref) THEN
-        kpp_3d_fields(ichnk)%Ssurf(:)=kpp_3d_fields(ichnk)%SSref(:)
-     ELSE
-        kpp_3d_fields(ichnk)%Ssurf(:)=kpp_3d_fields(ichnk)%X(:,1,2)+kpp_3d_fields(ichnk)%Sref(:)
-     ENDIF
+    kpp_3d_fields(ichnk)%Sref(:)=(kpp_3d_fields(ichnk)%X(:,1,2)+kpp_3d_fields(ichnk)%X(:,nzp1,2))/2.
+    kpp_3d_fields(ichnk)%Ssref(:)=kpp_3d_fields(ichnk)%Sref(:)
+    do i=1,nzp1
+      kpp_3d_fields(ichnk)%X(:,i,2)=kpp_3d_fields(ichnk)%X(:,i,2)-kpp_3d_fields(ichnk)%Sref(:)
+    enddo
+    ! Initial surface temp
+    kpp_3d_fields(ichnk)%Tref(:) = kpp_3d_fields(ichnk)%X(:,1,1)
+    IF (kpp_const_fields%L_SSref) THEN
+      kpp_3d_fields(ichnk)%Ssurf(:)=kpp_3d_fields(ichnk)%SSref(:)
+    ELSE
+      kpp_3d_fields(ichnk)%Ssurf(:)=kpp_3d_fields(ichnk)%X(:,1,2)+kpp_3d_fields(ichnk)%Sref(:)
+    ENDIF
   ENDDO
 #else
   kpp_3d_fields%Sref(:)=(kpp_3d_fields%X(:,1,2)+kpp_3d_fields%X(:,nzp1,2))/2.
   kpp_3d_fields%Ssref(:)=kpp_3d_fields%Sref(:)
   do i=1,nzp1
-     kpp_3d_fields%X(:,i,2)=kpp_3d_fields%X(:,i,2)-kpp_3d_fields%Sref(:)
+    kpp_3d_fields%X(:,i,2)=kpp_3d_fields%X(:,i,2)-kpp_3d_fields%Sref(:)
   enddo
   ! Initial surface temp
   kpp_3d_fields%Tref(:) = kpp_3d_fields%X(:,1,1)
   IF (kpp_const_fields%L_SSref) THEN
-     kpp_3d_fields%Ssurf(:)=kpp_3d_fields%SSref(:)
+    kpp_3d_fields%Ssurf(:)=kpp_3d_fields%SSref(:)
   ELSE
-     kpp_3d_fields%Ssurf(:)=kpp_3d_fields%X(:,1,2)+kpp_3d_fields%Sref(:)
+    kpp_3d_fields%Ssurf(:)=kpp_3d_fields%X(:,1,2)+kpp_3d_fields%Sref(:)
   ENDIF
 #endif
   
@@ -322,15 +227,15 @@ SUBROUTINE mckpp_initialize_ocean_profiles_vinterp(var_in,var_z,nz_in,model_z,va
   INTEGER, intent(in) :: nz_in
 
 #ifdef MCKPP_CAM3
-  REAL(r4),dimension(PLON,PLAT,NZ_IN), intent(in) :: var_in
+  REAL(r8),dimension(PLON,PLAT,NZ_IN), intent(in) :: var_in
   REAL(r8),dimension(PLON,PLAT,NZP1), intent(out) :: var_out
 #else
-  REAL*4,dimension(NX,NY,NZ_IN),intent(in) :: var_in
+  REAL,dimension(NX,NY,NZ_IN),intent(in) :: var_in
   REAL,dimension(NPTS,NZP1),intent(out) :: var_out
 #endif
  
   INTEGER :: my_nx, my_ny
-  REAL*4,dimension(NZ_IN), intent(in) :: var_z
+  REAL,dimension(NZ_IN), intent(in) :: var_z
   REAL,dimension(NZP1), intent(in) :: model_z
   REAL :: deltaz,deltavar
   INTEGER :: ix,iy,iz,ipt,kin

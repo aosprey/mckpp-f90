@@ -1,3 +1,5 @@
+! XIOS code for reading/writing restarts and writing diagnostics.
+! Used by mckpp_xios_control module which contains higher-level routines used by KPP model. 
 MODULE mckpp_xios_io
 
 #ifdef MCKPP_CAM3
@@ -5,15 +7,17 @@ MODULE mckpp_xios_io
 #else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
 #endif
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, update_context
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
 
   USE xios 
 
   IMPLICIT NONE
 
-  PUBLIC :: xios_comm, ctx_hdl_diags
+  PUBLIC :: xios_comm
   PUBLIC :: mckpp_xios_diagnostic_definition, mckpp_xios_restart_definition, &
-       mckpp_xios_diagnostic_output, mckpp_xios_write_restart
+       mckpp_xios_diagnostic_output, mckpp_xios_write_restart, mckpp_xios_read_restart
 
   PRIVATE
 
@@ -57,7 +61,7 @@ CONTAINS
 
   SUBROUTINE mckpp_xios_set_dimensions() 
 
-    dtime%second=kpp_const_fields%dto
+    dtime%second = kpp_const_fields%dto
     ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
     start_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%startt+1)
 
@@ -209,7 +213,7 @@ CONTAINS
   END SUBROUTINE mckpp_xios_diagnostic_output
 
 
-  !!! Restart output. File and field definition all done in code. 
+  !!! Restart input/output. File and field definition all done in code. 
 
   SUBROUTINE mckpp_xios_write_restart(restart_time) 
 
@@ -219,6 +223,7 @@ CONTAINS
     CHARACTER(LEN=17) :: restart_filename
     CHARACTER(LEN=21) :: context_name
     TYPE(xios_context) :: ctx_hdl_restart
+    CHARACTER(LEN=24) :: routine = "MCKPP_XIOS_WRITE_RESTART"
 
     WRITE(restart_time_str,'(F9.3)') restart_time
     restart_filename = "restart_"//TRIM(ADJUSTL(restart_time_str))
@@ -230,7 +235,7 @@ CONTAINS
     CALL xios_set_current_context(ctx_hdl_restart)
 
     ! Define file  
-    CALL mckpp_xios_restart_definition(restart_filename) 
+    CALL mckpp_xios_restart_definition(routine, restart_filename, "write") 
 
     ! Write fields 
     CALL mckpp_xios_restart_output() 
@@ -242,10 +247,38 @@ CONTAINS
   END SUBROUTINE mckpp_xios_write_restart
 
   
-  SUBROUTINE mckpp_xios_restart_definition(filename) 
+  SUBROUTINE mckpp_xios_read_restart(restart_filename) 
 
-    CHARACTER(*), INTENT(IN) :: filename
+    CHARACTER(LEN=17), INTENT(IN) :: restart_filename
+    
+    CHARACTER(LEN=16) :: context_name = "ctx_restart_read"
+    TYPE(xios_context) :: ctx_hdl_restart
+    CHARACTER(LEN=23) :: routine = "MCKPP_XIOS_READ_RESTART"
 
+
+    ! Define a new context for this restart file 
+    CALL xios_context_initialize(context_name, xios_comm)
+    CALL xios_get_handle(context_name, ctx_hdl_restart)
+    CALL xios_set_current_context(ctx_hdl_restart)
+
+    ! Define file  
+    CALL mckpp_xios_restart_definition(routine, restart_filename, "read") 
+
+    ! Read fields 
+    CALL mckpp_xios_restart_input() 
+
+    ! Now close context
+    CALL xios_context_finalize()
+
+  END SUBROUTINE mckpp_xios_read_restart
+
+
+  ! We can use the same defintion code for reading or writing restart, with a couple of small changes
+  SUBROUTINE mckpp_xios_restart_definition(calling_routine, filename, mode) 
+
+    CHARACTER(*), INTENT(IN) :: calling_routine, filename, mode
+
+    LOGICAL :: read_mode
     TYPE(xios_filegroup) :: filedefn_hdl 
     TYPE(xios_file) :: file_hdl
     TYPE(xios_axisgroup) :: axisdefn_hdl
@@ -257,23 +290,40 @@ CONTAINS
     TYPE(xios_scalargroup) :: scalardefn_hdl
     TYPE(xios_scalar) :: scalar_hdl
     TYPE(xios_field) :: field_hdl   
-    TYPE(xios_date) :: restart_date 
+    TYPE(xios_date) :: restart_date
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=29) :: routine = "MCKPP_XIOS_RESTART_DEFINITION"
+
+    ! Check if read or write mode
+    IF (mode .EQ. "read") THEN
+      read_mode = .TRUE.
+    ELSE IF (mode .EQ. "write") THEN
+      read_mode = .FALSE.
+    ELSE
+      context = update_context(calling_routine, routine) 
+      WRITE(message,*) "Routine called with mode = ", mode, ", but must be read or write"
+      CALL mckpp_print_error(context, message)
+      CALL mckpp_abort()
+    END IF  
 
     ! Define calendar and ts
     CALL xios_define_calendar(type="Gregorian") 
     restart_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%time+1)
     CALL xios_set_start_date(restart_date) 
     CALL xios_set_time_origin(restart_date) 
+    dtime%second = kpp_const_fields%dto
     CALL xios_set_timestep(timestep=dtime) 
 
     ! Define axes and grids - no landsea mask is applied
     CALL xios_get_handle("domain_definition", domaindefn_hdl) 
     CALL xios_add_child(domaindefn_hdl, domain_hdl, "domain_kpp_nomask")
     CALL xios_set_domain_attr("domain_kpp_nomask", type="rectilinear", & 
-        data_dim=1, &  
-        ni_glo=NX, nj_glo=NY, & 
-        lonvalue_1d=lons, latvalue_1d=lats, & 
-        lon_name="longitude", lat_name="latitude")
+        data_dim=1, ni_glo=NX, nj_glo=NY, lon_name="longitude", lat_name="latitude")
+    IF (read_mode) THEN
+      CALL xios_set_domain_attr("domain_kpp_nomask", ni=nx, nj=ny, ibegin=0, jbegin=0)
+    ELSE
+      CALL xios_set_domain_attr("domain_kpp_nomask", lonvalue_1d=lons, latvalue_1d=lats)
+    END IF 
 
     CALL xios_get_handle("axis_definition", axisdefn_hdl) 
 
@@ -308,7 +358,10 @@ CONTAINS
     CALL xios_get_handle("file_definition", filedefn_hdl)
     CALL xios_add_child(filedefn_hdl, file_hdl, "restart") 
     CALL xios_set_file_attr("restart", name=filename, output_freq=xios_timestep, & 
-        type="one_file", par_access="collective") 
+        type="one_file", par_access="collective")
+    IF (read_mode) THEN
+      CALL xios_set_file_attr("restart", mode="read")
+    END IF
 
     ! Define variables to write to restart
     CALL xios_add_child(file_hdl, field_hdl, "time")
@@ -382,4 +435,37 @@ CONTAINS
 
   END SUBROUTINE mckpp_xios_restart_output
 
+  
+  SUBROUTINE mckpp_xios_restart_input()
+
+    REAL, DIMENSION(npts) :: tmp
+
+    ! Assume only reading restart once at start of run
+    CALL xios_update_calendar(0)
+
+    CALL xios_recv_field("uvel", kpp_3d_fields%U(:,:,1)) 
+    CALL xios_recv_field("vvel", kpp_3d_fields%U(:,:,2))
+    CALL xios_recv_field("T", kpp_3d_fields%X(:,:,1)) 
+    CALL xios_recv_field("S", kpp_3d_fields%X(:,:,2))
+    CALL xios_recv_field("CP", kpp_3d_fields%cp(:,1:NZP1))
+    CALL xios_recv_field("rho", kpp_3d_fields%rho(:,1:NZP1))
+    CALL xios_recv_field("hmix", kpp_3d_fields%hmix)
+    CALL xios_recv_field("kmix", kpp_3d_fields%kmix)
+    CALL xios_recv_field("Sref", kpp_3d_fields%Sref)
+    CALL xios_recv_field("SSref", kpp_3d_fields%SSref)
+    CALL xios_recv_field("Ssurf", kpp_3d_fields%Ssurf)
+    CALL xios_recv_field("Tref", kpp_3d_fields%Tref)
+    CALL xios_recv_field("old", tmp)
+    kpp_3d_fields%old = INT(tmp)
+    CALL xios_recv_field("new", tmp)
+    kpp_3d_fields%new = INT(tmp)
+    CALL xios_recv_field("Us", kpp_3d_fields%Us(:,:,1,0:1))
+    CALL xios_recv_field("Vs", kpp_3d_fields%Us(:,:,2,0:1))
+    CALL xios_recv_field("Ts", kpp_3d_fields%Xs(:,:,1,0:1))
+    CALL xios_recv_field("Ss", kpp_3d_fields%Xs(:,:,2,0:1))
+    CALL xios_recv_field("hmixd", kpp_3d_fields%hmixd(:,0:1))
+    
+  END SUBROUTINE mckpp_xios_restart_input 
+
+  
 END MODULE mckpp_xios_io

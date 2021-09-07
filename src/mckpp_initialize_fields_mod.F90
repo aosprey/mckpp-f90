@@ -19,7 +19,7 @@ MODULE mckpp_initialize_fields_mod
 #endif
   USE mckpp_initialize_advection_mod, ONLY: mckpp_initialize_advection
   USE mckpp_initialize_couplingweight_mod, ONLY: mckpp_initialize_couplingweight
-  USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_file, mckpp_initialize_fluxes_variables
+  USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_variables
   USE mckpp_initialize_geography_mod, ONLY: mckpp_initialize_geography  
   USE mckpp_initialize_landsea_mod, ONLY: mckpp_initialize_landsea
   USE mckpp_initialize_ocean, ONLY: mckpp_initialize_ocean_model, mckpp_initialize_ocean_profiles
@@ -28,13 +28,15 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
-  USE mckpp_read_heatcorrections, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d 
+  USE mckpp_read_fluxes_mod, ONLY: mckpp_initialize_fluxes_file
+  USE mckpp_read_heat_corrections_mod, ONLY: mckpp_read_fcorr_2d, mckpp_read_fcorr_3d
   USE mckpp_read_ice_mod, ONLY: mckpp_read_ice
-  USE mckpp_read_salinity, ONLY: mckpp_read_salinity_3d
-  USE mckpp_read_saltcorrections, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d 
+  USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
+  USE mckpp_read_salt_corrections_mod, ONLY: mckpp_read_sfcorr_2d, mckpp_read_sfcorr_3d
   USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
-  USE mckpp_read_temperatures, ONLY: mckpp_read_temperatures_bottom, mckpp_read_temperatures_3d
-  USE mckpp_restart_io, ONLY: mckpp_restart_io_read_netcdf
+  USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
+  USE mckpp_read_temperatures_bottom_mod, ONLY: mckpp_read_temperatures_bottom
+  USE mckpp_xios_control, ONLY: mckpp_read_restart
 
   IMPLICIT NONE
 
@@ -60,154 +62,86 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   kpp_3d_fields%dampv_flag(:)=0.
   kpp_3d_fields%freeze_flag(:)=0.
   kpp_3d_fields%reset_flag(:)=0.
-   
-  ! Initialize cplwght. 
   kpp_3d_fields%cplwght(:)=0.
   
   ! Initialize latitude and longitude areas and the land/sea mask
-#ifdef MCKPP_CAM3
-  DO ichnk=begchunk,endchunk
-     ncol=get_ncols_p(ichnk)
-     CALL GET_RLAT_ALL_P(ichnk,ncol,clat1)
-     CALL GET_RLON_ALL_P(ichnk,ncol,clon1)
-     kpp_3d_fields(ichnk)%dlat(:)=clat1*360./kpp_const_fields%twopi
-     kpp_3d_fields(ichnk)%dlon(:)=clon1*360./kpp_const_fields%twopi    
-  ENDDO
-  IF (kpp_const_fields%L_LANDSEA) THEN
-     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_LANDSEA")
-     CALL MCKPP_INITIALIZE_LANDSEA()
-     CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_LANDSEA")
-  ENDIF
-#elif CFS
-  IF (L_LANDSEA) CALL read_landsea_global()
-#else
-  IF (kpp_const_fields%L_LANDSEA) THEN
-     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_LANDSEA")
-     kpp_3d_fields%dlat(1)=kpp_const_fields%alat
-     kpp_3d_fields%dlon(1)=kpp_const_fields%alon
-     CALL MCKPP_INITIALIZE_LANDSEA()
-  ELSEIF (kpp_const_fields%L_REGGRID) THEN
-     DO iy=1,ny
-        DO ix=1,nx
-           ipt=(iy-1)*nx+ix
-           kpp_3d_fields%dlat(ipt)=kpp_const_fields%alat+(iy-1)*kpp_const_fields%delta_lat
-           kpp_3d_fields%dlon(ipt)=kpp_const_fields%alon+(ix-1)*kpp_const_fields%delta_lon
-           kpp_3d_fields%ocdepth(ipt)=-10000.
-           kpp_3d_fields%L_OCEAN(ipt)=.TRUE.
-        ENDDO
-     ENDDO
-   ELSEIF (.NOT. kpp_const_fields%L_REGGRID .AND. .NOT. kpp_const_fields%L_LANDSEA) THEN
-     WRITE(message,*) "If you set L_REGGRID=.FALSE., you must specify a land-sea mask file from which", & 
-         " to read the locations of the gridpoints in the horizontal."
-     CALL mckpp_print_warning(routine, message)
-  ENDIF
-#endif
+  CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_LANDSEA")
+  CALL MCKPP_INITIALIZE_LANDSEA()
 
   ! Initialize the vertical grid
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_GEOGRAPHY")
   CALL MCKPP_INITIALIZE_GEOGRAPHY()
-  CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_GEOGRAPHY")
 
   ! Initialize coupling weights   
-#if (defined OASIS2 || defined OASIS3 || defined CFS)
-  CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
-#elif (defined MCKPP_CAM3)
-  CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_COUPLINGWEIGHT") 
-  CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
-  CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_COUPLINGWEIGHT")
+  IF (kpp_const_fields%L_COUPLE .OR. kpp_const_fields%L_CPLWGHT) THEN 
+    CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_COUPLINGWEIGHT") 
+    CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
+  ENDIF
+  
+#ifdef MCKPP_CAM3
   ! Initialize coupling-period mean fluxes and SST fields
   DO ichnk=begchunk,endchunk
      ncol=get_ncols_p(ichnk)
      kpp_3d_fields(ichnk)%sflux_cpl(:,:)=0
      kpp_3d_fields(ichnk)%sst_cpl(:)=0
   ENDDO
-#else
-  IF (kpp_const_fields%L_CPLWGHT) CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
-#endif
-
-  ! Initialize advection options
-  IF (kpp_const_fields%L_ADVECT) THEN
-     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
-     CALL MCKPP_INITIALIZE_ADVECTION()
-     CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_ADVECTION")
-  ELSE
-#ifdef MCKPP_CAM3
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        kpp_3d_fields(ichnk)%nmodeadv(1:ncol,:)=0
-      ENDDO
-#else
-     DO ipt=1,npts
-        kpp_3d_fields%nmodeadv(ipt,1)=0
-        kpp_3d_fields%nmodeadv(ipt,2)=0
-     ENDDO
 #endif 
-     CALL mckpp_print(routine, "No advection has been specified.") 
-   ENDIF
+  
+  ! Initialize advection options
+  CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
+  CALL MCKPP_INITIALIZE_ADVECTION()
 
   ! Initialize relaxation of SST, temperature and/or salinity
   IF (kpp_const_fields%L_RELAX_SST .OR. kpp_const_fields%L_RELAX_SAL &
        .OR. kpp_const_fields%L_RELAX_OCNT) THEN     
      CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_RELAXATION")
      CALL MCKPP_INITIALIZE_RELAXATION()
-     CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_RELAXATION")
   ENDIF
 
   ! Initialize water type for optical properties of seawater
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OPTICS")
   CALL MCKPP_INITIALIZE_OPTICS()
-  CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_OPTICS")
 
   ! Initialize ocean profiles
   IF (kpp_const_fields%L_RESTART) THEN     
-     CALL mckpp_print(routine, "Calling MCKPP_RESTART_IO_READ")
+     CALL mckpp_print(routine, "Calling MCKPP_READ_RESTART")
      ! Still needs scattering code
-     CALL MCKPP_RESTART_IO_READ_NETCDF()
-     CALL mckpp_print(routine, "Returned from MCKPP_RESTART_IO_READ")
+     CALL mckpp_read_restart()
   ELSE
      CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OCEAN_PROFILES")
      CALL MCKPP_INITIALIZE_OCEAN_PROFILES()
-     CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_OCEAN_PROFILES")
   ENDIF
   
   ! Initialize boundary conditions
   IF (kpp_const_fields%L_CLIMSST) THEN     
-     CALL mckpp_print(routine, "Calling MCKPP_READ_SST")
-     CALL MCKPP_READ_SST()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_SST")
+     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_SST")
+     CALL mckpp_read_sst()
   ENDIF
 
   IF (kpp_const_fields%L_CLIMICE) THEN    
      CALL mckpp_print(routine, "Calling MCKPP_READ_ICE")
      CALL MCKPP_READ_ICE()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_ICE")
   ENDIF
-!!$    !IF (L_CLIMCURR) CALL read_surface_currents(kpp_3d_fields,kpp_const_fields)
   
   IF (kpp_const_fields%L_FCORR_WITHZ) THEN     
      CALL mckpp_print(routine, "Calling MCKPP_READ_FCORR_3D")
      CALL MCKPP_READ_FCORR_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_FCORR_3D")
   ELSEIF (kpp_const_fields%L_FCORR) THEN      
      CALL mckpp_print(routine, "Calling MCKPP_READ_FCORR_2D")
      CALL MCKPP_READ_FCORR_2D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_FCORR_2D")
   ENDIF
 
   IF (kpp_const_fields%L_SFCORR_WITHZ) THEN   
      CALL mckpp_print(routine, "Calling MCKPP_READ_SFCORR_3D")
      CALL MCKPP_READ_SFCORR_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_SFCORR_3D")
   ELSEIF (kpp_const_fields%L_SFCORR) THEN
      CALL mckpp_print(routine, "Calling MCKPP_READ_SFCORR_2D")
      CALL MCKPP_READ_SFCORR_2D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_SFCORR_2D")
   ENDIF
 
   IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN     
      CALL mckpp_print(routine, "Calling MCKPP_READ_TEMPERATURES_BOTTOM")
      CALL MCKPP_READ_TEMPERATURES_BOTTOM()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_TEMPERATURES_BOTTOM")
   ENDIF
 
   !!! THESE SHOULD NOT BE CALLED IF DOING L_INTERP_OCNT / L_INTERP_SAL !!!
@@ -215,35 +149,30 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   IF (kpp_const_fields%L_RELAX_OCNT .AND. .NOT. kpp_const_fields%L_INTERP_OCNT) THEN 
      CALL mckpp_print(routine, "Calling MCKPP_READ_TEMPERATURES_3D")
      CALL MCKPP_READ_TEMPERATURES_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_TEMPERATURES_3D")
   ELSEIF (kpp_const_fields%L_RELAX_OCNT .AND. kpp_const_fields%L_INTERP_OCNT) THEN     
      CALL mckpp_print(routine, "Calling MCKPP_BOUNDARY_INTERPOLATE_TEMP")
      CALL MCKPP_BOUNDARY_INTERPOLATE_TEMP()
-     CALL mckpp_print(routine, "Returned from MCKPP_BOUNDARY_INTERPOLATE_TEMP")
   ENDIF
 
   IF (kpp_const_fields%L_RELAX_SAL .AND. .NOT. kpp_const_fields%L_INTERP_SAL) THEN
      CALL mckpp_print(routine, "Calling MCKPP_READ_SALINITY_3D")
      CALL MCKPP_READ_SALINITY_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_SALINITY_3D")
   ELSEIF (kpp_const_fields%L_RELAX_SAL .AND. kpp_const_fields%L_INTERP_SAL) THEN
+     CALL mckpp_print(routine, "Calling MCKPP_BOUNDARY_INTERPOLATE_SAL")
      CALL MCKPP_BOUNDARY_INTERPOLATE_SAL()
   ENDIF
 
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_FLUXES_VARIABLES")
   CALL MCKPP_INITIALIZE_FLUXES_VARIABLES()
-  CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_FLUXES_VARIABLES")
 
   ! Isothermal detection routine requires 3D ocean temperature and salinity fields
   IF (kpp_const_fields%L_NO_ISOTHERM .AND. .NOT. kpp_const_fields%L_RELAX_SAL &
        .AND. .NOT. kpp_const_fields%L_RELAX_OCNT) THEN         
      CALL mckpp_print(routine, " Calling MCKPP_READ_TEMPERATURES_3D")
      CALL MCKPP_READ_TEMPERATURES_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_READ_TEMPERATURES_3D")
 
      CALL mckpp_print(routine, "Calling MCKPP_READ_SALINITY_3D")
      CALL MCKPP_READ_SALINITY_3D()
-     CALL mckpp_print(routine, "Returned from MCKPP_SALINITY_3D")
   ENDIF
   
   ! L_INTERP_OCNT and L_INTERP_SAL imply L_PERIODIC_OCNT and L_PERIODIC_SAL,
@@ -251,20 +180,16 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   IF (kpp_const_fields%L_INTERP_OCNT) kpp_const_fields%L_PERIODIC_OCNT=.TRUE.
   IF (kpp_const_fields%L_INTERP_SAL) kpp_const_fields%L_PERIODIC_SAL=.TRUE.
 
-#ifndef MCKPP_COUPLE
-  IF (kpp_const_fields%L_FLUXDATA) THEN
+  IF (kpp_const_fields%L_FLUXDATA .AND. .NOT. kpp_const_fields%L_COUPLE) THEN
      CALL MCKPP_INITIALIZE_FLUXES_FILE()       
   ENDIF
-#endif  
 
   kpp_const_fields%ntime=0
-  ! CALL mckpp_print(routine, "Calling MCKPP_PHYSICS_LOOKUP")
+  CALL mckpp_print(routine, "Calling MCKPP_PHYSICS_LOOKUP")
   CALL MCKPP_PHYSICS_LOOKUP(kpp_const_fields)
-  ! CALL mckpp_print(routine, "Returned from MCKPP_PHYSICS_LOOKUP")
-
+ 
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OCEAN_MODEL")
   CALL MCKPP_INITIALIZE_OCEAN_MODEL()
-  CALL mckpp_print(routine, "Returned from MCKPP_INITIALIZE_OCEAN_MODEL")
 
 END SUBROUTINE MCKPP_INITIALIZE_FIELDS
 

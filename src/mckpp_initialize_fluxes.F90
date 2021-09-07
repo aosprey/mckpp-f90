@@ -1,11 +1,5 @@
 MODULE mckpp_initialize_fluxes
 
-  USE mckpp_netcdf_subs
-
-CONTAINS
-
-SUBROUTINE mckpp_initialize_fluxes_variables()
-  
 #ifdef MCKPP_CAM3
   USE mckpp_types, only: kpp_3d_fields
   USE ppgrid, only: begchunk,endchunk,pcols
@@ -15,10 +9,14 @@ SUBROUTINE mckpp_initialize_fluxes_variables()
 #endif  
   USE mckpp_parameters, ONLY: npts, nsflxs
 
+  IMPLICIT NONE
+
+CONTAINS
+
 ! Set up parameters for calculating fluxes and initialize fluxes.
 ! intermediate values computed every ndtld
-  IMPLICIT NONE
-  
+SUBROUTINE mckpp_initialize_fluxes_variables()
+    
 #ifdef MCKPP_CAM3
   INTEGER :: ichnk,ncol
 #endif
@@ -47,54 +45,6 @@ SUBROUTINE mckpp_initialize_fluxes_variables()
   ENDDO
 #endif
 
-end SUBROUTINE mckpp_initialize_fluxes_variables
-
-! No support for data atmosphere when coupled to CAM3
-#ifndef MCKPP_CAM3 
-SUBROUTINE mckpp_initialize_fluxes_file()
-
-  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-  USE mckpp_data_fields, ONLY: kpp_const_fields
-
-  IMPLICIT NONE
-  
-#include <netcdf.inc>
-  
-  INTEGER status,index(3)
-  CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FLUXES"
-  CHARACTER(LEN=max_message_len) :: message
-
-  index(1)=1
-  index(2)=1
-  index(3)=1
-  
-  WRITE(message,*) "Opening file ", kpp_const_fields%forcing_file
-  CALL mckpp_print(routine, message)
-  status=NF_OPEN(kpp_const_fields%forcing_file,0,kpp_const_fields%flx_ncid)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'time',kpp_const_fields%flx_timein_id)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'taux',kpp_const_fields%flx_varin_id(1))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'tauy',kpp_const_fields%flx_varin_id(2))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'swf',kpp_const_fields%flx_varin_id(3))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'lwf',kpp_const_fields%flx_varin_id(4))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'lhf',kpp_const_fields%flx_varin_id(5))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'shf',kpp_const_fields%flx_varin_id(6))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  status=NF_INQ_VARID(kpp_const_fields%flx_ncid,'precip',kpp_const_fields%flx_varin_id(7))
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-  
-  status=NF_GET_VAR1_REAL(kpp_const_fields%flx_ncid,kpp_const_fields%flx_timein_id,&
-       index,kpp_const_fields%flx_first_timein)
-  IF (status .NE. NF_NOERR) CALL MCKPP_HANDLE_ERR(status)
-            
-END SUBROUTINE mckpp_initialize_fluxes_file
-#endif
+END SUBROUTINE mckpp_initialize_fluxes_variables
 
 END MODULE mckpp_initialize_fluxes
