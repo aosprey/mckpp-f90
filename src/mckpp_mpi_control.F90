@@ -1,13 +1,14 @@
 MODULE mckpp_mpi_control 
 
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len 
+  USE mckpp_parameters, ONLY : npts
   USE mpi
   USE xios
 
   IMPLICIT NONE 
 
-  INTEGER :: comm, rank, nproc, root_proc
-  INTEGER :: npts_local, offset_global
+  INTEGER :: comm, rank, nproc, npts_local, offset_global
+  LOGICAL :: root_proc
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
 CONTAINS
@@ -48,11 +49,12 @@ CONTAINS
 
   ! 1d decomposition 
   ! Extra columns assigned from highest rank.
+  ! Call after mckpp_initialize_namelist (so npts is set)
   SUBROUTINE mckpp_decompose_domain()
 
-    USE mckpp_parameters, ONLY : npts, nuout
-
     INTEGER :: n, min, rem, index
+    CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN"
+    CHARACTER(LEN=max_message_len) :: message
 
     ALLOCATE( npts_local_all(0:nproc-1) )
     ALLOCATE( offset_global_all(0:nproc-1) )
@@ -72,7 +74,8 @@ CONTAINS
       index = index + npts_local_all(n)
 
       IF (rank .EQ. 0) THEN
-        WRITE(nuout,*) n, npts_local_all(n), offset_global_all(n)
+        WRITE(message,*) n, npts_local_all(n), offset_global_all(n)
+        CALL mckpp_print(routine, message) 
       END IF
     END DO
 
