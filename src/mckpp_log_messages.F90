@@ -1,26 +1,26 @@
 ! Routines to print log messages.
-! Currently all messages including warnings and errors go to a log file
-! for each MPI process.
-! Error messages are also written to stderr.
+! Messages including warnings and errors go to a log file for
+! each MPI process.
+! Error message from mckpp_abort goes to stderr.
 MODULE mckpp_log_messages
 
   IMPLICIT NONE
 
   PUBLIC :: mckpp_initialize_logs, mckpp_finalize_logs, &
        mckpp_print, mckpp_print_error, mckpp_print_warning, &
-       update_context, max_message_len
+       mckpp_print_stderr, update_context, max_message_len
   
   PRIVATE 
 
-  INTEGER :: nuout = 6,  nuerr = 0, nupe, my_rank 
+  INTEGER :: nuout = 6, nuerr = 0, nupe = 99, my_rank 
   INTEGER, PARAMETER :: max_message_len = 200
 
 CONTAINS
 
 
   ! Create a log file for each MPI process
-  ! Pass in rank and store here, to avoid circular dependencies with MPI
-  ! module. 
+  ! Store rank in this module, to avoid circular dependencies
+  ! with MPI module. 
   SUBROUTINE mckpp_initialize_logs(rank)
 
     INTEGER, INTENT(IN) :: rank 
@@ -48,33 +48,46 @@ CONTAINS
 
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
     CHARACTER(LEN=max_message_len) :: print_message
-    
-    print_message = TRIM(routine) // ": " // TRIM(ADJUSTL(message))
+
+    IF (routine .NE. "") THEN 
+      print_message = TRIM(routine) // ": " // TRIM(ADJUSTL(message))
+    ELSE
+      print_message = message
+    END IF 
     CALL mckpp_write(nupe, print_message) 
     
   END SUBROUTINE mckpp_print
 
 
-  ! Write error to log file and stderr, split over multiple lines. 
+  ! Write error to log file, split over multiple lines. 
   SUBROUTINE mckpp_print_error(routine, message)
 
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
     CHARACTER(LEN=max_message_len) :: print_message
-
-    WRITE(print_message,*) "Error from rank ", my_rank 
-    CALL mckpp_write(nuerr, print_message)
     
     IF (routine .NE. "") THEN 
       print_message = "Error in " // TRIM(ADJUSTL(routine)) // ":"
       CALL mckpp_write(nupe, print_message)
-      CALL mckpp_write(nuerr, print_message)
-     ENDIF 
-      
-    print_message = message
-    CALL mckpp_write(nupe, print_message)
-    CALL mckpp_write(nuerr, print_message) 
+    ENDIF      
+    CALL mckpp_write(nupe, message)
     
   END SUBROUTINE mckpp_print_error
+
+
+  ! Write an error message to stderr (called by mckpp_abort) 
+  SUBROUTINE mckpp_print_stderr(routine, message)
+    
+    CHARACTER(LEN=*), INTENT(IN) :: routine, message
+    CHARACTER(LEN=max_message_len) :: print_message, tmp
+
+    WRITE(tmp,*) "Error from rank ", my_rank
+    IF (routine .NE. "") THEN 
+       print_message = tmp // " in " // TRIM(ADJUSTL(routine)) // ":"
+      CALL mckpp_write(nuerr, print_message)
+    ENDIF      
+    CALL mckpp_write(nuerr, message)
+
+  END SUBROUTINE mckpp_print_stderr
 
 
   ! Write warning, split over 2 lines 
@@ -83,11 +96,11 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
     CHARACTER(LEN=max_message_len) :: print_message
 
-    print_message = "Warning in " // TRIM(ADJUSTL(routine)) // ":"
-    CALL mckpp_write(nupe, print_message)
-    
-    print_message = message
-    CALL mckpp_write(nupe, print_message)
+    IF (routine .NE. "") THEN 
+      print_message = "Warning in " // TRIM(ADJUSTL(routine)) // ":"
+      CALL mckpp_write(nupe, print_message)
+    END IF 
+    CALL mckpp_write(nupe, message)
     
   END SUBROUTINE mckpp_print_warning
 
