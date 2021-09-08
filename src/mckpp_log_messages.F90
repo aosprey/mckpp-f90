@@ -13,7 +13,7 @@ MODULE mckpp_log_messages
   PRIVATE 
 
   INTEGER :: nuout = 6, nuerr = 0, nupe = 99, my_rank 
-  INTEGER, PARAMETER :: max_message_len = 200
+  INTEGER, PARAMETER :: max_message_len = 250
 
 CONTAINS
 
