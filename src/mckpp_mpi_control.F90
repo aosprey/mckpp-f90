@@ -9,7 +9,8 @@ MODULE mckpp_mpi_control
   IMPLICIT NONE 
 
   INTEGER :: comm, rank, nproc, npts_local, offset_global
-  LOGICAL :: root_proc
+  INTEGER :: root_proc = 0
+  LOGICAL :: l_root_proc
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
 CONTAINS
@@ -32,10 +33,10 @@ CONTAINS
     WRITE(message,*) "Rank ", rank, " of ", nproc
     CALL mckpp_print(routine, message)
     
-    IF (rank .EQ. 0) THEN
-      root_proc = .TRUE.
+    IF (rank .EQ. root_proc) THEN
+      l_root_proc = .TRUE.
     ELSE
-      root_proc = .FALSE.
+      l_root_proc = .FALSE.
     END IF
 
   END SUBROUTINE mckpp_initialize_mpi
