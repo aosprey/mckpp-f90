@@ -64,12 +64,14 @@ CONTAINS
     CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN"
     CHARACTER(LEN=max_message_len) :: message
 
+    IF (l_root_proc) CALL mckpp_print(routine, "proc, offset_global, npts_local")
+    
     ALLOCATE( npts_local_all(0:nproc-1) )
     ALLOCATE( offset_global_all(0:nproc-1) )
 
     min = npts / nproc
     rem = npts - (min*nproc)
-
+    
     index = 0
     DO n = 0, nproc-1
       IF ( (nproc - n) .LE. rem) THEN
@@ -81,14 +83,17 @@ CONTAINS
       offset_global_all(n) = index
       index = index + npts_local_all(n)
 
-      IF (rank .EQ. 0) THEN
-        WRITE(message,*) n, npts_local_all(n), offset_global_all(n)
+      IF (l_root_proc) THEN
+        WRITE(message,*) n, offset_global_all(n), npts_local_all(n)
         CALL mckpp_print(routine, message) 
       END IF
     END DO
 
     npts_local = npts_local_all(rank)
     offset_global = offset_global_all(rank)
+    
+    WRITE(message,*) "offset_global, npts_local = ", offset_global, npts_local
+    CALL mckpp_print(routine, message)
 
   END SUBROUTINE mckpp_decompose_domain
 
