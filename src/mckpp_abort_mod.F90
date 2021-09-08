@@ -2,23 +2,24 @@ MODULE mckpp_abort_mod
   
   IMPLICIT NONE
 
-  USE mckpp_log_messages, ONLY: mckpp_print_stderr
+  USE mckpp_log_messages, ONLY: mckpp_print_stderr, mckpp_finalize_logs
   USE mpi 
   IMPLICIT NONE
   
 CONTAINS 
 
-  ! Shutdown model. 
+  ! Print error message and shutdown model.
+  ! Flush log file buffer. 
   ! The error code passed to MPI_abort doesn't mean anything.
   SUBROUTINE mckpp_abort(routine, message)
 
     CHARACTER(LEN=*), INTENT(IN) :: routine, message
-    INTEGER :: error_code = 100
+    INTEGER :: error_code = 101
     INTEGER :: ierr
     
-    CALL mckpp_print_stderr(routine, message) 
+    CALL mckpp_print_stderr(routine, message)
+    CALL mckpp_finalize_logs()
     
-    error_code = 100 
     CALL mpi_abort(MPI_comm_world, error_code, ierr)
  
   END SUBROUTINE mckpp_abort
