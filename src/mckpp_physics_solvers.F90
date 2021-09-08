@@ -138,14 +138,13 @@ SUBROUTINE mckpp_physics_solvers_tridmat(cu,cc,cl,rhs,yo,nzi,yn)
      gam(i)= cl(i-1)/bet
      bet   = cc(i) - cu(i)*gam(i)
      if(bet.eq.0.) then
-        CALL mckpp_print_error(routine, "Algorithm for solving tridiag matrix failed.")
         WRITE(message,*) 'bet = ', bet
         CALL mckpp_print_error(routine, message) 
         WRITE(message,*) 'i-1 = ', i-1, ', cc = ', cc(i-1), ', cl = ', cl(i-1)
         CALL mckpp_print_error(routine, message) 
         WRITE(message,*) 'i = ', i, ', cc = ', cc(i), ', cu=', cu(i), ', gam = ', gam(i)
         CALL mckpp_print_error(routine, message) 
-        CALL MCKPP_ABORT()
+        CALL mckpp_abort(routine, "Algorithm for solving tridiag matrix failed.")
         bet=1.E-12
         !     Pause 3
      endif
@@ -213,8 +212,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
 !        month = 1 + int(12. * day / dpy)    ! 367.)
 !        if(month.gt.12) then
 !           WRITE(message,*) 'Rounding error, month gt 12 =',month
-!           CALL mckpp_print_error(routine, message) 
-!           CALL mckpp_abort()
+!           CALL mckpp_abort(routine, message) 
 !        endif
 
 !       Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual
@@ -282,8 +280,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
      !     diag
      !     if(month.gt.12) then
      !     WRITE(message,*) 'Rounding error, month gt 12 =',month
-     !     CALL mckpp_print_error(routine, message) 
-     !     CALL mckpp_abort()
+     !     CALL mckpp_abort(routine, message) 
      !     endif  
      !     diag
      !     Am = -12. * f(month) * (xsA(iyr) - 0.0 )       ! Annual
@@ -319,8 +316,7 @@ subroutine mckpp_physics_solvers_rhsmod(jsclr,mode,A,dto,km,dm,nzi,rhs,kpp_1d_fi
         
      else
         WRITE(message,*) 'mode out of range, mode = ', mode
-        CALL mckpp_print_error(routine, message)
-        CALL MCKPP_ABORT()
+        CALL mckpp_abort(routine, message)
      endif
      
      !     Finish both 6 and 7 here

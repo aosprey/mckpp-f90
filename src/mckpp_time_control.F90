@@ -106,7 +106,8 @@ CONTAINS
         CALL mckpp_print_error(routine, message)
         WRITE(message,*) update_time, TRIM(file)
         CALL mckpp_print_error(routine, message)
-        CALL mckpp_abort()
+        WRITE(message,*) "Error reading ", TRIM(file)
+        CALL mckpp_abort(routine, message)
       END IF
     END IF
 
@@ -118,7 +119,8 @@ CONTAINS
       CALL mckpp_print_error(routine, message) 
       WRITE(message,*) 'The closest I came was', file_update_time
       CALL mckpp_print_error(routine, message) 
-      CALL mckpp_abort()
+      WRITE(message,*) "Error reading ", TRIM(file)
+      CALL mckpp_abort(routine, message)
     END IF
 
   END SUBROUTINE mckpp_get_update_time

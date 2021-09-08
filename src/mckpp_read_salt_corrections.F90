@@ -49,18 +49,18 @@ CONTAINS
     IF (ndims .EQ. 3) THEN
       CALL mckpp_netcdf_get_coord(routine, file, ncid, "z", nz_in)
       IF (nz_in .NE. nzp1) THEN
-        WRITE(message,*) "Salinity corrections file does not have the ", & 
-                         "correct number of vertical levels."
+        WRITE(message,*) "Vertical levels should be ", NZP1, &
+                         " but instead is ", nz_in
         CALL mckpp_print_error(routine, message)
-        WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_in
-        CALL mckpp_print_error(routine, message)
-        CALL mckpp_abort()
+        WRITE(message,*) "Salinity corrections file does not have the ", &
+                          "correct number of vertical levels."
+        CALL mckpp_abort(routine, message)
       END IF
     END IF
 
     l_initialized = .TRUE.
 
-  END SUBROUTINE initialize_sfcorr
+END SUBROUTINE initialize_sfcorr
 
 
   ! Read in a NetCDF file containing a time-varying salinity correction

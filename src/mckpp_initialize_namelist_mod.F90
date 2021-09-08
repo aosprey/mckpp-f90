@@ -50,21 +50,21 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   
   READ(75,NAME_PARAMETERS) 
   CALL mckpp_print(routine, "Read Namelist PARAMETERS") 
-  IF ( (nx .LE. 0) .OR. (ny .LE. 0) .OR. (nz .LE. 0) ) THEN 
-    CALL mckpp_print_error(routine, "You must specify values of nx, ny and nz in the namelist")
-    CALL MCKPP_ABORT()
+  IF ( (nx .LE. 0) .OR. (ny .LE. 0) .OR. (nz .LE. 0) ) THEN
+    CALL mckpp_abort(routine, &
+         "You must specify values of nx, ny and nz in the namelist")
   END IF 
   IF (ngrid .LE. 0) THEN 
-    CALL mckpp_print_error(routine, "You must specify a value of ngrid in the namelist")
-    CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, &
+         "You must specify a value of ngrid in the namelist")
   END IF 
   IF (nztmax .LE. 0) THEN 
-    CALL mckpp_print_error(routine, "You must specify a value of nztmax in the namelist")
-    CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, &
+         "You must specify a value of nztmax in the namelist")
   END IF 
   IF ( (nx_globe .LE. 0) .OR. (ny_globe .LE. 0) ) THEN 
-    CALL mckpp_print_error(routine, "You must specify a value of nx_globe and ny_globe in the namelist")
-    CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, &
+         "You must specify a value of nx_globe and ny_globe in the namelist")
   END IF 
 
   nzm1 = nz -1 
@@ -132,12 +132,10 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_VGRID_FILE=.FALSE.
   READ(75,NAME_DOMAIN)
   IF (DMAX .LE. 0.0) THEN 
-     CALL mckpp_print_error(routine, "You must specify a depth for the domain")
-     CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, "You must specify a depth for the domain")
   ENDIF
   IF ((L_STRETCHGRID) .AND. (dscale .EQ. 0.0)) THEN
-     CALL mckpp_print_error(routine, "You cannot have dscale=0 for stretched grids") 
-     CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, "You cannot have dscale=0 for stretched grids") 
   ENDIF
   CALL mckpp_print(routine, "Read Namelist DOMAIN")
   kpp_const_fields%alat=alat
@@ -166,8 +164,8 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   finalt=-999.999
   READ(75,NAME_TIMES) 
   IF ((dtsec .LE. 0.0) .OR. (startt .LT. 0.0) .OR. (finalt .LT. 0.0)) THEN 
-     CALL mckpp_print_error(routine, "You must specify values of dtsec,startt,finalt in the namelist")
-     CALL MCKPP_ABORT()
+    CALL mckpp_abort(routine, &
+         "You must specify values of dtsec,startt,finalt in the namelist")
   ENDIF
   kpp_const_fields%ndtocn=ndtocn
   kpp_const_fields%spd=spd
@@ -180,11 +178,12 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   kpp_const_fields%num_timesteps=kpp_const_fields%nend*kpp_const_fields%ndtocn
   IF (float(kpp_const_fields%num_timesteps) .NE. &
        (kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dto) THEN
-     CALL mckpp_print_error(routine, "The integration length is not a multiple of the ocean timestep")
-     WRITE(message, *) "dto = ", kpp_const_fields%dto, ", finalt = ", kpp_const_fields%finalt, &
+    WRITE(message, *) "dto = ", kpp_const_fields%dto, &
+        ", finalt = ", kpp_const_fields%finalt, &
         ", startt = ", kpp_const_fields%startt
-     CALL mckpp_print_error(routine, message) 
-     CALL MCKPP_ABORT()
+    CALL mckpp_print_error(routine, message)
+    CALL mckpp_abort(routine, &
+        "The integration length is not a multiple of the ocean timestep")
   ENDIF
   kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
   kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
@@ -250,26 +249,22 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   CALL mckpp_print(routine, "Read Namelist FORCING")  
   IF (L_FCORR_WITHZ .AND. L_FCORR) THEN
      WRITE(message, *) "L_FCORR and L_FCORR_WITHZ are mutually exclusive. Choose one or neither."
-     CALL mckpp_print_error(routine, message)
-     CALL MCKPP_ABORT()
+     CALL mckpp_abort(routine, message)
   ENDIF
   IF (L_SFCORR_WITHZ .AND. L_SFCORR) THEN
      WRITE(message, *) "L_SFCORR and L_SFCORR_WITHZ are mutually exclusive. Choose one or neither."
-     CALL mckpp_print_error(routine, message)
-     CALL MCKPP_ABORT()
+     CALL mckpp_abort(routine, message)
   ENDIF
   IF (L_FCORR_WITHZ .AND. L_RELAX_SST) THEN
      WRITE(message, *) "L_FCORR_WITHZ and L_RELAX_SST are mutually exclusive. Choose one or neither."
-     CALL mckpp_print_error(routine, message)
-     CALL MCKPP_ABORT()
+     CALL mckpp_abort(routine, message)
   ENDIF
   IF (L_NO_ISOTHERM .AND. (ocnT_file .eq. 'none' .or.&
       sal_file .eq. 'none')) THEN
      WRITE(message, *) "If you specify L_NO_ISOTHERM for reseting of isothermal points, " &
         // "you must specify files from which to read climatological ocean temperature " &
         // "(ocnT_file) and salinity (sal_file)."
-     CALL mckpp_print_error(routine, message)
-     CALL MCKPP_ABORT()
+     CALL mckpp_abort(routine, message)
   ELSEIF (L_NO_ISOTHERM) THEN
      kpp_const_fields%iso_bot=isotherm_bottom
      kpp_const_fields%iso_thresh=isotherm_threshold

@@ -93,8 +93,7 @@ CONTAINS
     IF (offset_lon .EQ. 0 ) THEN 
       CALL mckpp_print_error(context, message)
       WRITE(message,*) "Could not find starting longitude", start_lon
-      CALL mckpp_print_error("", message) 
-      CALL mckpp_abort()
+      CALL mckpp_abort(routine, message)
     END IF
     
     WRITE(message, *) "Reading latitude from file ", TRIM(file_name)
@@ -106,8 +105,7 @@ CONTAINS
     IF (offset_lat .EQ. 0 ) THEN 
       CALL mckpp_print_error(context, message) 
       WRITE(message,*) "Could not find starting latitude", start_lat
-      CALL mckpp_print_error("", message) 
-      CALL mckpp_abort()
+      CALL mckpp_abort(routine, message) 
     END IF
 
     IF ( PRESENT(num_times) ) THEN 
@@ -424,9 +422,8 @@ CONTAINS
     INTEGER, INTENT(IN) :: status
  
     IF (status /= NF90_noerr) THEN 
-      CALL mckpp_print_error(routine, message) 
-      CALL mckpp_print_error("",NF90_strerror(status))
-      CALL mckpp_abort()
+      CALL mckpp_print_error(routine, NF90_strerror(status))
+      CALL mckpp_abort(routine, message)
     END IF 
     
   END SUBROUTINE check 

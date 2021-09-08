@@ -298,8 +298,7 @@ CONTAINS
     ELSE
       context = update_context(calling_routine, routine) 
       WRITE(message,*) "Routine called with mode = ", mode, ", but must be read or write"
-      CALL mckpp_print_error(context, message)
-      CALL mckpp_abort()
+      CALL mckpp_abort(context, message)
     END IF  
 
     ! Define calendar and ts

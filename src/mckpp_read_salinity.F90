@@ -48,12 +48,12 @@ CONTAINS
     ! Check vertical levels
     CALL mckpp_netcdf_get_coord(routine, file, ncid, "z", nz_in)
     IF (nz_in .NE. nzp1) THEN
+      WRITE(message,*) "Vertical levels should be ", nzp1, &
+                       " but instead is ", nz_in
+      CALL mckpp_print_error(routine, message)
       WRITE(message,*) "Salinity climatology file does not have the correct ", &
-          "number of vertical levels."
-      CALL mckpp_print_error(routine, message)
-      WRITE(message,*) "It should have ", nzp1, " but instead has ", nz_in
-      CALL mckpp_print_error(routine, message)
-      CALL mckpp_abort()
+                       "number of vertical levels."
+      CALL mckpp_abort(routine, message)
     END IF
 
     l_initialized = .TRUE.

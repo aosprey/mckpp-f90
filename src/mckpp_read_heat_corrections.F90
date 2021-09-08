@@ -49,18 +49,18 @@ CONTAINS
     IF (ndims .EQ. 3) THEN
       CALL mckpp_netcdf_get_coord(routine, file, ncid, "z", nz_in)
       IF (nz_in .NE. nzp1) THEN
+        WRITE(message,*) "Vertical levels should be ", nzp1, &
+                         " but instead is ", nz_in
+        CALL mckpp_print_error(routine, message)
         WRITE(message,*) "Heat corrections file does not have the correct ", &
                          "number of vertical levels."
-        CALL mckpp_print_error(routine, message)
-        WRITE(message,*) "It should have ", nzp1, " but instead has ", nz_in
-        CALL mckpp_print_error(routine, message)
-        CALL mckpp_abort()
+        CALL mckpp_abort(routine, message)
       END IF
     END IF
 
     l_initialized = .TRUE.
 
-  END SUBROUTINE initialize_fcorr
+END SUBROUTINE initialize_fcorr
 
 
   ! Read in a NetCDF file containing a time-varying flux correction
