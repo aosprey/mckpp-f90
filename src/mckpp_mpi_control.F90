@@ -1,6 +1,7 @@
 MODULE mckpp_mpi_control 
 
-  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len 
+  USE mckpp_log_messages, ONLY: mckpp_initialize_logs, mckpp_finalize_logs, &
+       mckpp_print, max_message_len 
   USE mckpp_parameters, ONLY : npts
   USE mpi
   USE xios
@@ -13,7 +14,7 @@ MODULE mckpp_mpi_control
 
 CONTAINS
 
-  ! Initialize MPI and XIOS. 
+  ! Initialize MPI, XIOS and log files. 
   ! Get communicator from XIOS 
   SUBROUTINE mckpp_initialize_mpi() 
 
@@ -26,9 +27,11 @@ CONTAINS
 
     CALL mpi_comm_size(comm, nproc, ierror)
     CALL mpi_comm_rank(comm, rank, ierror)
-    WRITE(message,*) "Rank ", rank, " of ", nproc
-    CALL mckpp_print(routine, message) 
 
+    CALL mckpp_initialize_logs(rank)
+    WRITE(message,*) "Rank ", rank, " of ", nproc
+    CALL mckpp_print(routine, message)
+    
     IF (rank .EQ. 0) THEN
       root_proc = .TRUE.
     ELSE
@@ -38,10 +41,14 @@ CONTAINS
   END SUBROUTINE mckpp_initialize_mpi
 
 
+  ! Shutdown XIOS, log files and MPI
   SUBROUTINE mckpp_finalize_mpi
 
     INTEGER :: ierr
-
+    
+    CALL xios_context_finalize()
+    CALL xios_finalize()
+    CALL mckpp_finalize_logs()
     CALL mpi_finalize(ierr)
 
   END SUBROUTINE mckpp_finalize_mpi
