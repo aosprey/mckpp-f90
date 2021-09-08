@@ -9,12 +9,22 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   ! only once.
 
   USE mckpp_data_fields, ONLY: kpp_const_type
+  USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_log_messages, ONLY:  mckpp_print_error, max_message_len
   USE mckpp_namelists
   USE mckpp_parameters
   
   IMPLICIT NONE
 
   TYPE(kpp_const_type),intent(inout) :: kpp_const_fields
+  CHARACTER(LEN=26) :: routine = "MCKPP_INITIALIZE_CONSTANTS"
+  CHARACTER(LEN=max_message_len) :: message
+
+  kpp_const_fields%alat=alat
+  kpp_const_fields%alon=alon
+  kpp_const_fields%delta_lat=delta_lat
+  kpp_const_fields%delta_lon=delta_lon
+  kpp_const_fields%dscale=dscale
   
   kpp_const_fields%spd=spd
   kpp_const_fields%dpy=dpy
@@ -109,7 +119,29 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%ndtupdbottom=ndtupdbottom
   kpp_const_fields%L_PERIODIC_BOTTOM_TEMP=L_PERIODIC_BOTTOM_TEMP
   kpp_const_fields%bottom_temp_period=bottom_temp_period
-  
+
+  kpp_const_fields%ndtocn=ndtocn
+  kpp_const_fields%spd=spd
+  kpp_const_fields%dtsec=dtsec
+  kpp_const_fields%startt=startt*kpp_const_fields%spd
+  kpp_const_fields%finalt=finalt*kpp_const_fields%spd
+  kpp_const_fields%dto=kpp_const_fields%dtsec/float(kpp_const_fields%ndtocn)
+  kpp_const_fields%nend=int((kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dtsec)
+  kpp_const_fields%nstart=nint(kpp_const_fields%startt)/kpp_const_fields%dto
+  kpp_const_fields%num_timesteps=kpp_const_fields%nend*kpp_const_fields%ndtocn
+  IF (float(kpp_const_fields%num_timesteps) .NE. &
+       (kpp_const_fields%finalt-kpp_const_fields%startt)/kpp_const_fields%dto) THEN
+    WRITE(message, *) "dto = ", kpp_const_fields%dto, &
+        ", finalt = ", kpp_const_fields%finalt, &
+        ", startt = ", kpp_const_fields%startt
+    CALL mckpp_print_error(routine, message)
+    CALL mckpp_abort(routine, &
+        "The integration length is not a multiple of the ocean timestep")
+  ENDIF
+  kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
+  kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
+  kpp_const_fields%time=kpp_const_fields%startt
+ 
   kpp_const_fields%L_OUTKELVIN=L_OUTKELVIN
   kpp_const_fields%L_COUPLE=L_COUPLE
   kpp_const_fields%ifirst=ifirst
@@ -141,6 +173,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
 
   kpp_const_fields%restart_infile=restart_infile
   kpp_const_fields%restart_outfile=restart_outfile
+  kpp_const_fields%ndt_per_restart=kpp_const_fields%nend*kpp_const_fields%ndtocn    
 
   kpp_const_fields%L_INITDATA=L_INITDATA
   kpp_const_fields%initdata_file=initdata_file
@@ -149,6 +182,14 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   kpp_const_fields%L_NO_ISOTHERM=L_NO_ISOTHERM
   kpp_const_fields%L_NO_FREEZE=L_NO_FREEZE
   kpp_const_fields%L_DAMP_CURR=L_DAMP_CURR
+
+  IF (L_NO_ISOTHERM) THEN
+     kpp_const_fields%iso_bot=isotherm_bottom
+     kpp_const_fields%iso_thresh=isotherm_threshold
+  ENDIF
+  IF (L_DAMP_CURR) THEN
+     kpp_const_fields%dt_uvdamp=dtuvdamp
+  ENDIF
 
 END SUBROUTINE mckpp_initialize_constants
 

@@ -497,7 +497,10 @@ MODULE mckpp_data_fields
     ALLOCATE( kpp_const_fields%relax_sst_in(ny) )
     ALLOCATE( kpp_const_fields%relax_ocnt_in(ny) )  
     ALLOCATE( kpp_const_fields%relax_sal_in(ny) )
-    
+    ALLOCATE(kpp_const_fields%wmt(0:891,0:49))
+    ALLOCATE(kpp_const_fields%wst(0:891,0:49))
+    ALLOCATE(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
+  
   END SUBROUTINE mckpp_allocate_const_fields
 
 END MODULE mckpp_data_fields
