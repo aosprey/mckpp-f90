@@ -15,7 +15,8 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_initialize_ocean_profiles_mod, ONLY: mckpp_initialize_ocean_profiles
   USE mckpp_initialize_optics_mod, ONLY: mckpp_initialize_optics
   USE mckpp_initialize_relaxtion_mod, ONLY: mckpp_initialize_relaxation
-  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len, &
+      mckpp_finalize_logs
   USE mckpp_mpi_control, ONLY: mckpp_decompose_domain, comm
   USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
@@ -41,15 +42,16 @@ CONTAINS
     CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FIELDS"
     CHARACTER(LEN=max_message_len) :: message 
 
-    CALL mckpp_decompose_domain()
-    CALL mpi_barrier(comm, ierr) 
-    CALL mckpp_abort(routine, "stop")
-  
+    CALL mckpp_decompose_domain()  
     CALL mckpp_allocate_3d_fields()
 
      ! Initialize latitude and longitude areas and the land/sea mask
     CALL mckpp_initialize_landsea()
 
+    CALL mckpp_finalize_logs()
+    CALL mpi_barrier(comm, ierr) 
+    CALL mckpp_abort(routine, "stop")
+  
     ! Initialize the vertical grid
     CALL mckpp_initialize_geography()
 

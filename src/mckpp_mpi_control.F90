@@ -8,7 +8,8 @@ MODULE mckpp_mpi_control
 
   IMPLICIT NONE 
 
-  INTEGER :: comm, rank, nproc, npts_local, offset_global
+  INTEGER :: comm, rank, nproc, npts_local, offset_global, start_global, & 
+             end_global 
   INTEGER :: root_proc = 0
   LOGICAL :: l_root_proc
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
@@ -63,8 +64,6 @@ CONTAINS
     INTEGER :: n, min, rem, index
     CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN"
     CHARACTER(LEN=max_message_len) :: message
-
-    IF (l_root_proc) CALL mckpp_print(routine, "proc, offset_global, npts_local")
     
     ALLOCATE( npts_local_all(0:nproc-1) )
     ALLOCATE( offset_global_all(0:nproc-1) )
@@ -91,8 +90,12 @@ CONTAINS
 
     npts_local = npts_local_all(rank)
     offset_global = offset_global_all(rank)
+
+    start_global = offset_global + 1
+    end_global = offset_global + npts_local
     
-    WRITE(message,*) "offset_global, npts_local = ", offset_global, npts_local
+    WRITE(message,*) "offset_global, npts_local, start_global, end_global = ", &
+                      offset_global, npts_local, start_global, end_global
     CALL mckpp_print(routine, message)
 
   END SUBROUTINE mckpp_decompose_domain
