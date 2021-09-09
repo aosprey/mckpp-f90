@@ -51,13 +51,13 @@ CONTAINS
     ! Initialize the vertical grid
     CALL mckpp_initialize_geography()
 
-    CALL mckpp_finalize_logs()
-    CALL mpi_barrier(comm, ierr) 
-    CALL mckpp_abort(routine, "stop")
-
     ! Initialize coupling weights   
     CALL mckpp_initialize_coupling_weight()    
     CALL mckpp_initialize_flags()
+
+    CALL mckpp_finalize_logs()
+    CALL mpi_barrier(comm, ierr) 
+    CALL mckpp_abort(routine, "stop")
 
     ! Initialize advection options
     CALL mckpp_initialize_advection()
@@ -164,6 +164,5 @@ CONTAINS
     END IF
     
   END SUBROUTINE mckpp_initialize_flags
-
 
 END MODULE mckpp_initialize_fields_mod

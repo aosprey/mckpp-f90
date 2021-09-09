@@ -23,6 +23,7 @@ CONTAINS
 
     INTEGER :: ncid, offset_lat, offset_lon
     INTEGER, DIMENSION(2) :: start, count 
+    REAL, DIMENSION(nx, ny) :: cplwght_global
     CHARACTER(LEN=max_nc_filename_len) :: file
     CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_COUPLINGWEIGHT"
     CHARACTER(LEN=max_message_len) :: message
@@ -30,28 +31,33 @@ CONTAINS
     CALL mckpp_print(routine, "")
 
     IF (kpp_const_fields%l_couple .OR. kpp_const_fields%l_cplwght) THEN  
-   
-      file = kpp_const_fields%cplwght_file
-      WRITE(message,*) "Reading coupling weight (alpha) from file ", TRIM(file)
-      CALL mckpp_print(routine, message)
-      CALL mckpp_netcdf_open(routine, file, ncid)
-    
-      CALL mckpp_netcdf_determine_boundaries( & 
-          routine, file, ncid, &
-          kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat)
-    
-      start = (/ offset_lon, offset_lat /) 
-      count = (/ nx,  ny/)
-      CALL mckpp_netcdf_get_var( routine, file, ncid, "alpha", & 
-                                 kpp_3d_fields%cplwght, start, count, 2)
-      CALL mckpp_netcdf_close(routine, file, ncid)
+
+      IF (l_root_proc) THEN 
+
+        file = kpp_const_fields%cplwght_file
+        WRITE(message,*) "Reading coupling weight (alpha) from file ", TRIM(file)
+        CALL mckpp_print(routine, message)
+        CALL mckpp_netcdf_open(routine, file, ncid)
+
+        CALL mckpp_netcdf_determine_boundaries( & 
+          routine, file, ncid, kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), & 
+          offset_lon, offset_lat )
+
+        start = (/ offset_lon, offset_lat /) 
+        count = (/ nx,  ny/)
+        CALL mckpp_netcdf_get_var( routine, file, ncid, "alpha", & 
+                                   cplwght_global, start, count, 2 )
+
+        CALL mckpp_netcdf_close(routine, file, ncid)
+
+      END IF
+  
+      CALL mckpp_scatter_field(cplwght_global, kpp_3d_fields%cplwght, root_proc)
 
     ELSE
-      
-        kpp_3d_fields%cplwght(:) = 0.0
-
+      kpp_3d_fields%cplwght(:) = 0.0
     END IF
-        
+
   END SUBROUTINE mckpp_initialize_coupling_weight
 
 END MODULE mckpp_initialize_coupling_weight_mod
