@@ -32,10 +32,10 @@ CONTAINS
     CALL mckpp_netcdf_get_var(routine, file, ncid, "alpha", cplwght_in)
     CALL mckpp_netcdf_close(routine, file, ncid)
     DO ix=1,NX_GLOBE
-       DO jy=1,NY_GLOBE
-          ipoint_globe=(jy-1)*NX_GLOBE+ix
-          kpp_3d_fields%cplwght(ipoint_globe)=cplwght_in(ix,jy)
-       ENDDO
+      DO jy=1,NY_GLOBE
+        ipoint_globe=(jy-1)*NX_GLOBE+ix
+        kpp_3d_fields%cplwght(ipoint_globe)=cplwght_in(ix,jy)
+      ENDDO
     ENDDO
 
   END SUBROUTINE mckpp_initialize_couplingweight
