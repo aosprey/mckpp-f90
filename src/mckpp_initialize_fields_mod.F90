@@ -1,3 +1,5 @@
+
+
 #ifdef MCKPP_CAM3
 #include <misc.h>
 #include <params.h>
@@ -22,7 +24,8 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_variables
   USE mckpp_initialize_geography_mod, ONLY: mckpp_initialize_geography  
   USE mckpp_initialize_landsea_mod, ONLY: mckpp_initialize_landsea
-  USE mckpp_initialize_ocean, ONLY: mckpp_initialize_ocean_model, mckpp_initialize_ocean_profiles
+  USE mckpp_initialize_ocean, ONLY: mckpp_initialize_ocean_model
+  USE mckpp_initialize_ocean_profiles_mod, ONLY: mckpp_initialize_ocean_profiles
   USE mckpp_initialize_optics_mod, ONLY: mckpp_initialize_optics
   USE mckpp_initialize_relaxtion_mod, ONLY: mckpp_initialize_relaxation
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
