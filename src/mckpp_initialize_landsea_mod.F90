@@ -20,11 +20,10 @@ CONTAINS
 
     INTEGER :: ncid, offset_lon, offset_lat, i, j, ipt
     INTEGER, DIMENSION(2) :: start, count
-    REAL :: start_, end
     REAL, DIMENSION(nx) :: lon_in
     REAL, DIMENSION(ny) :: lat_in
-    REAL, DIMENSION(npts) :: landsea, ocedepth 
-    REAL, DIMENSION(npts_local) :: landsea_local
+    REAL, DIMENSION(npts) :: landsea_global, ocedepth_global 
+    REAL, DIMENSION(npts_local) :: landsea
     CHARACTER(LEN=max_nc_filename_len) :: file
     CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_LANDSEA"
     CHARACTER(LEN=max_message_len) :: message
@@ -46,19 +45,19 @@ CONTAINS
           offset_lon, offset_lat)
 
         CALL mckpp_netcdf_get_var( routine, file, ncid, "longitude", & 
-                                   lon_in, offset_lon)
+                                   lon_in, offset_lon )
         CALL mckpp_netcdf_get_var( routine, file, ncid, "latitude", & 
-                                   lat_in, offset_lat)
+                                   lat_in, offset_lat )
 
         start = (/ offset_lon, offset_lat /)
         count = (/ nx, ny /) 
-        CALL mckpp_netcdf_get_var( routine, file, ncid, "lsm", landsea, & 
-                                   start, count, 2)
+        CALL mckpp_netcdf_get_var( routine, file, ncid, "lsm", & 
+                                   landsea_global, start, count, 2 )
         CALL mckpp_netcdf_get_var( routine, file, ncid, "max_depth", & 
-                                   ocdepth, start, count, 2)       
+                                   ocdepth_global, start, count, 2 )       
         CALL mckpp_netcdf_close(routine, file, ncid)
 
-      END IF
+      ENDIF 
 
       ! Broadcast lons and lats 
       CALL mckpp_broadcast_field(lon_in, nx, root_proc)
@@ -75,11 +74,11 @@ CONTAINS
       END DO
 
       ! Scatter ocdepth and lsm 
-      CALL mckpp_scatter_field(ocdepth, kpp_3d_fields%ocdepth, root_proc)
-      CALL mckpp_scatter_field(landsea, landsea_local, root_proc)
+      CALL mckpp_scatter_field(ocdepth_global, kpp_3d_fields%ocdepth, root_proc)
+      CALL mckpp_scatter_field(landsea_global, landsea, root_proc)
 
       ! Generate logical lsm 
-      kpp_3d_fields%l_ocean = landsea_local .NE. 1.0 
+      kpp_3d_fields%l_ocean = landsea .NE. 1.0 
 
     ! Generate a regularly spaced grid  
     ELSEIF (kpp_const_fields%l_reggrid) THEN    

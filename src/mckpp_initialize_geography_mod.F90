@@ -34,11 +34,11 @@ CONTAINS
 
         CALL mckpp_netcdf_open(routine, file, ncid)     
         CALL mckpp_netcdf_get_var( routine, file, ncid, "d", &
-            kpp_const_fields%dm(1:nz))
+                                   kpp_const_fields%dm(1:nz) )
         CALL mckpp_netcdf_get_var( routine, file, ncid, "h", & 
-            kpp_const_fields%hm(1:nz))
+                                   kpp_const_fields%hm(1:nz) )
         CALL mckpp_netcdf_get_var( routine, file, ncid, "z", & 
-            kpp_const_fields%zm(1:nz))
+                                   kpp_const_fields%zm(1:nz) )
         CALL mckpp_netcdf_close(routine, file, ncid)
 
       END IF
@@ -48,7 +48,7 @@ CONTAINS
       CALL mckpp_broadcast_field(kpp_const_fields%zm(1:nz), nz, root_proc) 
 
       kpp_const_fields%dmax = -1. * ( kpp_const_fields%zm(nz) - & 
-          kpp_const_fields%hm(nz))
+                              kpp_const_fields%hm(nz) )
 
     ELSE
 
