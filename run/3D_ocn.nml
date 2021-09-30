@@ -1,0 +1,49 @@
+ &NAME_PARAMETERS
+ nz=69, ndim=1, nx=453, ny=319, nvel=2, nsclr=2, nsb=1, 
+ itermax=200, hmixtolfrac=0.1, 
+ ngrid=69, nzl=1, nzu=2, nzdivmax=8, nztmax=83, igridmax=5,
+ nsflxs=9, njdt=1, ndharm=5, maxmodeadv=6, mr=100, 
+ nx_globe=538, ny_globe=428
+ &END
+ &NAME_CONSTANTS &END
+ &NAME_PROCSWIT &END
+ &NAME_DOMAIN
+ L_STRETCHGRID=.F.,dmax=1000.0,dscale=4.0,L_REGGRID=.T.,
+ alat=-14.90625,alon=90.71875,delta_lat=0.09375,delta_lon=0.14062,
+ L_VGRID_FILE=.T.,vgrid_file='kpp_vgrid.nc'
+ &END
+ &NAME_LANDSEA
+ L_LANDSEA=.T.,landsea_file='lsm.nc'
+ &END
+ &NAME_START
+ L_INITDATA=.T.,initdata_file='kpp_initcond_20151101.nc',L_RESTART=.F.,
+ restart_infile='KPP.restart.RRRRR',L_INTERPINIT=.T.
+ &END
+ &NAME_TIMES
+ dtsec=3600.,startt=00304.0,finalt=0305.0,ndtocn=3
+ &END
+ &NAME_COUPLE
+ L_COUPLE=.F.,sstin_file='sst_clim.nc',
+ &END
+ &NAME_ADVEC
+ L_ADVECT=.F.,L_RELAX_SST=.F.,L_RELAX_SAL=.F.,L_RELAX_OCNT=.F.
+ &END
+ &NAME_PARAS
+ paras_file='aqua_paras.nc',L_JERLOV=.F.
+ &END
+ &NAME_FORCING
+ L_FLUXDATA=.T.,forcing_file='fluxes.nc'
+ L_FCORR_WITHZ=.F.,L_UPD_FCORR=.F.,fcorrin_file='fcorr_withz.nc',ndtupdfcorr=24,
+ L_PERIODIC_FCORR=.F.,fcorr_period=360,L_SFCORR_WITHZ=.F.,L_UPD_SFCORR=.F.,
+ sfcorrin_file='scorr_withz.nc',ndtupdsfcorr=24,L_PERIODIC_SFCORR=.F.,sfcorr_period=360,
+ L_VARY_BOTTOM_TEMP=.F.,bottomin_file='204m_temps.nc',ndtupdbottom=24,
+ L_UPD_BOTTOM_TEMP=.F.,L_PERIODIC_BOTTOM_TEMP=.F.,bottom_temp_period=360,
+ L_UPD_SAL=.F.,L_PERIODIC_SAL=.F.,sal_period=360,sal_file='sal_clim.nc',
+ ndtupdsal=24,L_UPD_OCNT=.F.,ndtupdocnt=24,L_PERIODIC_OCNT=.F.,
+ ocnT_period=360,ocnT_file='ocnT_clim.nc',L_NO_FREEZE=.F.,L_NO_ISOTHERM=.F.,
+ isotherm_bottom=90,isotherm_threshold=0.002,L_DAMP_CURR=.F.,dtuvdamp=360
+ &END
+ &NAME_OUTPUT
+ L_RESTARTW=.T.,restart_outfile='restart_fields.out'
+ ndt_per_restart=72,
+ &END

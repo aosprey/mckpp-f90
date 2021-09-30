@@ -1,0 +1,161 @@
+<!-- Test KPP output -->
+
+<simulation>
+
+  <context id="xios">
+
+    <variable_definition>
+      <variable id="using_server" type="bool">false</variable>
+      <variable id="info_level" type="int">100</variable>
+      <variable id="print_file" type="bool">true</variable>
+      <variable id="optimal_buffer_size" type="string">memory</variable>
+    </variable_definition>
+
+  </context>
+
+  <context id="kpp">
+
+    <domain_definition>
+      <domain id="domain_kpp"/>
+    </domain_definition>
+
+    <axis_definition>
+      <axis id="levels_kpp" />
+    </axis_definition>
+
+    <grid_definition>
+
+      <grid id="grid_kpp_2d">
+        <domain domain_ref="domain_kpp"/>
+      </grid>
+
+      <grid id="grid_kpp_3d">
+	<domain domain_ref="domain_kpp"/>
+	<axis axis_ref="levels_kpp"/>
+      </grid> 
+
+    </grid_definition>
+
+    <!-- All possible diagnostics -->
+    <field_definition enabled="true" default_value="1e20">
+
+      <!-- Depth-varying diagnostics -->
+      <field_group id="diagnostics_3d" grid_ref="grid_kpp_3d">
+        <field id="u" name="u" long_name="Zonal velocity" unit="m/s"/> 
+        <field id="v" name="v" long_name="Meridional velocity" unit="m/s"/> 
+        <field id="T" name="T" long_name="Temperature" unit="degC"/>
+        <field id="S" name="S" long_name="Salinity" unit="o/oo"/>
+        <field id="B" name="B" long_name="Buoyancy" unit="m/s^2"/> 
+        <field id="wu" name="wu" long_name="Turbulent Zonal Velocity Flux" unit="'m^2/s^2"/> 
+        <field id="wv" name="wv" long_name="Turbulent Meridional Velocity Flux" unit="m^2/s^2"/> 
+        <field id="wT" name="wT" long_name="Turbulent Temperature Flux" unit="degC m/s"/> 
+        <field id="wS" name="wS" long_name="Turbulent Salinity Flux" unit="o/oo m/s"/> 
+        <field id="wB" name="wB" long_name="Turbulent Buoyancy Flux" unit="m^2/s^3"/> 
+        <field id="wTnt" name="wTnt" long_name="Non-Turbulent Temperature Flux" unit="degC m/s"/> 
+        <field id="difm" name="difm" long_name="Diffusion Coefficient (Momentum)" unit="m^2/s"/> 
+        <field id="dift" name="dift" long_name="Diffusion Coefficient (Temperature)" unit="m^2/s"/> 
+        <field id="difs" name="difs" long_name="Diffusion Coefficient (Salinity)" unit="m^2/s"/> 
+        <field id="rho" name="rho" long_name="Density" unit="kg/m^3"/> 
+        <field id="cp" name="cp" long_name="Specific Heat Capacity" unit="J/kg/K"/> 
+        <field id="scorr" name="scorr" long_name="Salinity correction (with depth)" unit="o/oo/s"/> 
+        <field id="Rig" name="Rig" long_name="Local Richardson Number in kpp.f" unit="unitless"/> 
+        <field id="dbloc" name="dbloc" long_name="Local delta buoyancy in kpp.f" unit="m/s^2"/> 
+        <field id="Shsq" name="Shsq" long_name="Local shear-squared term in kpp.f" unit="m^2/s^2"/> 
+        <field id="tinc_fcorr" name="tinc_fcorr" long_name="Temperature increment flux correction" unit="K/timestep"/> 
+        <field id="fcorr_z" name="fcorr_z" long_name="Heat correction as flux (dT/dt*rho*cp)" unit="W/m^3"/> 
+        <field id="sinc_fcorr" name="sinc_fcorr" long_name="Salinity increment flux correction" unit="o/oo/timestep"/> 
+      </field_group>
+
+      <!-- Single-level diagnostics -->
+      <field_group id="diagnostics_2d" grid_ref="grid_kpp_2d">
+        <field id="hmix" name="hmix" long_name="Mixed Layer Depth" unit="m"/>
+        <field id="fcorr" name="fcorr" long_name="Flux Correction" unit="W/m^2"/>
+        <field id="taux_in" name="taux_in" long_name="Zonal wind stress from " unit="N/m^2"/>
+        <field id="tauy_in" name="tauy_in" long_name="Meridional wind stress from " unit="N/m^2"/>
+        <field id="solar_in" name="solar_in" long_name="Solar from " unit="W/m^2"/>
+        <field id="nsolar_in" name="nsolar_in" long_name="Non-solar from " unit="W/m^2"/>
+        <field id="PminusE_in" name="PminusE_in" long_name="P minus E from " unit="mm/s"/>
+        <field id="cplwght" name="cplwght" long_name="Coupling weight" unit="none"/>
+        <field id="freeze_flag" name="freeze_flag" long_name="Fraction of levels below freezing" unit="fraction"/>
+        <field id="comp_flag" name="comp_flag" long_name="Number of integrations (<0 = isothermal reset)" unit="unitless"/>
+        <field id="dampu_flag" name="dampu_flag" long_name="Fraction of levels with ui~u**2" unit="fraction"/>
+        <field id="dampv_flag" name="dampv_flag" long_name="Fraction of levels with vi~v**2" unit="fraction"/>
+      </field_group>
+
+    </field_definition> 
+
+    <!-- Output files -->
+    <file_definition type="one_file" par_access="collective" enabled=".TRUE.">
+
+      <!-- Instantaneous --> 
+      <file id="output_kpp" name="output_kpp" output_freq="1h" split_freq="1d"> 
+	<field field_ref="T" name="T_inst" operation="instant"/>
+	<field field_ref="S" name="S_inst" operation="instant"/>
+	<field field_ref="hmix" name="hmix_inst" operation="instant"/>
+      </file> 
+
+      <!-- Mean -->
+      <file id="output_kpp_means" name="output_kpp_means" output_freq="3h" split_freq="1d">  
+	<field field_ref="T" name="T_mean" operation="average"/>
+	<field field_ref="S" name="S_mean" operation="average"/>
+	<field field_ref="hmix" name="hmix_mean" operation="average"/>
+      </file> 
+     
+      <!-- Minimum -->
+      <file id="output_kpp_min" name="output_kpp_min" output_freq="3h" split_freq="1d"> 
+	<field field_ref="T" name="T_min" operation="minimum"/>
+	<field field_ref="S" name="S_min" operation="minimum"/>
+	<field field_ref="hmix" name="hmix_min" operation="minimum"/>
+      </file> 
+    
+      <!-- Maximum -->
+      <file id="output_kpp_max" name="output_kpp_max" output_freq="3h" split_freq="1d"> 
+	<field field_ref="T" name="T_max" operation="maximum"/>
+	<field field_ref="S" name="S_max" operation="maximum"/>
+	<field field_ref="hmix" name="hmix_max" operation="maximum"/>
+      </file> 
+
+      <!-- Test all diags -->
+      <file id="output_kpp_all" name="output_kpp_all" output_freq="3h" split_freq="1d"> 
+	<field field_ref="T" operation="instant"/>
+	<field field_ref="S" operation="instant"/>
+        <field field_ref="u" operation="instant"/>
+        <field field_ref="v" operation="instant"/>
+	<field field_ref="B" operation="instant"/>
+	<field field_ref="wu" operation="instant"/>
+	<field field_ref="wv" operation="instant"/>
+	<field field_ref="wT" operation="instant"/>
+	<field field_ref="wS" operation="instant"/>
+	<field field_ref="wB" operation="instant"/>
+	<field field_ref="wTnt" operation="instant"/>
+	<field field_ref="difm" operation="instant"/>
+	<field field_ref="dift" operation="instant"/>
+	<field field_ref="difs" operation="instant"/>
+	<field field_ref="rho" operation="instant"/>
+	<field field_ref="cp" operation="instant"/>
+	<field field_ref="scorr" operation="instant"/>
+	<field field_ref="Rig" operation="instant"/>
+	<field field_ref="dbloc" operation="instant"/>
+	<field field_ref="Shsq" operation="instant"/>
+	<field field_ref="tinc_fcorr" operation="instant"/>
+	<field field_ref="fcorr_z" operation="instant"/>
+	<field field_ref="sinc_fcorr" operation="instant"/>
+	<field field_ref="hmix" operation="instant"/>
+	<field field_ref="fcorr" operation="instant"/>
+	<field field_ref="taux_in" operation="instant"/>
+	<field field_ref="tauy_in" operation="instant"/>
+	<field field_ref="solar_in" operation="instant"/>
+	<field field_ref="nsolar_in" operation="instant"/>
+	<field field_ref="PminusE_in" operation="instant"/>
+	<field field_ref="cplwght" operation="instant"/>
+	<field field_ref="freeze_flag" operation="instant"/>
+	<field field_ref="comp_flag" operation="instant"/>
+	<field field_ref="dampu_flag" operation="instant"/>
+	<field field_ref="dampv_flag" operation="instant"/>
+      </file>
+
+    </file_definition> 
+
+  </context>
+
+</simulation>
