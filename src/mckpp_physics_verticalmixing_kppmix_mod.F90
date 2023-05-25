@@ -1,10 +1,6 @@
 MODULE mckpp_physics_verticalmixing_kppmix_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
-#endif
   USE mckpp_physics_verticalmixing_bldepth_mod, ONLY: mckpp_physics_verticalmixing_bldepth
   USE mckpp_physics_verticalmixing_blmix_mod, ONLY: mckpp_physics_verticalmixing_blmix
   USE mckpp_physics_verticalmixing_ddmix_mod, ONLY: mckpp_physics_verticalmixing_ddmix

@@ -1,15 +1,6 @@
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
-
 MODULE mckpp_physics_solvers
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type, kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
-#endif
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len
   USE mckpp_parameters, ONLY: nztmax

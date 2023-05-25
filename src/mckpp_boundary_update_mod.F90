@@ -1,10 +1,6 @@
 MODULE mckpp_boundary_update_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_const_fields
-#else
   USE mckpp_data_fields, ONLY: kpp_const_fields
-#endif
   USE mckpp_boundary_interpolate, ONLY: mckpp_boundary_interpolate_temp, &
       mckpp_boundary_interpolate_sal
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len

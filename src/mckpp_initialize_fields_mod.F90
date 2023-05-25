@@ -1,24 +1,9 @@
-
-
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
-
 MODULE mckpp_initialize_fields_mod
 
-#ifdef MCKPP_CAM3
-  USE shr_kind_mod, only : r8=>shr_kind_r8
-  USE mckpp_types, only : kpp_global_fields,kpp_3d_fields,kpp_const_fields
-  USE phys_grid, only : get_ncols_p,get_rlat_all_p,get_rlon_all_p
-  USE ppgrid, only : pcols,begchunk,endchunk
-  USE pmgrid, only : masterproc
-#else
   USE mckpp_boundary_interpolate, ONLY: mckpp_boundary_interpolate_temp, &
       mckpp_boundary_interpolate_sal
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, &
       mckpp_allocate_3d_fields
-#endif
   USE mckpp_initialize_advection_mod, ONLY: mckpp_initialize_advection
   USE mckpp_initialize_couplingweight_mod, ONLY: mckpp_initialize_couplingweight
   USE mckpp_initialize_fluxes, ONLY: mckpp_initialize_fluxes_variables
@@ -47,17 +32,11 @@ CONTAINS
 
 SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   
-#ifdef MCKPP_CAM3
-  INTEGER :: icol,ncol,ichnk
-  REAL(r8) :: clat1(pcols),clon1(pcols)
-#endif
   INTEGER :: iy,ix,ipt
   CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FIELDS"
   CHARACTER(LEN=max_message_len) :: message 
 
-#ifndef MCKPP_CAM3
   CALL mckpp_allocate_3d_fields()
-#endif
 
   ! Set initial values for flags in kpp_3d_fields, which otherwise
   ! might never be set if points are not coupled.
@@ -80,16 +59,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_COUPLINGWEIGHT") 
     CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
   ENDIF
-  
-#ifdef MCKPP_CAM3
-  ! Initialize coupling-period mean fluxes and SST fields
-  DO ichnk=begchunk,endchunk
-     ncol=get_ncols_p(ichnk)
-     kpp_3d_fields(ichnk)%sflux_cpl(:,:)=0
-     kpp_3d_fields(ichnk)%sst_cpl(:)=0
-  ENDDO
-#endif 
-  
+   
   ! Initialize advection options
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
   CALL MCKPP_INITIALIZE_ADVECTION()

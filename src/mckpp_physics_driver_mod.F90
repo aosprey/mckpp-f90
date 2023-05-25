@@ -1,19 +1,7 @@
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
-
 MODULE mckpp_physics_driver_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_parameters
-  USE mckpp_types, only: kpp_3d_fields,kpp_1d_type,kpp_const_fields
-  USE ppgrid, only: begchunk,endchunk,pcols
-  USE phys_grid,only: get_ncols_p
-#else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_1d_type, kpp_const_fields
   USE mckpp_timer, ONLY: mckpp_define_new_timer, mckpp_start_timer, mckpp_stop_timer
-#endif
   USE mckpp_parameters
   USE mckpp_physics_ocnstep_mod, ONLY: mckpp_physics_ocnstep
   USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_bottomtemp, mckpp_physics_overrides_check_profile
@@ -25,10 +13,6 @@ CONTAINS
 
 SUBROUTINE mckpp_physics_driver()
   
-#ifdef MCKPP_CAM3
-  INTEGER :: icol,ncol,ichnk
-#endif
-  
   ! Local
   TYPE(kpp_1d_type) :: kpp_1d_fields
   INTEGER :: ipt, index
@@ -38,20 +22,6 @@ SUBROUTINE mckpp_physics_driver()
   CHARACTER(LEN=21) phys_timer_name
   CHARACTER(LEN=19) trans_timer_name
   
-#ifdef MCKPP_CAM3
-  DO ichnk=begchunk,endchunk
-     ncol=get_ncols_p(ichnk)
-     DO icol=1,ncol
-        IF (kpp_3d_fields(ichnk)%landfrac(icol) .lt. 1.0 .and. &
-             kpp_3d_fields(ichnk)%cplwght(icol) .gt. 0.0) THEN
-           CALL MCKPP_FIELDS_3Dto1D(kpp_3d_fields(ichnk),icol,kpp_1d_fields)
-           CALL MCKPP_PHYSICS_OCNSTEP(kpp_1d_fields,kpp_const_fields)
-           CALL MCKPP_PHYSICS_OVERRIDES_CHECK_PROFILE(kpp_1d_fields,kpp_const_fields)
-           CALL MCKPP_FIELDS_1Dto3D(kpp_1d_fields,icol,kpp_3d_fields(ichnk))
-        ENDIF
-     ENDDO
-  ENDDO   
-#else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(NONE) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
@@ -96,7 +66,6 @@ SUBROUTINE mckpp_physics_driver()
 !$OMP END DO
 !$OMP END PARALLEL
 #endif /*OPENMP*/
-#endif /*MCKPP_CAM3*/
   
   IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN
      CALL mckpp_start_timer("Update ancillaries")

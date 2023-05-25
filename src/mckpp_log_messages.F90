@@ -1,5 +1,5 @@
 ! Routines to print log messages to stdout, and error/warnings to 
-! stderr. If running in parallel (CAM) only masterproc writes messages.
+! stderr.
 ! 
 ! Ideas:
 ! - split long messages over multiple lines
@@ -9,10 +9,6 @@
 
 MODULE mckpp_log_messages
 
-#ifdef MCKPP_CAM3
-  USE pmgrid, only: masterproc
-#endif  
- 
   IMPLICIT NONE 
 
   PUBLIC :: mckpp_print, mckpp_print_error, mckpp_print_warning, update_context
@@ -87,11 +83,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: unit
     CHARACTER(LEN=*) :: string
 
-#ifdef MCKPP_CAM3
-    IF (masterproc) THEN WRITE(unit,*) TRIM(ADJUSTL(string))
-#else
     WRITE(unit,*) TRIM(ADJUSTL(string))
-#endif
 
   END SUBROUTINE mckpp_write
   

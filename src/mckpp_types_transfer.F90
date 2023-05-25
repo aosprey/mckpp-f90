@@ -1,11 +1,7 @@
 MODULE mckpp_types_transfer
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_3d_type,kpp_1d_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_3d_type, kpp_1d_type, &
       mckpp_allocate_1d_fields
-#endif
   USE mckpp_parameters, ONLY: nz, nzp1, nztmax, nzp1tmax, &
       nvel, nsclr, nvp1, nsp1, maxmodeadv, nsflxs, njdt
   
