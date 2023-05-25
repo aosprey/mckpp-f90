@@ -1,9 +1,10 @@
 MODULE mckpp_initialize_landsea_mod
 
+  USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, &
       mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var, max_nc_filename_len
-  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, max_message_len
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
   USE mckpp_parameters, ONLY: npts, nx, ny
 
   IMPLICIT NONE
@@ -69,7 +70,8 @@ CONTAINS
     ELSEIF (.NOT. kpp_const_fields%L_REGGRID .AND. .NOT. kpp_const_fields%L_LANDSEA) THEN
       WRITE(message,*) "If you set L_REGGRID=.FALSE., you must specify a land-sea mask file from which", & 
           " to read the locations of the gridpoints in the horizontal."
-      CALL mckpp_print_warning(routine, message)
+      CALL mckpp_print_error(routine, message)
+      CALL mckpp_abort()
     ENDIF
 
   END SUBROUTINE mckpp_initialize_landsea
