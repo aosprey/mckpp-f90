@@ -54,7 +54,7 @@ REAL FUNCTION MCKPP_CPSW(S,T1,P0)
   CP2 = ((C*P+B)*P+A)*P
 ! SPECIFIC HEAT RETURN
   MCKPP_CPSW = CP0 + CP1 + CP2
-  RETURN
+
 END FUNCTION MCKPP_CPSW
 
 ! **********************************************************************
@@ -186,7 +186,7 @@ Subroutine MCKPP_ABK80(S,T1,P,Alpha,Beta,Kappa,Sig0,Sig)
   EndIf
   
 ! All Done, Return with appropriate desired values calculated  
-  Return
+
 End Subroutine MCKPP_ABK80
 
 ! Coefficient of Haline Contraction using algebraic derivation of 
@@ -236,7 +236,7 @@ Subroutine MCKPP_Bet80(S,T,P,Beta,&
   ABFlg=.False. 
   Beta=DRho/(1.-PK) - ABFac*DK
   Beta=Beta/Rho 
-  Return
+ 
 End Subroutine MCKPP_Bet80
  
 ! Thermal Expansion Coefficient for Sea Water  
@@ -313,7 +313,7 @@ Subroutine MCKPP_Alf80(S,T,P,Alpha,&
   EndIf
   Alpha=Alph0/(1.-PK) - ABFac*AlphK 
   Alpha=-Alpha/Rho
-  RETURN
+
 END Subroutine MCKPP_Alf80
  
 ! Coefficient of Compressibility using algebraic derivation of
@@ -363,7 +363,7 @@ Subroutine MCKPP_Kap80(S,T,P,KapFlg,Kappa,&
 ! Full nonzero pressure formula for Kappa given A,B,K  
   DelK=A+(P0+P0)*B
   Kappa=(1.-PK*DelK)/(K-P0) 
-  Return
+
 End Subroutine MCKPP_Kap80
  
 ! EQUATION OF STATE FOR SEA WATER  
@@ -472,7 +472,7 @@ Subroutine MCKPP_Sig80(S,T,P,KapFlg,Sig0,Sig,&
   If (KapFlg) Return
   Sig=(1000.0*PK+Sig0)/(1.0-PK)   
   Rho=1000.0 + Sig  
-  RETURN
+
 END Subroutine MCKPP_Sig80
 
 END MODULE mckpp_physics_state_equations
