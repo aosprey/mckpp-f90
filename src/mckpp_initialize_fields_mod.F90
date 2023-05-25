@@ -59,7 +59,7 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_COUPLINGWEIGHT") 
     CALL MCKPP_INITIALIZE_COUPLINGWEIGHT()
   ENDIF
-   
+    
   ! Initialize advection options
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
   CALL MCKPP_INITIALIZE_ADVECTION()
@@ -160,7 +160,14 @@ SUBROUTINE MCKPP_INITIALIZE_FIELDS()
   kpp_const_fields%ntime=0
   CALL mckpp_print(routine, "Calling MCKPP_PHYSICS_LOOKUP")
   CALL MCKPP_PHYSICS_LOOKUP(kpp_const_fields)
- 
+  
+  ! Determine whether to run physics code on this column
+  IF (kpp_const_fields%L_COUPLE) THEN
+    kpp_3d_fields%run_physics = kpp_3d_fields%l_ocean .AND. kpp_3d_fields%cplwght(ipt) .GT. 0.0
+  ELSE 
+    kpp_3d_fields%run_physics = kpp_3d_fields%l_ocean 
+  END IF 
+
   CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OCEAN_MODEL")
   CALL MCKPP_INITIALIZE_OCEAN_MODEL()
 

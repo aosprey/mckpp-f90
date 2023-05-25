@@ -18,14 +18,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   CHARACTER(LEN=25) :: routine = "MCKPP_INITIALIZE_NAMELIST"
   CHARACTER(LEN=max_message_len) :: message
  
-  ! This is a bug fix for the IBM XLF compiler, which otherwise complains
-  ! about "incorrect characters" in the namelist.  If you are using the
-  ! IBM compiler, you need to pass -WF,-DXLF_OLDNAME when you compile MC-KPP.
-  ! NPK 5/6/09 - R2
-#ifdef XLF_OLDNAME
-  CALL SETRTEOPTS("namelist=old")
-#endif
-  
   ! Open the namelist
   OPEN(75,FILE='3D_ocn.nml')  
 

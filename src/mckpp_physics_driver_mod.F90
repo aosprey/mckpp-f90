@@ -17,7 +17,7 @@ SUBROUTINE mckpp_physics_driver()
   TYPE(kpp_1d_type) :: kpp_1d_fields
   INTEGER :: ipt, index
 #ifdef OPENMP
-  INTEGER :: tid,OMP_GET_THREAD_NUM
+  INTEGER :: tid, OMP_GET_THREAD_NUM
 #endif
   CHARACTER(LEN=21) phys_timer_name
   CHARACTER(LEN=19) trans_timer_name
@@ -43,11 +43,8 @@ SUBROUTINE mckpp_physics_driver()
   WRITE(phys_timer_name,'(A21)') 'KPP Physics thread 01'
 #endif /*OPENMP*/
   DO ipt=1,npts
-#ifdef MCKPP_COUPLE
-        IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
-#else       
-        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
-#endif
+    IF (kpp_3d_fields%run_physics(ipt)) THEN
+
         CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
         CALL mckpp_stop_timer(trans_timer_name) 
@@ -59,13 +56,12 @@ SUBROUTINE mckpp_physics_driver()
 
         CALL mckpp_start_timer(trans_timer_name)
         CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
-        CALL mckpp_stop_timer(trans_timer_name) 
+        CALL mckpp_stop_timer(trans_timer_name)
+        
      ENDIF
-  ENDDO
-#ifdef OPENMP
+   ENDDO
 !$OMP END DO
 !$OMP END PARALLEL
-#endif /*OPENMP*/
   
   IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN
      CALL mckpp_start_timer("Update ancillaries")

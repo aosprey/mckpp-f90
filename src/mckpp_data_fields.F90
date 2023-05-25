@@ -83,7 +83,8 @@ MODULE mckpp_data_fields
 
     LOGICAL, ALLOCATABLE :: & 
         l_ocean(:), & 
-        l_initflag(:)
+        l_initflag(:), &
+        run_physics(:)
 
     INTEGER :: & 
         old_pt, & 
@@ -419,23 +420,26 @@ MODULE mckpp_data_fields
     ALLOCATE( kpp_3d_fields%shf(npts) )
     ALLOCATE( kpp_3d_fields%rain(npts) )
     ALLOCATE( kpp_3d_fields%snow(npts) )
-#ifdef mckpp_couple
-    ALLOCATE( kpp_3d_fields%sst(nx_globe,ny_globe) )
-    ALLOCATE( kpp_3d_fields%iceconc(nx_globe,ny_globe) )
-    ALLOCATE( kpp_3d_fields%usf(nx_globe,ny_globe) )
-    ALLOCATE( kpp_3d_fields%vsf(nx_globe,ny_globe) )
-    ALLOCATE( kpp_3d_fields%icedepth(nx_globe,ny_globe) )
-    ALLOCATE( kpp_3d_fields%snowdepth(nx_globe,ny_globe) )
-#else
-    ALLOCATE( kpp_3d_fields%sst(nx,ny) )
-    ALLOCATE( kpp_3d_fields%iceconc(nx,ny) )
-    ALLOCATE( kpp_3d_fields%usf(nx,ny) )
-    ALLOCATE( kpp_3d_fields%vsf(nx,ny) )
-    ALLOCATE( kpp_3d_fields%icedepth(nx,ny) )
-    ALLOCATE( kpp_3d_fields%snowdepth(nx,ny) )
-#endif
+    
+    IF ( kpp_const_fields%L_COUPLE ) THEN 
+      ALLOCATE( kpp_3d_fields%sst(nx_globe,ny_globe) )
+      ALLOCATE( kpp_3d_fields%iceconc(nx_globe,ny_globe) )
+      ALLOCATE( kpp_3d_fields%usf(nx_globe,ny_globe) )
+      ALLOCATE( kpp_3d_fields%vsf(nx_globe,ny_globe) )
+      ALLOCATE( kpp_3d_fields%icedepth(nx_globe,ny_globe) )
+      ALLOCATE( kpp_3d_fields%snowdepth(nx_globe,ny_globe) )
+    ELSE
+      ALLOCATE( kpp_3d_fields%sst(nx,ny) )
+      ALLOCATE( kpp_3d_fields%iceconc(nx,ny) )
+      ALLOCATE( kpp_3d_fields%usf(nx,ny) )
+      ALLOCATE( kpp_3d_fields%vsf(nx,ny) )
+      ALLOCATE( kpp_3d_fields%icedepth(nx,ny) )
+      ALLOCATE( kpp_3d_fields%snowdepth(nx,ny) )
+    END IF
+    
     ALLOCATE( kpp_3d_fields%l_ocean(npts) ) 
     ALLOCATE( kpp_3d_fields%l_initflag(npts) )
+    ALLOCATE( kpp_3d_fields%run_physics(npts) ) 
     ALLOCATE( kpp_3d_fields%old(npts) ) 
     ALLOCATE( kpp_3d_fields%new(npts) )
     ALLOCATE( kpp_3d_fields%jerlov(npts) )

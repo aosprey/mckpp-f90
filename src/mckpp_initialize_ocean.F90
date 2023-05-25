@@ -41,21 +41,16 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
   IF ( .NOT. kpp_const_fields%L_RESTART) THEN    
      ! Determine hmix for initial profile:
 
-#ifdef OPENMP
 !$OMP PARALLEL DEFAULT(none) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
 !$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
 !$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
 !$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields, hmix0, kmix0)
 !$OMP DO SCHEDULE(dynamic)
-#endif
      DO ipt=1,npts
-#ifdef MCKPP_COUPLE
-        IF (kpp_3d_fields%L_OCEAN(ipt) .and. kpp_3d_fields%cplwght(ipt) .gt. 0.0) THEN
-#else       
-        IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
-#endif
-           CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
+        IF (kpp_3d_fields%run_physics(ipt)) THEN
+
+          CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
 
            kpp_1d_fields%L_INITFLAG=.TRUE.
            CALL MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmix0,kmix0)
@@ -100,13 +95,12 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
               ENDDO
             ENDDO
             
-           CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
+          CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
+
         ENDIF
      ENDDO
-#ifdef OPENMP
 !$OMP END DO
 !$OMP END PARALLEL
-#endif      
 
   ENDIF
 
