@@ -1,10 +1,6 @@
 MODULE mckpp_physics_verticalmixing_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_1d_type,kpp_const_type
-#endif
   USE mckpp_fluxes_mod, ONLY: mckpp_fluxes, mckpp_fluxes_ntflux
   USE mckpp_parameters, ONLY: nz, nzp1, nsp1
   USE mckpp_physics_state_equations, ONLY: mckpp_abk80, mckpp_cpsw

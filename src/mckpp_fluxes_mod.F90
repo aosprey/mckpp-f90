@@ -1,10 +1,6 @@
 MODULE mckpp_fluxes_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
-#endif
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
   USE mckpp_parameters, ONLY: npts, nz
   USE mckpp_read_fluxes_mod, ONLY: mckpp_read_fluxes
@@ -14,7 +10,6 @@ MODULE mckpp_fluxes_mod
 
 CONTAINS 
 
-#ifndef MCKPP_CAM3
 SUBROUTINE MCKPP_FLUXES()
 
   TYPE(kpp_1d_type) :: kpp_1d_fields
@@ -79,7 +74,6 @@ SUBROUTINE MCKPP_FLUXES()
 !#endif
   
 END SUBROUTINE MCKPP_FLUXES
-#endif
 
 
 SUBROUTINE mckpp_fluxes_ntflux(kpp_1d_fields,kpp_const_fields)

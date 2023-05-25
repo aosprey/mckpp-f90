@@ -1,17 +1,6 @@
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
-
 MODULE mckpp_initialize_ocean
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_3d_fields,kpp_const_fields,kpp_1d_type
-  USE ppgrid, only: begchunk,endchunk
-  USE phys_grid, only: get_ncols_p
-#else
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
-#endif
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
@@ -26,11 +15,7 @@ CONTAINS
 ! Compute hmix and diffusivity profiles for initial profile.
 ! Prepare for first time step.
 SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
-  
-#ifdef MCKPP_CAM3
-  INTEGER :: icol,ncol,ichnk
-#endif
-  
+    
   ! Local
   TYPE(kpp_1d_type) :: kpp_1d_fields
   real dzb(NZ)              ! diff. between grid-levels below z(j)
@@ -56,14 +41,6 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
   IF ( .NOT. kpp_const_fields%L_RESTART) THEN    
      ! Determine hmix for initial profile:
 
-#ifdef MCKPP_CAM3
-     DO ichnk=begchunk,endchunk
-        ncol=get_ncols_p(ichnk)
-        DO icol=1,ncol
-           IF (kpp_3d_fields(ichnk)%L_OCEAN(icol) .and. &
-                kpp_3d_fields(ichnk)%cplwght(icol) .gt. 0.0) THEN
-              CALL mckpp_fields_3dto1d(kpp_3d_fields(ichnk),icol,kpp_1d_fields)
-#else
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(none) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
@@ -79,7 +56,7 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
         IF (kpp_3d_fields%L_OCEAN(ipt)) THEN
 #endif
            CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)
-#endif
+
            kpp_1d_fields%L_INITFLAG=.TRUE.
            CALL MCKPP_PHYSICS_VERTICALMIXING(kpp_1d_fields,kpp_const_fields,hmix0,kmix0)
            kpp_1d_fields%L_INITFLAG=.FALSE.
@@ -121,13 +98,8 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
                  kpp_1d_fields%Xs(k,l,0)=kpp_1d_fields%X(k,l)
                  kpp_1d_fields%Xs(k,l,1)=kpp_1d_fields%X(k,l)
               ENDDO
-           ENDDO
-#ifdef MCKPP_CAM3
-           CALL mckpp_fields_1dto3d(kpp_1d_fields,icol,kpp_3d_fields(ichnk))
-        ENDIF
-     ENDDO
-  ENDDO
-#else
+            ENDDO
+            
            CALL mckpp_fields_1dto3d(kpp_1d_fields,ipt,kpp_3d_fields)
         ENDIF
      ENDDO
@@ -135,7 +107,6 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
 !$OMP END DO
 !$OMP END PARALLEL
 #endif      
-#endif
 
   ENDIF
 

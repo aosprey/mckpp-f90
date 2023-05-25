@@ -7,9 +7,6 @@ SUBROUTINE MCKPP_ABORT()
   IMPLICIT NONE
   
 #ifdef MCKPP_COUPLE
-#ifdef MCKPP_CAM3
-  CALL endrun
-#endif
 #ifdef OASIS2
   ! Support for stopping in OASIS2
   ! NPK April 2009 - R2

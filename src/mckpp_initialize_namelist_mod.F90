@@ -1,15 +1,6 @@
-#ifdef MCKPP_CAM3
-#include <misc.h>
-#include <params.h>
-#endif
-
 MODULE mckpp_initialize_namelist_mod
 
-#ifdef MCKPP_CAM3  
-  USE mckpp_types, only: kpp_const_fields
-#else
   USE mckpp_data_fields, ONLY: kpp_const_fields, mckpp_allocate_const_fields
-#endif
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_initialize_constants_mod, ONLY: mckpp_initialize_constants
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
@@ -100,9 +91,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   WRITE(message,*) nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
   CALL mckpp_print(routine, message)
 
-#ifndef MCKPP_CAM3
   CALL mckpp_allocate_const_fields() 
-#endif 
   allocate(kpp_const_fields%wmt(0:891,0:49))
   allocate(kpp_const_fields%wst(0:891,0:49))
   allocate(kpp_const_fields%tri(0:NZtmax,0:1,NGRID))
@@ -211,7 +200,7 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   CALL mckpp_print(routine, "Read Namelist TIMES") 
   
   ! Initialize and read the couple namelist
-#if defined MCKPP_COUPLE || defined MCKPP_CAM3
+#if defined MCKPP_COUPLE
   L_COUPLE=.TRUE.
 #else
   L_COUPLE=.FALSE.
@@ -235,15 +224,9 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   L_ADVECT=.FALSE.
   L_RELAX_SST=.FALSE.
   L_RELAX_CALCONLY=.FALSE.
-#ifdef MCKPP_CAM3
-  ALLOCATE( relax_sst_in(ny_globe) )
-  ALLOCATE( relax_sal_in(ny_globe) )
-  ALLOCATE( relax_ocnt_in(ny_globe) )
-#else
   ALLOCATE( relax_sst_in(ny) )
   ALLOCATE( relax_sal_in(ny) )
   ALLOCATE( relax_ocnt_in(ny) )
-#endif
   DO iy=1,ny
      relax_sst_in(iy)=0.0
      relax_sal_in(iy)=0.0

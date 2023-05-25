@@ -1,13 +1,6 @@
 MODULE mckpp_physics_overrides
 
-#ifdef MCKPP_CAM3
-  USE shr_kind_mod, only: r8=>shr_kind_r8
-  USE mckpp_types, only: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
-  USE ppgrid, only: begchunk,endchunk,pcols
-  USE phys_grid, only: get_ncols_p
-#else 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
-#endif
   USE mckpp_log_messages, ONLY: mckpp_print_warning, max_message_len
   USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
   
@@ -18,21 +11,8 @@ CONTAINS
 ! Written by NPK 10/4/08
 SUBROUTINE mckpp_physics_overrides_bottomtemp()
 
-#ifdef MCKPP_CAM3
-  INTEGER :: ichnk,ncol,icol
-#endif  
   INTEGER ipt,z
   
-#ifdef MCKPP_CAM3
-  DO ichnk=begchunk,endchunk
-     ncol=get_ncols_p(ichnk)
-     kpp_3d_fields(ichnk)%tinc_fcorr(1:ncol,NZP1)=kpp_3d_fields(ichnk)%bottom_temp(1:ncol)-kpp_3D_fields(ichnk)%X(1:ncol,NZP1,1)
-     kpp_3d_fields(ichnk)%ocnTcorr(1:ncol,NZP1)  =kpp_3d_fields(ichnk)%tinc_fcorr(1:ncol,NZP1)*&
-          kpp_3d_fields(ichnk)%rho(1:ncol,NZP1)*kpp_3d_fields(ichnk)%cp(1:ncol,NZP1)/&
-          kpp_const_fields%dto
-     kpp_3d_fields(ichnk)%X(1:ncol,NZP1,1) = kpp_3d_fields(ichnk)%bottom_temp(1:ncol)
-  ENDDO
-#else
   DO ipt=1,npts
      kpp_3d_fields%tinc_fcorr(ipt,NZP1)=kpp_3d_fields%bottom_temp(ipt)-kpp_3D_fields%X(ipt,NZP1,1)
      kpp_3d_fields%ocnTcorr(ipt,NZP1)=kpp_3d_fields%tinc_fcorr(ipt,NZP1)*&
@@ -40,7 +20,6 @@ SUBROUTINE mckpp_physics_overrides_bottomtemp()
           kpp_const_fields%dto
      kpp_3d_fields%X(ipt,NZP1,1) = kpp_3d_fields%bottom_temp(ipt)
   ENDDO
-#endif
   
 END SUBROUTINE mckpp_physics_overrides_bottomtemp
 
@@ -48,25 +27,14 @@ END SUBROUTINE mckpp_physics_overrides_bottomtemp
 ! Written by NPK 27/8/07
 SUBROUTINE mckpp_physics_overrides_sst0()
   
-#ifdef MCKPP_CAM3
-  INTEGER :: ichnk,ncol,icol
-#endif
-
   INTEGER ix,iy,ipoint
 
-#ifdef MCKPP_CAM3
-  DO ichnk=begchunk,endchunk
-     ncol=get_ncols_p(ichnk)
-     kpp_3d_fields(ichnk)%SST0(1:ncol) = kpp_3d_fields(ichnk)%sst(1:ncol)
-  ENDDO
-#else
   DO iy=1,ny
      DO ix=1,nx
         ipoint=(iy-1)*nx+ix
         kpp_3d_fields%SST0(ipoint)=kpp_3d_fields%SST(ix+kpp_const_fields%ifirst-1,iy+kpp_const_fields%jfirst-1)
      ENDDO
   ENDDO
-#endif
   
 END SUBROUTINE mckpp_physics_overrides_sst0
 

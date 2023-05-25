@@ -8,11 +8,7 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   ! in mckkp_initialize_namelists.  It should be called
   ! only once.
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_const_type
-#endif 
   USE mckpp_namelists
   USE mckpp_parameters
   

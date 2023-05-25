@@ -1,10 +1,6 @@
 MODULE mckpp_physics_ocnint_mod
 
-#ifdef MCKPP_CAM3
-  USE mckpp_types, only: kpp_1d_type,kpp_const_type
-#else 
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
-#endif
   USE mckpp_parameters, ONLY: nz, nztmax, nzp1, nsclr, nvel
   USE mckpp_physics_solvers, ONLY: mckpp_physics_solvers_tridcof, mckpp_physics_solvers_tridrhs, &
       mckpp_physics_solvers_tridmat, mckpp_physics_solvers_rhsmod
