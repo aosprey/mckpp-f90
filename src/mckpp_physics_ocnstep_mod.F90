@@ -67,14 +67,14 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
   ! Number of iterations for computational instability
   integer comp_iter_max
   real rmsd(4),rmsd_threshold(4)
-  data comp_iter_max /10/
+  comp_iter_max = 10
+
   ! Critical depth-integrated RMS difference between old and new profiles
   ! for repeating integration, for (/U,V,T,S/). Typical (stable) 
   ! values are O(10^-2) for U and V, O(10^-3) for T and O(10^-4) for S.
   ! NPK 17/5/13
-  data rmsd_threshold /1,1,1,1/
-  
-  data lambda /0.5/
+  rmsd_threshold = (/1,1,1,1/)
+  lambda = 0.5
 
   ALLOCATE( rmke(nzp1) )
   

@@ -28,10 +28,10 @@ subroutine MCKPP_PHYSICS_SWFRAC_OPT(fact, kpp_1d_fields, kpp_const_fields)
   ! jerlov water type :  I       IA      IB      II      III
   !            jwtype    1       2       3       4       5
   !
-  data rfac         /  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /
-  data a1           /  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /
-  data a2           / 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /
-  data rmin         / -80. /
+  rfac =           (/  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /)
+  a1 =             (/  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /)
+  a2 =             (/ 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /)
+  rmin =             -80.
   
   DO l=1,NZP1
      r1      = MAX(kpp_const_fields%zm(l)*fact/a1(kpp_1d_fields%jerlov), rmin)
@@ -66,10 +66,10 @@ subroutine MCKPP_PHYSICS_SWFRAC(fact, z, jwtype, swdk)
 
   ! jerlov water type :  I       IA      IB      II      III
   !            jwtype    1       2       3       4       5
-  data rfac         /  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /
-  data a1           /  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /
-  data a2           / 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /
-  data rmin         / -80. /
+  rfac =            (/  0.58 ,  0.62 ,  0.67 ,  0.77 ,  0.78 /)
+  a1 =              (/  0.35 ,  0.6  ,  1.0  ,  1.5  ,  1.4  /)
+  a2 =              (/ 23.0  , 20.0  , 17.0  , 14.0  ,  7.9  /)
+  rmin =              -80.
   
         
   r1   = MAX(z*fact/a1(jwtype), rmin)
