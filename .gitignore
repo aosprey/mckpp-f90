@@ -35,6 +35,7 @@
 *.i
 
 # FCM files
+fcm-make.cfg
 fcm-make.log
 fcm-make-on-success.cfg
 fcm-make-as-parsed.cfg
