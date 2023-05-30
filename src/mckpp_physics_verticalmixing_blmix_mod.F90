@@ -46,12 +46,18 @@ SUBROUTINE mckpp_physics_verticalmixing_blmix(km, mdiff, ustar, bfsfc, hbl, stab
        zetas
   integer ki,kn
  
-  data epsln             /   1.e-20 /
-  data epsilon           /   0.1    /
-  data c1                /   5.0    /
-  data am,cm,c2,zetam    /   1.257  ,  8.380, 16.0, - 0.2 / !7-24-92
-  data as,cs,c3,zetas    / -28.86   , 98.96 , 16.0, - 1.0 /
-  data cstar             /    5.    /     
+  epsln   = 1.e-20
+  epsilon = 0.1 
+  c1      = 5.0 
+  am      = 1.257
+  cm      = 8.380
+  c2      = 16.0
+  zetam   = -0.2 
+  as      = -28.86
+  cs      = 98.96
+  c3      = 16.0
+  zetas   = -1.0
+  cstar   = 5.0
 
   cg = cstar * kpp_const_fields%vonk * (cs * kpp_const_fields%vonk * epsilon)**(1./3.)
       

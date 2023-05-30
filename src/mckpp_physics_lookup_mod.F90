@@ -13,15 +13,24 @@ SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
   real zmin,zmax,umin,umax,usta,zeta,zehat,epsln,&
        am,cm,c1,c2,zetam,as,cs,c3,zetas,cstar,deltau,deltaz
   integer i,j,ni,nj
-  parameter ( ni = 890,&     ! number of values for zehat
-       nj = 48)             ! number of values for ustar      
-  data epsln             /   1.e-20 /
-  data c1                /   5.0    /
-  data zmin,zmax  / -4.e-7, 0.0   / ! m3/s3
-  data umin,umax  /  0.   , .04   / ! m/s
-  data am,cm,c2,zetam    /   1.257  ,  8.380, 16.0, - 0.2 / !7-24-92
-  data as,cs,c3,zetas    / -28.86   , 98.96 , 16.0, - 1.0 /
-  data cstar             /    5.    /
+
+  ni    = 890     ! number of values for zehat
+  nj    = 48      ! number of values for ustar      
+  epsln = 1.e-20
+  c1    = 5.0  
+  zmin  = -4.e-7
+  zmax  = 0.0     ! m3/s3
+  umin  = 0.0
+  umax  = 0.04    ! m/s
+  am    = 1.257
+  cm    = 8.380
+  c2    = 16.0
+  zetam = -0.2    !7-24-92
+  as    = -28.86
+  cs    = 98.96
+  c3    = 16.0
+  zetas = -1.0
+  cstar = 5.0 
   
   deltaz = (zmax-zmin)/(ni+1) 
   deltau = (umax-umin)/(nj+1)

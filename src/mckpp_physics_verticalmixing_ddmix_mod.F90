@@ -24,8 +24,8 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_DDMIX(km, kmp1, alphaDT,betaDS,kpp_1d_fi
   real diffdd            ! double diffusion diffusivity scale
   real prandtl           ! prandtl number
 
-  data Rrho0  /  1.9   / ! Rp=(alpha*delT)/(beta*delS)
-  data dsfmax / 1.0e-4 / ! .0001 m2/s
+  Rrho0  = 1.9     ! Rp=(alpha*delT)/(beta*delS)
+  dsfmax = 1.0e-4  ! .0001 m2/s
 
   DO ki= 1, km           
      ! salt fingering case

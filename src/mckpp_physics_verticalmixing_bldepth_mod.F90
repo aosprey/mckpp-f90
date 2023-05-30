@@ -62,14 +62,14 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
   real hek                  ! Ekman depth
   logical LEK, LMO          ! flags for MO and Ekman depth checks
       
-  data epsln           /  1.e-16 /
-  data Ricr            /  0.30   /
-  data epsilon         /  0.1    /
-  data cekman          /  0.7    /
-  data cmonob          /  1.0    /
-  data cs              / 98.96   /
-  data cv              /  1.6    /
-  data hbf             /  1.0    /     
+  epsln   = 1.e-16
+  Ricr    = 0.30
+  epsilon = 0.1 
+  cekman  = 0.7 
+  cmonob  = 1.0 
+  cs      = 98.96
+  cv      = 1.6
+  hbf     = 1.0     
 
   ! Set MO and Ekman depth flags
   LEK = .true. 

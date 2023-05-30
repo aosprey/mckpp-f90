@@ -24,18 +24,18 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_RIMIX(km,kmp1,kpp_1d_fields,kpp_const_fi
   real epsln,Riinfty,Ricon,difm0,difs0,difmiw,difsiw,difmcon,difscon,c1,c0
   INTEGER ki,mRi,j
       
-  data  epsln   / 1.e-16 /  ! a small number          
-  data  Riinfty /  0.8     / ! LMD default was = 0.7
-  data  Ricon   / -0.2    / ! note: exp was repl by multiplication
-  data  difm0   / 0.005  /  ! max visc due to shear instability
-  data  difs0   / 0.005  /  ! max diff ..  .. ..    ..
-  data  difmiw  / 0.0001  / ! background/internal waves visc(m^2/s)
-  data  difsiw  / 0.00001 / ! ..         ..       ..    diff(m^2/s)
-  data  difmcon / 0.0000   / ! max visc for convection  (m^2/s)
-  data  difscon / 0.0000   / ! max diff for convection  (m^2/s)
-  data  c1/ 1.0/
-  data  c0/ 0.0/
-  data  mRi/ 1 /            ! number of vertical smoothing passes
+  epsln   = 1.e-16   ! a small number          
+  Riinfty = 0.8      ! LMD default was = 0.7
+  Ricon   = -0.2     ! note: exp was repl by multiplication
+  difm0   = 0.005    ! max visc due to shear instability
+  difs0   = 0.005    ! max diff ..  .. ..    ..
+  difmiw  = 0.0001   ! background/internal waves visc(m^2/s)
+  difsiw  = 0.00001  ! ..         ..       ..    diff(m^2/s)
+  difmcon = 0.0000   ! max visc for convection  (m^2/s)
+  difscon = 0.0000   ! max diff for convection  (m^2/s)
+  c1      = 1.0
+  c0      = 0.0
+  mRi     = 1        ! number of vertical smoothing passes
      
   !     compute interior gradient Ri at all interfaces, except surface     
   !-----------------------------------------------------------------------

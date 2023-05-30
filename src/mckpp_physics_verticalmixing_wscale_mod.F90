@@ -11,24 +11,21 @@ CONTAINS
 ! zetahat (=vonk*sigma*hbl*bfsfc).
 SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws, kpp_const_fields)
   
-  INTEGER ni,nj,i,iz,izp1,j,ju,jup1
+  INTEGER i,iz,izp1,j,ju,jup1
   REAL am,as,c1,c2,c3,cm,cs,epsln,fzfrac,ucube,udiff,ufrac,&
        usta,wam,was,wbm,wbs,zdiff,zetas,zfrac,zetam
   
   TYPE(kpp_const_type) :: kpp_const_fields
 
   ! lookup table
-  parameter ( ni = 890,&   ! number of values for zehat
-       nj = 48)            ! number of values for ustar
+  INTEGER :: ni = 890, &   ! number of values for zehat
+             nj = 48       ! number of values for ustar
 
   real deltaz               ! delta zehat in table
   real deltau               ! delta ustar in table
-  real zmin,zmax            ! zehat limits for table
-  real umin,umax            ! ustar limits for table
-
-  data zmin,zmax  / -4.e-7, 0.0   / ! m3/s3
-  data umin,umax  /  0.   , .04   / ! m/s
-      
+  real zmin, zmax           ! zehat limits for table
+  real umin, umax           ! ustar limits for table
+     
   ! input
   real sigma                ! normalized depth (d/hbl)
   real hbl                  ! boundary layer depth (m)
@@ -41,11 +38,21 @@ SUBROUTINE MCKPP_PHYSICS_VERTICALMIXING_WSCALE(sigma, hbl, ustar, bfsfc, wm, ws,
   ! local
   real zehat                ! = zeta *  ustar**3
   real zeta                 ! = stability parameter d/L
-      
-  data epsln           /   1.0e-20/
-  data c1              /   5.0   /
-  data am,cm,c2,zetam  /   1.257 ,  8.380 , 16.0 , - 0.2  /
-  data as,cs,c3,zetas  / -28.86  , 98.96  , 16.0 , - 1.0  /
+
+  zmin   = -4.e-7
+  zmax   = 0.0
+  umin   = 0.0
+  umax   = 0.04
+  epsln  = 1.0e-20
+  c1     = 5.0
+  am     = 1.257
+  cm     = 8.380
+  c2     = 16.0
+  zetam  = -0.2
+  as     = -28.86
+  cs     = 98.96
+  c3     = 16.0
+  zetas  = -1.0
 
   deltaz = (zmax-zmin)/(ni+1) 
   deltau = (umax-umin)/(nj+1)
