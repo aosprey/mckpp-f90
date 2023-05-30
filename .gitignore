@@ -45,3 +45,6 @@ build/
 # Editors
 *~
 *.swp
+
+# Documentation 
+Doxyfile
