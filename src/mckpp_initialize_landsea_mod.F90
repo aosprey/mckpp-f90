@@ -45,8 +45,8 @@ CONTAINS
       DO j = 1, ny 
         DO i =1, nx
           ipt = (j-1)*nx + i
-          kpp_3d_fields%dlon(ipt) = lon_in(j) 
-          kpp_3d_fields%dlat(ipt) = lat_in(i)
+          kpp_3d_fields%dlon(ipt) = lon_in(i) 
+          kpp_3d_fields%dlat(ipt) = lat_in(j)
           IF (landsea(ipt) .EQ. 1.0) THEN
             kpp_3d_fields%L_OCEAN(ipt)=.FALSE.
           ELSE
