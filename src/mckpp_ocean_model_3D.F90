@@ -19,11 +19,13 @@ PROGRAM mckpp_ocean_model_3d
   CHARACTER(LEN=20) :: routine = "MCKPP_OCEAN_MODEL_3D"
   CHARACTER(LEN=max_message_len) :: message
 
-  ! Initialise
-  CALL mckpp_print(routine, "Initialisation")
+  ! Initialize
+  CALL mckpp_print(routine, "Initialization")
 
   CALL mckpp_initialize_timers()
   CALL mckpp_start_timer('Initialization')
+
+  kpp_const_fields%ntime = 0 
 
   CALL mckpp_initialize_xios() 
   CALL mckpp_initialize_namelist()
@@ -39,7 +41,8 @@ PROGRAM mckpp_ocean_model_3d
 
     ! Update time variables
     CALL mckpp_update_time(ntime) 
-    WRITE(message,*) "ntime, time = ", kpp_const_fields%ntime, kpp_const_fields%time
+    WRITE(message,*) "ntime, time = ", kpp_const_fields%ntime, &
+                     kpp_const_fields%time
     CALL mckpp_print(routine, message)
 
     ! Fluxes
@@ -71,8 +74,8 @@ PROGRAM mckpp_ocean_model_3d
 
   END DO
 
-  ! Finalise
-  CALL mckpp_print(routine, "Finalisation")
+  ! Finalize
+  CALL mckpp_print(routine, "Finalization")
   CALL mckpp_finalize_xios() 
   CALL mckpp_print_timers()
 
