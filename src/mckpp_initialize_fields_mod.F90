@@ -50,30 +50,23 @@ CONTAINS
     CALL mckpp_initialize_flags()
 
     ! Initialize advection options
-    CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_ADVECTION")
-    CALL MCKPP_INITIALIZE_ADVECTION()
+    CALL mckpp_initialize_advection()
 
     ! Initialize relaxation of SST, temperature and/or salinity
-    IF (kpp_const_fields%L_RELAX_SST .OR. kpp_const_fields%L_RELAX_SAL &
-         .OR. kpp_const_fields%L_RELAX_OCNT) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_RELAXATION")
-       CALL MCKPP_INITIALIZE_RELAXATION()
-    ENDIF
+    IF ( kpp_const_fields%l_relax_sst .OR. kpp_const_fields%l_relax_sal & 
+         .OR. kpp_const_fields%l_relax_ocnt ) &   
+       CALL mckpp_initialize_relaxation()
 
     ! Initialize water type for optical properties of seawater
-    CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OPTICS")
-    CALL MCKPP_INITIALIZE_OPTICS()
+    CALL mckpp_initialize_optics()
 
     ! Initialize ocean profiles
-    IF (kpp_const_fields%L_RESTART) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_READ_RESTART")
-       ! Still needs scattering code
-       CALL mckpp_read_restart()
+    IF ( kpp_const_fields%l_restart ) THEN     
+      CALL mckpp_read_restart()
     ELSE
-       CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_OCEAN_PROFILES")
-       CALL MCKPP_INITIALIZE_OCEAN_PROFILES()
+      CALL mckpp_initialize_ocean_profiles()
     ENDIF
-
+ 
     ! Initialize boundary conditions
     IF (kpp_const_fields%L_CLIMSST) THEN     
        CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_SST")
