@@ -68,54 +68,46 @@ CONTAINS
     ENDIF
  
     ! Initialize boundary conditions
-    IF (kpp_const_fields%L_CLIMSST) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_SST")
-       CALL mckpp_read_sst()
+    IF ( kpp_const_fields%l_climsst ) CALL mckpp_read_sst()
+    IF ( kpp_const_fields%l_climice ) CALL mckpp_read_ice()
+
+    ! Heat corrections
+    IF ( kpp_const_fields%l_fcorr_withz ) THEN     
+      CALL mckpp_read_fcorr_3d()
+
+    ELSEIF ( kpp_const_fields%l_fcorr ) THEN      
+      CALL mckpp_read_fcorr_2d()
     ENDIF
 
-    IF (kpp_const_fields%L_CLIMICE) THEN    
-       CALL mckpp_print(routine, "Calling MCKPP_READ_ICE")
-       CALL MCKPP_READ_ICE()
+    ! Salt corrections
+    IF ( kpp_const_fields%l_sfcorr_withz ) THEN   
+       CALL mckpp_read_sfcorr_3d()
+
+    ELSEIF ( kpp_const_fields%l_sfcorr ) THEN
+      CALL mckpp_read_sfcorr_2d()
     ENDIF
 
-    IF (kpp_const_fields%L_FCORR_WITHZ) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_READ_FCORR_3D")
-       CALL MCKPP_READ_FCORR_3D()
-    ELSEIF (kpp_const_fields%L_FCORR) THEN      
-       CALL mckpp_print(routine, "Calling MCKPP_READ_FCORR_2D")
-       CALL MCKPP_READ_FCORR_2D()
-    ENDIF
+    ! Bottom temperature
+    IF ( kpp_const_fields%l_vary_bottom_temp ) & 
+      CALL mckpp_read_temperatures_bottom()
+ 
+   ! 3D temperature relaxation
+    IF ( kpp_const_fields%l_relax_ocnt ) THEN 
+      IF ( .NOT. kpp_const_fields%l_interp_ocnt ) THEN 
+        CALL mckpp_read_temperatures_3d()
+      ELSE
+        CALL mckpp_boundary_interpolate_temp()
+      END IF
+    END IF 
 
-    IF (kpp_const_fields%L_SFCORR_WITHZ) THEN   
-       CALL mckpp_print(routine, "Calling MCKPP_READ_SFCORR_3D")
-       CALL MCKPP_READ_SFCORR_3D()
-    ELSEIF (kpp_const_fields%L_SFCORR) THEN
-       CALL mckpp_print(routine, "Calling MCKPP_READ_SFCORR_2D")
-       CALL MCKPP_READ_SFCORR_2D()
-    ENDIF
-
-    IF (kpp_const_fields%L_VARY_BOTTOM_TEMP) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_READ_TEMPERATURES_BOTTOM")
-       CALL MCKPP_READ_TEMPERATURES_BOTTOM()
-    ENDIF
-
-!!! THESE SHOULD NOT BE CALLED IF DOING L_INTERP_OCNT / L_INTERP_SAL !!!
-
-    IF (kpp_const_fields%L_RELAX_OCNT .AND. .NOT. kpp_const_fields%L_INTERP_OCNT) THEN 
-       CALL mckpp_print(routine, "Calling MCKPP_READ_TEMPERATURES_3D")
-       CALL MCKPP_READ_TEMPERATURES_3D()
-    ELSEIF (kpp_const_fields%L_RELAX_OCNT .AND. kpp_const_fields%L_INTERP_OCNT) THEN     
-       CALL mckpp_print(routine, "Calling MCKPP_BOUNDARY_INTERPOLATE_TEMP")
-       CALL MCKPP_BOUNDARY_INTERPOLATE_TEMP()
-    ENDIF
-
-    IF (kpp_const_fields%L_RELAX_SAL .AND. .NOT. kpp_const_fields%L_INTERP_SAL) THEN
-       CALL mckpp_print(routine, "Calling MCKPP_READ_SALINITY_3D")
-       CALL MCKPP_READ_SALINITY_3D()
-    ELSEIF (kpp_const_fields%L_RELAX_SAL .AND. kpp_const_fields%L_INTERP_SAL) THEN
-       CALL mckpp_print(routine, "Calling MCKPP_BOUNDARY_INTERPOLATE_SAL")
-       CALL MCKPP_BOUNDARY_INTERPOLATE_SAL()
-    ENDIF
+    ! 3D salinity relaxation
+    IF ( kpp_const_fields%l_relax_sal ) THEN 
+      IF ( .NOT. kpp_const_fields%l_interp_sal ) THEN
+        CALL mckpp_read_salinity_3d()
+      ELSE
+        CALL mckpp_boundary_interpolate_sal()
+      END IF
+    END IF 
 
     CALL mckpp_print(routine, "Calling MCKPP_INITIALIZE_FLUXES_VARIABLES")
     CALL MCKPP_INITIALIZE_FLUXES_VARIABLES()
