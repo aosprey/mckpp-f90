@@ -13,6 +13,7 @@ MODULE mckpp_boundary_update_mod
   USE mckpp_read_sst_mod, ONLY: mckpp_read_sst
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_temperatures_bottom_mod, ONLY: mckpp_read_temperatures_bottom
+  USE mckpp_time_control, ONLY: ntime
 
   IMPLICIT NONE
  
@@ -27,11 +28,11 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE()
 
   ! Update SST
   IF (kpp_const_fields%L_UPD_CLIMSST .AND. &
-      MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdsst) .EQ. 0) THEN
+      MOD(ntime-1,kpp_const_fields%ndtupdsst) .EQ. 0) THEN
      ! CALL mckpp_print(routine, "Calling MCKPP_READ_SST") 
      CALL MCKPP_READ_SST()
      ! CALL mckpp_print(routine, "Returned from MCKPP_READ_SST")
-     ! WRITE(message,*) "Called read_sstin, ntime = ", kpp_const_fields%ntime
+     ! WRITE(message,*) "Called read_sstin, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
 
      ! SST0 specifies the temperature to which to relax the mixed-layer temperature.
@@ -40,83 +41,83 @@ SUBROUTINE MCKPP_BOUNDARY_UPDATE()
      IF (kpp_const_fields%L_RELAX_SST) THEN
         ! CALL mckpp_print(routine, "Calling MCKPP_PHYSICS_OVERRIDES_SST0")
         CALL MCKPP_PHYSICS_OVERRIDES_SST0()
-        ! WRITE(message,*) "Called upd_sst0, ntime = ", kpp_const_fields%ntime
+        ! WRITE(message,*) "Called upd_sst0, ntime = ", ntime
         ! CALL mckpp_print(routine, message)
      ENDIF
   ENDIF
   
   ! Update sea ice  
-  IF (kpp_const_fields%L_UPD_CLIMICE .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdice) .EQ. 0) THEN
+  IF (kpp_const_fields%L_UPD_CLIMICE .AND. MOD(ntime-1,kpp_const_fields%ndtupdice) .EQ. 0) THEN
      ! CALL mckpp_print(routine, "Calling MCKPP_READ_ICE")
      CALL MCKPP_READ_ICE()
      ! CALL mckpp_print(routine, "Returned from MCKPP_READ_ICE"
-     ! WRITE(message,*) "Called read_icein, ntime = ", kpp_const_fields%ntime
+     ! WRITE(message,*) "Called read_icein, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ENDIF
   
   ! Update surface currents - this routine does not exist 
-  ! IF(kpp_const_fields%L_UPD_CLIMCURR .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdcurr) .EQ. 0) THEN
+  ! IF(kpp_const_fields%L_UPD_CLIMCURR .AND. MOD(ntime-1,kpp_const_fields%ndtupdcurr) .EQ. 0) THEN
      ! CALL read_surface_currents(kpp_3d_fields,kpp_const_fields)
-     ! WRITE(message,*) "Called read_surface_currents, ntime = ", kpp_const_fields%ntime
+     ! WRITE(message,*) "Called read_surface_currents, ntime = ", ntime
      ! CALL mckpp_print(routine, message) 
   ! ENDIF
   
   ! Update heat corrections
-  IF (kpp_const_fields%L_UPD_FCORR .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdfcorr) .EQ. 0) THEN
+  IF (kpp_const_fields%L_UPD_FCORR .AND. MOD(ntime-1,kpp_const_fields%ndtupdfcorr) .EQ. 0) THEN
      IF (kpp_const_fields%L_FCORR_WITHZ) THEN
         CALL MCKPP_READ_FCORR_3D()
-        ! WRITE(messsage,*) "Called read_fcorrwithz, ntime = ", kpp_const_fields%ntime
+        ! WRITE(messsage,*) "Called read_fcorrwithz, ntime = ", ntime
         ! CALL mckpp_print(routine, message)
      ELSEIF (kpp_const_fields%L_FCORR) THEN
         CALL MCKPP_READ_FCORR_2D()
-        ! WRITE(messsage,*) "Called read_fcorr, ntime = ", kpp_const_fields%ntime
+        ! WRITE(messsage,*) "Called read_fcorr, ntime = ", ntime
         ! CALL mckpp_print(routine, message)
      ENDIF
   ENDIF
 
   ! Update salt corrections
-  IF (kpp_const_fields%L_UPD_SFCORR .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdsfcorr) .EQ. 0) THEN
+  IF (kpp_const_fields%L_UPD_SFCORR .AND. MOD(ntime-1,kpp_const_fields%ndtupdsfcorr) .EQ. 0) THEN
      IF (kpp_const_fields%L_SFCORR_WITHZ) THEN
         CALL MCKPP_READ_SFCORR_3D()
-        ! WRITE(messsage,*) "Called read_sfcorrwithz, ntime = ", kpp_const_fields%ntime
+        ! WRITE(messsage,*) "Called read_sfcorrwithz, ntime = ", ntime
         ! CALL mckpp_print(routine, message)
      ELSEIF (kpp_const_fields%L_SFCORR) THEN
         CALL MCKPP_READ_SFCORR_2D()
-        ! WRITE(messsage,*) "Called read_sfcorr, ntime = ", kpp_const_fields%ntime
+        ! WRITE(messsage,*) "Called read_sfcorr, ntime = ", ntime
         ! CALL mckpp_print(routine, message)
      ENDIF
   ENDIF
   
   ! Update bottom temperatures
-  IF (kpp_const_fields%L_UPD_BOTTOM_TEMP .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdbottom) .EQ. 0) THEN            
+  IF (kpp_const_fields%L_UPD_BOTTOM_TEMP .AND. MOD(ntime-1,kpp_const_fields%ndtupdbottom) .EQ. 0) THEN            
      CALL MCKPP_READ_TEMPERATURES_BOTTOM()
-     ! WRITE(messsage,*) "Called read_bottom_temp, ntime = ", kpp_const_fields%ntime
+     ! WRITE(messsage,*) "Called read_bottom_temp, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ENDIF
 
   ! Update reference salinity profiles
-  IF (kpp_const_fields%L_UPD_SAL .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdsal) .EQ. 0 .AND. &
+  IF (kpp_const_fields%L_UPD_SAL .AND. MOD(ntime-1,kpp_const_fields%ndtupdsal) .EQ. 0 .AND. &
        .NOT. kpp_const_fields%L_INTERP_SAL) THEN
      CALL MCKPP_READ_SALINITY_3D()
-     ! WRITE(messsage,*) "Called read_salinity, ntime = ", kpp_const_fields%ntime
+     ! WRITE(messsage,*) "Called read_salinity, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ELSEIF (kpp_const_fields%L_UPD_SAL .AND. kpp_const_fields%L_INTERP_SAL .AND. &
-       MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndt_interp_sal).EQ.0) THEN
+       MOD(ntime-1,kpp_const_fields%ndt_interp_sal).EQ.0) THEN
      CALL MCKPP_BOUNDARY_INTERPOLATE_SAL()
-     ! WRITE(messsage,*) "Interpolated ocean salinity, ntime = ", kpp_const_fields%ntime
+     ! WRITE(messsage,*) "Interpolated ocean salinity, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ENDIF
 
   ! Update reference temperature profiles
-  IF (kpp_const_fields%L_UPD_OCNT .AND. MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndtupdocnt) .EQ. 0 .AND. &
+  IF (kpp_const_fields%L_UPD_OCNT .AND. MOD(ntime-1,kpp_const_fields%ndtupdocnt) .EQ. 0 .AND. &
        .NOT. kpp_const_fields%L_INTERP_OCNT) THEN
      CALL MCKPP_READ_TEMPERATURES_3D()
-     ! WRITE(messsage,*) "Called read_ocean_temperatures, ntime = ", kpp_const_fields%ntime
+     ! WRITE(messsage,*) "Called read_ocean_temperatures, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ELSEIF (kpp_const_fields%L_UPD_OCNT .AND. kpp_const_fields%L_INTERP_OCNT .AND. &
-       MOD(kpp_const_fields%ntime-1,kpp_const_fields%ndt_interp_ocnt).EQ.0) THEN
+       MOD(ntime-1,kpp_const_fields%ndt_interp_ocnt).EQ.0) THEN
      CALL MCKPP_BOUNDARY_INTERPOLATE_TEMP()
-     ! WRITE(messsage,*) "Interpolated ocean temperatures, ntime = ", kpp_const_fields%ntime
+     ! WRITE(messsage,*) "Interpolated ocean temperatures, ntime = ", ntime
      ! CALL mckpp_print(routine, message)
   ENDIF
 

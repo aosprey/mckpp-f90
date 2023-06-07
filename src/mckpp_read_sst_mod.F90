@@ -7,7 +7,7 @@ MODULE mckpp_read_sst_mod
         mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
         mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_parameters, ONLY: nx, ny
-  USE mckpp_time_control, ONLY: mckpp_get_update_time
+  USE mckpp_time_control, ONLY: mckpp_get_update_time, time
 
   IMPLICIT NONE
 
@@ -67,7 +67,7 @@ CONTAINS
 
     ! Work out time to read and check against times in file
     CALL mckpp_get_update_time( & 
-      file, kpp_const_fields%time, kpp_const_fields%ndtupdsst, file_times, & 
+      file, time, kpp_const_fields%ndtupdsst, file_times, & 
       num_times, kpp_const_fields%l_periodic_climsst, &  
       kpp_const_fields%climsst_period, update_time, start(3), method=1 )
 

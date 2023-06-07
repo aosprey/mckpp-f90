@@ -6,6 +6,7 @@ MODULE mckpp_xios_io
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, update_context
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
+  USE mckpp_time_control, ONLY: ntime, time
 
   USE xios 
 
@@ -76,7 +77,7 @@ CONTAINS
     REAL, ALLOCATABLE, DIMENSION(:) :: temp_1d
     INTEGER :: k, ix, iy, ipt
 
-    CALL xios_update_calendar(kpp_const_fields%ntime)
+    CALL xios_update_calendar(ntime)
 
     !!! Depth-varying diagnostics 
     ALLOCATE( temp_2d(npts, nzp1) ) 
@@ -304,7 +305,7 @@ CONTAINS
 
     ! Define calendar and ts
     CALL xios_define_calendar(type="Gregorian") 
-    restart_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%time+1)
+    restart_date = xios_date(0000,01,01,00,00,00)+xios_day*(time+1)
     CALL xios_set_start_date(restart_date) 
     CALL xios_set_time_origin(restart_date) 
     dtime%second = kpp_const_fields%dto
@@ -406,9 +407,9 @@ CONTAINS
 
     ! Set correct time for validity of restart fields 
     ! (end of this timestep = start of next timestep)
-    CALL xios_update_calendar(kpp_const_fields%ntime+1)
+    CALL xios_update_calendar(ntime+1)
 
-    CALL xios_send_field("time", kpp_const_fields%time+kpp_const_fields%dto/kpp_const_fields%spd) 
+    CALL xios_send_field("time", time+kpp_const_fields%dto/kpp_const_fields%spd) 
     CALL xios_send_field("uvel", kpp_3d_fields%U(:,:,1)) 
     CALL xios_send_field("vvel", kpp_3d_fields%U(:,:,2))
     CALL xios_send_field("T", kpp_3d_fields%X(:,:,1)) 

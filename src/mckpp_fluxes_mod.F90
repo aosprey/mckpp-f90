@@ -6,6 +6,7 @@ MODULE mckpp_fluxes_mod
   USE mckpp_parameters, ONLY: npts, nz, nsflxs
   USE mckpp_read_fluxes_mod, ONLY: mckpp_initialize_fluxes_file, & 
         mckpp_read_fluxes
+  USE mckpp_time_control, ONLY: ntime
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   
   IMPLICIT NONE
@@ -97,16 +98,16 @@ CONTAINS
     CHARACTER(LEN=31) :: routine = "MCKPP_FLUXES_NTFLUX"
     CHARACTER(LEN=max_message_len) :: message
   
-    ! WRITE(message,*) "At time = ", kpp_const_fields%ntime
+    ! WRITE(message,*) "At time = ", ntime
     ! CALL mckpp_print(routine, message)
-    IF ( kpp_const_fields%ntime .LE. 1 ) THEN
+    IF ( ntime .LE. 1 ) THEN
       DO k = 0, nz
         kpp_1d_fields%swdk_opt(k) = mckpp_fluxes_swdk( & 
           -kpp_const_fields%dm(k), kpp_1d_fields%jerlov )
       END DO
     END IF
 
-    IF ( kpp_const_fields%ntime .GE. 1 ) THEN 
+    IF ( ntime .GE. 1 ) THEN 
       DO k = 0, nz
          kpp_1d_fields%wxnt(k,1) = &
            -kpp_1d_fields%sflux(3,5,0) * kpp_1d_fields%swdk_opt(k) / & 

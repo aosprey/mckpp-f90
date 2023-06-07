@@ -6,7 +6,7 @@ MODULE mckpp_read_fluxes_mod
        mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
        mckpp_netcdf_get_coord, mckpp_netcdf_get_var
   USE mckpp_parameters, ONLY: nx, ny, npts
-  USE mckpp_time_control, ONLY: mckpp_get_update_time
+  USE mckpp_time_control, ONLY: mckpp_get_update_time, time
 
   IMPLICIT NONE
 
@@ -75,7 +75,7 @@ CONTAINS
 
     ! Work out time to read in from 
     CALL mckpp_get_update_time( & 
-      file, kpp_const_fields%time, kpp_const_fields%ndtocn, file_times, & 
+      file, time, kpp_const_fields%ndtocn, file_times, & 
       num_times, .FALSE., 0, update_time, start(3), method=1 )
 
     WRITE(message,*) 'Reading fluxes for time ', update_time

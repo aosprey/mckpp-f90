@@ -3,6 +3,7 @@ MODULE mckpp_physics_verticalmixing_bldepth_mod
   USE mckpp_data_fields, ONLY: kpp_1d_type, kpp_const_type
   USE mckpp_physics_swfrac_mod, ONLY: mckpp_physics_swfrac, mckpp_physics_swfrac_opt
   USE mckpp_physics_verticalmixing_wscale_mod, ONLY: mckpp_physics_verticalmixing_wscale
+  USE mckpp_time_control, ONLY: ntime
 
   IMPLICIT NONE
 
@@ -109,7 +110,7 @@ SUBROUTINE mckpp_physics_verticalmixing_bldepth (km, kmp1, dVsq, Ritop, ustar, B
      ! Replaces the IF test at the beginning of the swfrac_opt
      ! subroutine.  The value will be stored in kpp_1d_field%swfrac
      ! thereafter (see below).
-     if (kpp_const_fields%ntime .le. 1 .and. kl.eq.2) then
+     if (ntime .le. 1 .and. kl.eq.2) then
         call MCKPP_PHYSICS_SWFRAC_OPT(hbf,kpp_1d_fields,kpp_const_fields)
      endif
                     

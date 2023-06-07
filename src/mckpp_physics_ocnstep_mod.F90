@@ -5,6 +5,7 @@ MODULE mckpp_physics_ocnstep_mod
   USE mckpp_parameters, ONLY: nz, nzp1, nvel, nsclr, nsp1, hmixtolfrac, itermax
   USE mckpp_physics_ocnint_mod, ONLY: mckpp_physics_ocnint
   USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
+  USE mckpp_time_control, ONLY: ntime
   
   IMPLICIT NONE
 
@@ -181,7 +182,7 @@ SUBROUTINE mckpp_physics_ocnstep(kpp_1d_fields,kpp_const_fields)
            endif
         endif
         if( iter.gt.(itermax+1) ) then
-           WRITE(message,*) 'long iteration at timestep', kpp_const_fields%ntime, &
+           WRITE(message,*) 'long iteration at timestep', ntime, &
                 ' location = (', kpp_1d_fields%dlon, ',', kpp_1d_fields%dlat, ')'
            CALL mckpp_print_warning(routine, message)
            WRITE(message,*) 'hmixest = ', hmixe, ', hmixnew=', hmixn, &

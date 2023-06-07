@@ -207,7 +207,6 @@ MODULE mckpp_data_fields
         FL,  & 
         FLSN, & 
         dto, & 
-        time, &
         startt, & 
         finalt, & 
         dtsec, &
@@ -234,7 +233,6 @@ MODULE mckpp_data_fields
         nstart, & 
         nend, & 
         ndtocn, & 
-        ntime, &
         num_timesteps, & 
         iso_bot, & 
         dt_uvdamp, & 
