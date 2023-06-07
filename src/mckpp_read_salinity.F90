@@ -3,10 +3,11 @@ MODULE mckpp_read_salinity_mod
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
-  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, mckpp_netcdf_close, &
-      mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_coord, mckpp_netcdf_get_var
-  USE mckpp_parameters, ONLY: nx, ny, nzp1, nx_globe, ny_globe
-  USE mckpp_time_control, ONLY: mckpp_get_update_time
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, & 
+        mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
+        mckpp_netcdf_get_coord, mckpp_netcdf_get_var
+  USE mckpp_parameters, ONLY: nx, ny, nzp1
+  USE mckpp_time_control, ONLY: mckpp_get_update_time, time
 
   IMPLICIT NONE
 
@@ -15,7 +16,7 @@ MODULE mckpp_read_salinity_mod
   PRIVATE
 
   LOGICAL :: l_initialized = .FALSE. 
-  INTEGER :: my_nx, my_ny, num_times
+  INTEGER :: num_times
   INTEGER, DIMENSION(4) :: start, count
   REAL, DIMENSION(:), ALLOCATABLE :: file_times
 
@@ -25,28 +26,23 @@ CONTAINS
 
     CHARACTER(LEN=max_nc_filename_len), INTENT(IN) :: file
     INTEGER, INTENT(IN) :: ncid
-
-    REAL :: start_lat, start_lon
-    INTEGER :: nz_in
+    INTEGER :: offset_lon, offset_lat, nz_in
     CHARACTER(LEN=19) :: routine = "INITIALIZE_SALINITY"
     CHARACTER(LEN=max_message_len) :: message
 
     WRITE(message,*) "Initializing ", TRIM(file)
     CALL mckpp_print(routine, message)
 
-    my_nx = nx
-    my_ny = ny 
-
     ! Work out start and count for each time entry
-    count=(/my_nx,my_ny,NZP1,1/)
-    start=(/1,1,1,1/)
-    start_lon = kpp_3d_fields%dlon(1)
-    start_lat = kpp_3d_fields%dlat(1)
-    CALL mckpp_netcdf_determine_boundaries(routine, file, ncid, &
-        start_lon, start_lat, start(1), start(2), num_times)
+    CALL mckpp_netcdf_determine_boundaries( & 
+      routine, file, ncid, kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), & 
+      offset_lon, offset_lat, num_times )
 
+    start = (/ offset_lon, offset_lat, 1, 1 /)
+    count = (/ nx, ny, nzp1, 1 /)
+ 
     ! Read in time field
-    ALLOCATE(file_times(num_times)) 
+    ALLOCATE( file_times(num_times) ) 
     CALL mckpp_netcdf_get_var(routine, file, ncid, "t", file_times)
 
     ! Check vertical levels
@@ -55,10 +51,11 @@ CONTAINS
       WRITE(message,*) "Salinity climatology file does not have the correct ", &
           "number of vertical levels."
       CALL mckpp_print_error(routine, message)
-      WRITE(message,*) "It should have ", NZP1, " but instead has ", nz_in
+      WRITE(message,*) "It should have ", nzp1, " but instead has ", nz_in
       CALL mckpp_print_error(routine, message)
       CALL mckpp_abort()
     END IF
+
     l_initialized = .TRUE.
 
   END SUBROUTINE initialize_salinity
@@ -72,9 +69,7 @@ CONTAINS
 
     CHARACTER(LEN=max_nc_filename_len) :: file
     REAL :: update_time
-    INTEGER :: ncid, ix, iy, iz, ipt
-    REAL, ALLOCATABLE, DIMENSION(:,:,:,:) :: var_in
-
+    INTEGER :: ncid, k
     CHARACTER(LEN=22) :: routine = "MCKPP_READ_SALINITY_3D"
     CHARACTER(LEN=max_message_len) :: message
 
@@ -83,33 +78,28 @@ CONTAINS
 
     ! On first call, get file dimensions
     IF (.NOT. l_initialized) CALL initialize_salinity(file, ncid)
-    ALLOCATE( var_in(my_nx,my_ny,nzp1,1) )
-
+ 
     ! Work out time to read and check against times in file
-    CALL mckpp_get_update_time(file, kpp_const_fields%time, kpp_const_fields%ndtupdsal, &
-        file_times, num_times, kpp_const_fields%L_PERIODIC_SAL, kpp_const_fields%sal_period, &
-        update_time, start(4), method=2)
+    CALL mckpp_get_update_time( & 
+      file, time, kpp_const_fields%ndtupdsal, file_times, & 
+      num_times, kpp_const_fields%L_PERIODIC_SAL, kpp_const_fields%sal_period, &
+      update_time, start(4), method=2 )
     WRITE(message,*) 'Reading ocean temperature for time ', update_time
     CALL mckpp_print(routine, message)
     WRITE(message,*) 'Reading ocean temperature from position ',start(4)
     CALL mckpp_print(routine, message)
 
     ! Read data 
-    CALL mckpp_netcdf_get_var(routine, file, ncid, "salinity", var_in, start) 
+    CALL mckpp_netcdf_get_var( routine, file, ncid, "salinity", & 
+                               kpp_3d_fields%sal_clim, start, count, 4 ) 
     CALL mckpp_netcdf_close(routine, file, ncid)
 
-    ! Put all (NX,NY) points into one long array with dimension NPTS.      
-    DO ix = 1,NX
-      DO iy = 1,NY
-        ipt = (iy-1)*nx+ix
-        DO iz = 1,NZP1
-          ! Subtract reference salinity from climatology, for compatability with
-          ! salinity values stored in main model.  
-          kpp_3d_fields%sal_clim(ipt,iz) = var_in(ix,iy,iz,1) - kpp_3d_fields%Sref(ipt)
-        ENDDO
-      ENDDO
+    ! Subtract reference salinity from climatology, for compatability with
+    ! salinity values stored in main model.  
+    DO k = 1, nzp1
+      kpp_3d_fields%sal_clim(:,k) = kpp_3d_fields%sal_clim(:,k) - & 
+                                    kpp_3d_fields%sref(:)
     ENDDO
-    DEALLOCATE(var_in)
 
   END SUBROUTINE mckpp_read_salinity_3d
 

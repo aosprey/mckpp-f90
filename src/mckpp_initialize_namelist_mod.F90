@@ -188,7 +188,6 @@ SUBROUTINE MCKPP_INITIALIZE_NAMELIST()
   ENDIF
   kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
   kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
-  kpp_const_fields%time=kpp_const_fields%startt
   CALL mckpp_print(routine, "Read Namelist TIMES") 
   
   ! Initialize and read the couple namelist

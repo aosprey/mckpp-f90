@@ -10,19 +10,44 @@ MODULE mckpp_time_control
 
   IMPLICIT NONE
 
-  PUBLIC mckpp_update_time, mckpp_get_time, mckpp_get_update_time
+  INTEGER :: ntime 
+  REAL :: time 
+
+  PUBLIC time, ntime 
+  PUBLIC mckpp_initialize_time, mckpp_update_time, mckpp_get_time, & 
+         mckpp_get_update_time
 
   PRIVATE 
 
 CONTAINS
 
-  ! Update ntime and time in kpp_const_fields
-  SUBROUTINE mckpp_update_time(ntime)
+  ! Initialize time variables at start of run 
+  SUBROUTINE mckpp_initialize_time()
 
-    INTEGER, INTENT(IN) :: ntime ! new timestep
+    CHARACTER(LEN=max_message_len) :: message
+    CHARACTER(LEN=21) :: routine = "MCKPP_INITIALIZE_TIME"
 
-    kpp_const_fields%ntime = ntime
-    kpp_const_fields%time = mckpp_get_time(ntime)
+    ntime = 0 
+    time = kpp_const_fields%startt
+
+    WRITE(message,*) "ntime, time = ", ntime, time
+    CALL mckpp_print(routine, message)
+
+  END SUBROUTINE mckpp_initialize_time 
+
+
+  ! Update time based on ntime 
+  SUBROUTINE mckpp_update_time(nt)
+
+    INTEGER, INTENT(IN) :: nt
+    CHARACTER(LEN=max_message_len) :: message
+    CHARACTER(LEN=17) :: routine = "MCKPP_UPDATE_TIME"
+
+    ntime = nt
+    time = mckpp_get_time(nt)
+
+    WRITE(message,*) "ntime, time = ", ntime, time
+    CALL mckpp_print(routine, message)
 
   END SUBROUTINE mckpp_update_time
 
@@ -38,12 +63,13 @@ CONTAINS
   END FUNCTION mckpp_get_time
 
 
-  ! Work out time for ancil data reads, based on current model time, udpate freq,
-  ! and time dim from file.
+  ! Work out time for ancil data reads, based on current model time, 
+  ! udpate freq, and time dim from file.
   ! Return time to read in, and position in time dimension in file.
-  ! Work out time based on method 1 or 2 - see get_update_time_[12] functions below. 
-  SUBROUTINE mckpp_get_update_time(file, time, ndt_update, file_times, num_times, & 
-      periodic, period, update_time, update_time_pos, method)
+  ! Work out time based on method 1 or 2 - see get_update_time_[12] functions 
+  ! below. 
+  SUBROUTINE mckpp_get_update_time(file, time, ndt_update, file_times, & 
+    num_times, periodic, period, update_time, update_time_pos, method)
 
     CHARACTER(LEN=*) :: file
     REAL, INTENT(IN) :: time 
@@ -75,8 +101,8 @@ CONTAINS
           update_time = update_time - period
         END DO
       ELSE
-        WRITE(message,*) "Time to read exceeds the last time in the netCDF file", &
-            " and periodic reads have not been specified."
+        WRITE(message,*) "Time to read exceeds the last time in the netCDF ", & 
+                         "file and periodic reads have not been specified."
         CALL mckpp_print_error(routine, message)
         WRITE(message,*) update_time, TRIM(file)
         CALL mckpp_print_error(routine, message)
@@ -105,7 +131,8 @@ CONTAINS
     REAL, INTENT(IN) :: time
     INTEGER, INTENT(IN) :: ndt_update 
 
-    get_update_time_1 = time + 0.5 * (kpp_const_fields%dto / kpp_const_fields%spd) * ndt_update
+    get_update_time_1 = time + 0.5 * (kpp_const_fields%dto / & 
+                        kpp_const_fields%spd) * ndt_update
 
   END FUNCTION get_update_time_1
 
@@ -119,9 +146,10 @@ CONTAINS
     REAL :: ndays_upd
 
     ndays_upd = ndt_update * kpp_const_fields%dto / kpp_const_fields%spd
-    get_update_time_2 = (ndays_upd)*(FLOOR(time,8)*NINT(kpp_const_fields%spd,8)/&
-        (ndt_update*NINT(kpp_const_fields%dto,8)))+&
-        (0.5*kpp_const_fields%dto/kpp_const_fields%spd*ndt_update)
+    get_update_time_2 = ndays_upd * & 
+           ( FLOOR(time,8) * NINT(kpp_const_fields%spd,8) / &
+             ( ndt_update*NINT(kpp_const_fields%dto,8) ) ) + &
+           ( 0.5 * kpp_const_fields%dto / kpp_const_fields%spd * ndt_update )
 
   END FUNCTION get_update_time_2
 
@@ -132,8 +160,9 @@ CONTAINS
     REAL, INTENT(IN) :: update_time, first_file_time
     INTEGER, INTENT(IN) :: ndt_update
 
-    get_update_pos = NINT( (update_time-first_file_time)*kpp_const_fields%spd / &
-        (kpp_const_fields%dto*ndt_update) ) + 1
+    get_update_pos = NINT( (update_time - first_file_time) * & 
+                     kpp_const_fields%spd / & 
+                     ( kpp_const_fields%dto * ndt_update ) ) + 1
 
   END FUNCTION get_update_pos
 

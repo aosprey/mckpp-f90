@@ -20,9 +20,10 @@ MODULE mckpp_netcdf_read
 
   INTERFACE mckpp_netcdf_get_var
     MODULE PROCEDURE mckpp_netcdf_get_var_real_1d, mckpp_netcdf_get_var_real_2d, &
-        mckpp_netcdf_get_var_real_3d,  mckpp_netcdf_get_var_real_4d, & 
-        mckpp_netcdf_get_var_real_to_2d, mckpp_netcdf_get_var_real_to_1d, &
-        mckpp_netcdf_get_var_int_2d
+        mckpp_netcdf_get_var_int_2d, mckpp_netcdf_get_var_real_3d,  &
+        mckpp_netcdf_get_var_real_4d, mckpp_netcdf_get_var_real_to_1d, &
+        mckpp_netcdf_get_var_int_to_1d, mckpp_netcdf_get_var_real_to_2d, &
+        mckpp_netcdf_get_var_int_to_2d
   END INTERFACE mckpp_netcdf_get_var
 
 CONTAINS
@@ -299,6 +300,52 @@ CONTAINS
   END SUBROUTINE mckpp_netcdf_get_var_real_4d
   
   
+  ! Read variable - multi-dimensional real into 1D array
+  ! Need to specify start and count and source dimensions
+  SUBROUTINE mckpp_netcdf_get_var_real_to_1d(calling_routine, file_name, &
+      ncid, var_name, array, start, count, source_dims)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
+    INTEGER, INTENT(IN) :: ncid, source_dims
+    REAL, DIMENSION(:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(source_dims), INTENT(IN) :: start, count
+
+    INTEGER :: varid
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=31) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_TO_1D"
+
+    context = update_context(calling_routine, routine)
+    WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
+
+    CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
+    CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
+
+  END SUBROUTINE mckpp_netcdf_get_var_real_to_1d
+
+  
+  ! Read variable - multi-dimensional integer into 1D array
+  ! Need to specify start and count and source dimensions
+  SUBROUTINE mckpp_netcdf_get_var_int_to_1d(calling_routine, file_name, &
+      ncid, var_name, array, start, count, source_dims)
+
+    CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
+    INTEGER, INTENT(IN) :: ncid, source_dims
+    INTEGER, DIMENSION(:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(source_dims), INTENT(IN) :: start, count
+
+    INTEGER :: varid
+    CHARACTER(LEN=max_message_len) :: context, message
+    CHARACTER(LEN=31) :: routine = "MCKPP_NETCDF_GET_VAR_INT_TO_1D"
+
+    context = update_context(calling_routine, routine)
+    WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
+
+    CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
+    CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
+
+  END SUBROUTINE mckpp_netcdf_get_var_int_to_1d
+
+
   ! Read variable - multi-dimensional real into 2D array
   ! Need to specify start and count and source dimensions
   SUBROUTINE mckpp_netcdf_get_var_real_to_2d(calling_routine, file_name, &
@@ -321,20 +368,20 @@ CONTAINS
 
   END SUBROUTINE mckpp_netcdf_get_var_real_to_2d
 
-  
-  ! Read variable - multi-dimensional real into 1D array
+
+  ! Read variable - multi-dimensional integer into 2D array
   ! Need to specify start and count and source dimensions
-  SUBROUTINE mckpp_netcdf_get_var_real_to_1d(calling_routine, file_name, &
+  SUBROUTINE mckpp_netcdf_get_var_int_to_2d(calling_routine, file_name, &
       ncid, var_name, array, start, count, source_dims)
 
     CHARACTER(LEN=*), INTENT(IN) :: calling_routine, file_name, var_name
     INTEGER, INTENT(IN) :: ncid, source_dims
-    REAL, DIMENSION(:), INTENT(OUT) :: array
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: array
     INTEGER, DIMENSION(source_dims), INTENT(IN) :: start, count
 
     INTEGER :: varid
     CHARACTER(LEN=max_message_len) :: context, message
-    CHARACTER(LEN=31) :: routine = "MCKPP_NETCDF_GET_VAR_REAL_TO_1D"
+    CHARACTER(LEN=31) :: routine = "MCKPP_NETCDF_GET_VAR_INT_TO_2D"
 
     context = update_context(calling_routine, routine)
     WRITE(message, *) "Reading ", TRIM(var_name), " from file ", TRIM(file_name)
@@ -342,7 +389,7 @@ CONTAINS
     CALL check( context, message, NF90_inq_varid(ncid, var_name, varid) )
     CALL check( context, message, NF90_get_var(ncid, varid, array, start, count) )
 
-  END SUBROUTINE mckpp_netcdf_get_var_real_to_1d
+  END SUBROUTINE mckpp_netcdf_get_var_int_to_2d
 
 
   ! Find first point in array that is within tolerance of a given target value,

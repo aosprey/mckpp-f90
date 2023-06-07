@@ -5,6 +5,7 @@ MODULE mckpp_physics_driver_mod
   USE mckpp_parameters
   USE mckpp_physics_ocnstep_mod, ONLY: mckpp_physics_ocnstep
   USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_bottomtemp, mckpp_physics_overrides_check_profile
+  USE mckpp_time_control, ONLY: ntime
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   
   IMPLICIT NONE
@@ -26,12 +27,12 @@ SUBROUTINE mckpp_physics_driver()
 !$OMP PARALLEL DEFAULT(NONE) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
 !$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
-!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
+!$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv, ntime) &
 !$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, index, kpp_1d_fields)
   tid=OMP_GET_THREAD_NUM()
   WRITE(trans_timer_name,'(A17,I2)') 'KPP 3D/1D thread ',tid
   WRITE(phys_timer_name,'(A19,I2)') 'KPP Physics thread ',tid
-  IF (kpp_const_fields%ntime .EQ. 1) THEN
+  IF (ntime .EQ. 1) THEN
 !$OMP CRITICAL
     CALL mckpp_define_new_timer(trans_timer_name, index)
     CALL mckpp_define_new_timer(phys_timer_name, index)

@@ -1,7 +1,8 @@
 MODULE mckpp_initialize_ocean
 
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
   USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
+  USE mckpp_log_messages, ONLY: mckpp_print
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
@@ -21,6 +22,9 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
   real dzb(NZ)              ! diff. between grid-levels below z(j)
   integer k,kmix0,n,l,ipt
   real hmix0,deltaz
+  CHARACTER(LEN=28) :: routine = "MCKPP_INITIALIZE_OCEAN_MODEL"
+
+  CALL mckpp_print(routine, "")
 
   ! Compute factors for coefficients of tridiagonal matrix elements.
   ! tri(0     ,1,.........) : dt/h(1) factor for rhs flux

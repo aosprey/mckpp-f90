@@ -5,6 +5,7 @@ MODULE mckpp_boundary_interpolate
   USE mckpp_parameters, ONLY: npts, nzp1
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
+  USE mckpp_time_control, ONLY: time
 
   IMPLICIT NONE
   
@@ -21,7 +22,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   allocate(prev_ocnT(NPTS,NZP1))
   allocate(next_ocnT(NPTS,NZP1))
 
-  true_time=kpp_const_fields%time
+  true_time=time
   ndays_upd_ocnT=kpp_const_fields%ndtupdocnT*kpp_const_fields%dto/kpp_const_fields%spd
       
   ! Read ocean temperatures for previous time
@@ -40,7 +41,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   WRITE(message,*) "prev_weight = ", prev_weight
   CALL mckpp_print(routine, message)
   
-  kpp_const_fields%time=prev_time
+  time=prev_time
   CALL MCKPP_READ_TEMPERATURES_3D()
   prev_ocnT=kpp_3d_fields%ocnT_clim
 
@@ -53,12 +54,12 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   WRITE(message,*) "next_weight = ", next_weight
   CALL mckpp_print(routine, message)
 
-  kpp_const_fields%time=next_time
+  time=next_time
   CALL MCKPP_READ_TEMPERATURES_3D()
   next_ocnT=kpp_3d_fields%ocnT_clim  
   kpp_3d_fields%ocnT_clim=next_ocnT*next_weight+prev_ocnT*prev_weight
 
-  kpp_const_fields%time=true_time
+  time=true_time
   deallocate(prev_ocnT)
   deallocate(next_ocnT)
 
@@ -76,7 +77,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   allocate(prev_sal(NPTS,NZP1))
   allocate(next_sal(NPTS,NZP1))
 
-  true_time=kpp_const_fields%time
+  true_time=time
   ndays_upd_sal=kpp_const_fields%ndtupdsal*kpp_const_fields%dto/kpp_const_fields%spd
   
   ! Read ocean salinity for previous time
@@ -95,7 +96,7 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   WRITE(message,*) "prev_weight = ", prev_weight
   CALL mckpp_print(routine, message)
   
-  kpp_const_fields%time=prev_time
+  time=prev_time
   CALL MCKPP_READ_SALINITY_3D()
   prev_sal=kpp_3d_fields%sal_clim
   
@@ -108,12 +109,12 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   WRITE(message,*) "next_weight = ", next_weight
   CALL mckpp_print(routine, message)
 
-  kpp_const_fields%time=next_time
+  time=next_time
   CALL MCKPP_READ_SALINITY_3D()
   next_sal=kpp_3d_fields%sal_clim  
   kpp_3d_fields%sal_clim=next_sal*next_weight+prev_sal*prev_weight
   
-  kpp_const_fields%time=true_time
+  time=true_time
   deallocate(prev_sal)
   deallocate(next_sal)
   

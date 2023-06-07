@@ -1,18 +1,22 @@
 MODULE mckpp_physics_lookup_mod
 
   USE mckpp_data_fields, ONLY: kpp_const_type
+  USE mckpp_log_messages, ONLY: mckpp_print
 
   IMPLICIT NONE
 
 CONTAINS
 
+! This is only called once at initialization 
 SUBROUTINE mckpp_physics_lookup(kpp_const_fields)
   
   TYPE(kpp_const_type) :: kpp_const_fields
-  
   real zmin,zmax,umin,umax,usta,zeta,zehat,epsln,&
        am,cm,c1,c2,zetam,as,cs,c3,zetas,cstar,deltau,deltaz
   integer i,j,ni,nj
+  CHARACTER(LEN=20) :: routine = "MCKPP_PHYSICS_LOOKUP"
+
+  CALL mckpp_print(routine, "") 
 
   ni    = 890     ! number of values for zehat
   nj    = 48      ! number of values for ustar      
