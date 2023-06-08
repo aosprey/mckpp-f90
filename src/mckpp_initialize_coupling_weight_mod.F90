@@ -32,7 +32,7 @@ CONTAINS
 
     IF (kpp_const_fields%l_couple .OR. kpp_const_fields%l_cplwght) THEN  
 
-      IF (l_root_proc) THEN 
+      IF (l_root) THEN 
 
         file = kpp_const_fields%cplwght_file
         WRITE(message,*) "Reading coupling weight (alpha) from file ", TRIM(file)
@@ -52,7 +52,7 @@ CONTAINS
 
       END IF
   
-      CALL mckpp_scatter_field(cplwght_global, kpp_3d_fields%cplwght, root_proc)
+      CALL mckpp_scatter_field(cplwght_global, kpp_3d_fields%cplwght, root)
 
     ELSE
       kpp_3d_fields%cplwght(:) = 0.0

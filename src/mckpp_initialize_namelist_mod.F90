@@ -5,7 +5,7 @@ MODULE mckpp_initialize_namelist_mod
   USE mckpp_initialize_constants_mod, ONLY: mckpp_initialize_constants
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len, &
       update_context
-  USE mckpp_mpi_control, ONLY: root_proc, l_root_proc, comm
+  USE mckpp_mpi_control, ONLY: root, l_root, comm
   USE mckpp_namelists
   USE mckpp_parameters
   USE mpi
@@ -24,7 +24,7 @@ CONTAINS
     CHARACTER(LEN=10) :: nml_file = "3D_ocn.nml"
 
     ! Only single pe reads namelist data, then sends data to others
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       OPEN(nml_unit, file=nml_file)
     END IF
 
@@ -41,7 +41,7 @@ CONTAINS
     CALL read_forcing_namelist(nml_unit)
     CALL read_output_namelist(nml_unit)
 
-    IF (l_root_proc) THEN 
+    IF (l_root) THEN 
       CLOSE(nml_unit)
     END IF
 
@@ -79,7 +79,7 @@ CONTAINS
     lens(2) = 21
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       ! Set some defaults
       ndim = 1 
       nvel = 2
@@ -151,13 +151,13 @@ CONTAINS
     ENDIF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
 
     ! Free memory from MPI type 
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       hmixtolfrac = my_name % hmixtolfrac
       nz = my_name % nz
       ndim = my_name % ndim
@@ -231,7 +231,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN 
+    IF (l_root) THEN 
       spd = 86400.                ! secs/day
       dpy = 360.                  ! days/year
       twopi = 8*atan(1.)          ! 2pi
@@ -268,11 +268,11 @@ CONTAINS
     END IF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)  
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)  
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       grav = my_name % grav
       vonk = my_name % vonk
       sbc = my_name % sbc
@@ -321,7 +321,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN 
+    IF (l_root) THEN 
       LKPP = .TRUE.
       LRI = .TRUE.
       LDD = .FALSE.
@@ -347,11 +347,11 @@ CONTAINS
     END IF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       LKPP = my_name % LKPP
       LRI = my_name % LRI
       LDD = my_name % LDD
@@ -398,7 +398,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       DMAX = 0.0
       alat = 0.0
       alon = 0.0
@@ -433,11 +433,11 @@ CONTAINS
     ENDIF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_REGGRID = my_name % L_REGGRID
       L_STRETCHGRID = my_name % L_STRETCHGRID
       L_VGRID_FILE = my_name % L_VGRID_FILE
@@ -487,7 +487,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       L_LANDSEA = .FALSE.
       landsea_file = ""
       
@@ -499,11 +499,11 @@ CONTAINS
     END IF
 
     ! Send data  
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_LANDSEA = my_name % L_LANDSEA
       landsea_file = my_name % landsea_file
     END IF
@@ -541,7 +541,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN     
+    IF (l_root) THEN     
       L_INITDATA = .TRUE.
       L_INTERPINIT = .TRUE.
       L_RESTART = .FALSE.
@@ -558,11 +558,11 @@ CONTAINS
     ENDIF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_INITDATA = my_name % L_INITDATA
       L_INTERPINIT = my_name % L_INTERPINIT
       L_RESTART = my_name % L_RESTART
@@ -602,7 +602,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       ndtocn = 1
       dtsec = 0.0
       startt = -999.999
@@ -624,11 +624,11 @@ CONTAINS
     END IF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       dtsec = my_name % dtsec
       startt = my_name % startt
       finalt = my_name % finalt
@@ -674,7 +674,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
 #if defined MCKPP_COUPLE
       L_COUPLE = .TRUE.
 #else
@@ -731,11 +731,11 @@ CONTAINS
     ENDIF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_COUPLE = my_name % L_COUPLE
       L_CLIMSST = my_name % L_CLIMSST
       L_UPD_CLIMSST= my_name % L_UPD_CLIMSST
@@ -822,7 +822,7 @@ CONTAINS
     ALLOCATE( relax_ocnt_in(ny) )
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       L_ADVECT = .FALSE.
       L_RELAX_SST = .FALSE.
       L_RELAX_CALCONLY = .FALSE.
@@ -843,16 +843,16 @@ CONTAINS
     ENDIF
 
     ! Send data
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Need to send allocatable arrays separately
-    CALL mpi_bcast(relax_sst_in, ny, MPI_REAL8, root_proc, comm, ierr)
-    CALL mpi_bcast(relax_sal_in, ny, MPI_REAL8, root_proc, comm, ierr)
-    CALL mpi_bcast(relax_ocnt_in, ny, MPI_REAL8, root_proc, comm, ierr)
+    CALL mpi_bcast(relax_sst_in, ny, MPI_REAL8, root, comm, ierr)
+    CALL mpi_bcast(relax_sal_in, ny, MPI_REAL8, root, comm, ierr)
+    CALL mpi_bcast(relax_ocnt_in, ny, MPI_REAL8, root, comm, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_ADVECT = my_name % L_ADVECT
       L_RELAX_SST = my_name % L_RELAX_SST
       L_RELAX_CALCONLY = my_name % L_RELAX_CALCONLY
@@ -902,7 +902,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN 
+    IF (l_root) THEN 
       L_JERLOV = .TRUE.
       paras_file = '3D_ocnparas.nc'
 
@@ -914,11 +914,11 @@ CONTAINS
     END IF
 
     ! Send data  
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_JERLOV = my_name % L_JERLOV
       paras_file = my_name % paras_file
     END IF
@@ -967,7 +967,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       L_FLUXDATA = .FALSE.
       L_FCORR_WITHZ = .FALSE.
       L_FCORR = .FALSE.
@@ -1058,11 +1058,11 @@ CONTAINS
     END IF
 
     ! Send data  
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_FCORR_WITHZ = my_name % L_FCORR_WITHZ
       L_FCORR = my_name % L_FCORR
       L_UPD_FCORR = my_name % L_UPD_FCORR
@@ -1169,7 +1169,7 @@ CONTAINS
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
-    IF (l_root_proc) THEN
+    IF (l_root) THEN
       L_RESTARTW = .TRUE.
       restart_outfile = ""
       
@@ -1182,11 +1182,11 @@ CONTAINS
     END IF
 
     ! Send data  
-    CALL mpi_bcast(my_name, 1, name_type_mpi, root_proc, comm, ierr)
+    CALL mpi_bcast(my_name, 1, name_type_mpi, root, comm, ierr)
     CALL mpi_type_free(name_type_mpi, ierr)
 
     ! Unpack data
-    IF (.NOT. l_root_proc) THEN
+    IF (.NOT. l_root) THEN
       L_RESTARTW = my_name % L_RESTARTW
       ndt_per_restart = my_name % ndt_per_restart
       restart_outfile = my_name % restart_outfile

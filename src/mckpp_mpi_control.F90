@@ -11,8 +11,8 @@ MODULE mckpp_mpi_control
 
   INTEGER :: comm, rank, nproc, npts_local, offset_global, start_global, & 
              end_global, subdomain_type
-  INTEGER :: root_proc = 0
-  LOGICAL :: l_root_proc
+  INTEGER :: root = 0
+  LOGICAL :: l_root
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
   INTERFACE mckpp_scatter_field
@@ -39,10 +39,10 @@ CONTAINS
     WRITE(message,*) "Rank ", rank, " of ", nproc
     CALL mckpp_print(routine, message)
     
-    IF (rank .EQ. root_proc) THEN
-      l_root_proc = .TRUE.
+    IF (rank .EQ. root) THEN
+      l_root = .TRUE.
     ELSE
-      l_root_proc = .FALSE.
+      l_root = .FALSE.
     END IF
 
   END SUBROUTINE mckpp_initialize_mpi
@@ -188,7 +188,7 @@ CONTAINS
       offset_global_all(n) = index
       index = index + npts_local_all(n)
 
-      IF (l_root_proc) THEN
+      IF (l_root) THEN
         WRITE(message,*) n, offset_global_all(n), npts_local_all(n)
         CALL mckpp_print(routine, message) 
       END IF

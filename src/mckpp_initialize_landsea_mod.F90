@@ -8,7 +8,7 @@ MODULE mckpp_initialize_landsea_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
         max_message_len, nupe 
   USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, mckpp_scatter_field, &
-        l_root_proc, root_proc, npts_local, offset_global, start_global, & 
+        l_root, root, npts_local, offset_global, start_global, & 
         end_global 
   USE mckpp_parameters, ONLY: npts, nx, ny
 
@@ -33,7 +33,7 @@ CONTAINS
     ! Read from file 
     IF (kpp_const_fields%l_landsea) THEN
 
-      IF (l_root_proc) THEN
+      IF (l_root) THEN
 
         file = kpp_const_fields%landsea_file
         WRITE(message,*) "Reading land sea mask from file ", TRIM(file)
@@ -60,8 +60,8 @@ CONTAINS
       ENDIF 
 
       ! Broadcast lons and lats 
-      CALL mckpp_broadcast_field(lon_in, nx, root_proc)
-      CALL mckpp_broadcast_field(lat_in, ny, root_proc) 
+      CALL mckpp_broadcast_field(lon_in, nx, root)
+      CALL mckpp_broadcast_field(lat_in, ny, root) 
 
       ! Expand to full grid
       ipt = 1
@@ -74,8 +74,8 @@ CONTAINS
       END DO
 
       ! Scatter ocdepth and lsm 
-      CALL mckpp_scatter_field(ocdepth_global, kpp_3d_fields%ocdepth, root_proc)
-      CALL mckpp_scatter_field(landsea_global, landsea, root_proc)
+      CALL mckpp_scatter_field(ocdepth_global, kpp_3d_fields%ocdepth, root)
+      CALL mckpp_scatter_field(landsea_global, landsea, root)
 
       ! Generate logical lsm 
       kpp_3d_fields%l_ocean = landsea .NE. 1.0 

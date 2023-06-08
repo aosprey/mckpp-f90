@@ -2,7 +2,7 @@ MODULE mckpp_initialize_geography_mod
 
   USE mckpp_data_fields, ONLY: kpp_const_fields, kpp_3d_fields
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len, nupe
-  USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, l_root_proc, root_proc, &
+  USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, l_root, root, &
         npts_local
   USE mckpp_netcdf_read, ONLY: mckpp_netcdf_open, mckpp_netcdf_close, & 
         mckpp_netcdf_get_var, max_nc_filename_len
@@ -26,7 +26,7 @@ CONTAINS
     ! Read vertical grid fields
     IF (kpp_const_fields%l_vgrid_file) THEN
 
-      IF (l_root_proc) THEN 
+      IF (l_root) THEN 
 
         file = kpp_const_fields%vgrid_file
         WRITE(message,*) "Reading vertical grid from file ", TRIM(file)
@@ -43,9 +43,9 @@ CONTAINS
 
       END IF
 
-      CALL mckpp_broadcast_field(kpp_const_fields%dm(1:nz), nz, root_proc) 
-      CALL mckpp_broadcast_field(kpp_const_fields%hm(1:nz), nz, root_proc) 
-      CALL mckpp_broadcast_field(kpp_const_fields%zm(1:nz), nz, root_proc) 
+      CALL mckpp_broadcast_field(kpp_const_fields%dm(1:nz), nz, root) 
+      CALL mckpp_broadcast_field(kpp_const_fields%hm(1:nz), nz, root) 
+      CALL mckpp_broadcast_field(kpp_const_fields%zm(1:nz), nz, root) 
 
       kpp_const_fields%dmax = -1. * ( kpp_const_fields%zm(nz) - & 
                               kpp_const_fields%hm(nz) )
