@@ -3,8 +3,8 @@ MODULE mckpp_initialize_namelist_mod
   USE mckpp_data_fields, ONLY: kpp_const_fields, mckpp_allocate_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_initialize_constants_mod, ONLY: mckpp_initialize_constants
-  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len, &
-      update_context
+  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
+        max_message_len, update_context
   USE mckpp_mpi_control, ONLY: root, l_root, comm
   USE mckpp_namelists
   USE mckpp_parameters
@@ -193,17 +193,20 @@ CONTAINS
     mrp1 = mr + 1 
     npts_globe = nx_globe * ny_globe
 
-    WRITE(message,*) "hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb, itermax = ", & 
-        nz, ndim, nx, ny, nvel, nsclr, nsb, itermax
+    WRITE(message,*) "hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb = ", & 
+                      hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb 
     CALL mckpp_print(routine, message)
-    WRITE(message,*) "ngrid, nzl, nzu, nzdivmax, nztmax, nzp1tmax, igridmax = ", &
-        ngrid, nzl, nzu, nzdivmax, nztmax, nzp1tmax, igridmax
+    WRITE(message,*) "itermax, ngrid, nzl, nzu, nzdivmax, nztmax = ", &  
+                      itermax, ngrid, nzl, nzu, nzdivmax, nztmax 
     CALL mckpp_print(routine, message)
-    WRITE(message,*) "nsflxs, ndharm, maxmodeadv, mr, nx_globe, ny_globe = ", &
-        nsflxs, ndharm, maxmodeadv, mr, nx_globe, ny_globe
+    WRITE(message,*) "nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr = ", &
+                      nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr
     CALL mckpp_print(routine, message)
-    WRITE(message,*) "nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe = ", &
-        nzm1, nzp1, npts, nvp1, nsp1, nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
+    WRITE(message,*) "nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1 = ", & 
+                      nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1
+    CALL mckpp_print(routine, message)
+    WRITE(message,*) "nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe = ", &
+                      nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
     CALL mckpp_print(routine, message)
 
   END SUBROUTINE read_parameters_namelist
@@ -217,7 +220,8 @@ CONTAINS
  
     TYPE name_type
       SEQUENCE
-      REAL(KIND=8) :: grav, vonk, sbc, twopi, onepi, TK0, spd, dpy, epsw, albocn, EL, SL, FL, FLSN
+      REAL(KIND=8) :: grav, vonk, sbc, twopi, onepi, TK0, spd, dpy, epsw, & 
+                      albocn, EL, SL, FL, FLSN
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -289,11 +293,14 @@ CONTAINS
       FLSN = my_name % FLSN
     END IF
 
-    WRITE(message, *) "grav, vonk, sbc, twopi, onepi = ",  grav, vonk, sbc, twopi, onepi
+    WRITE(message, *) "grav, vonk, sbc, twopi, onepi = ",  & 
+                       grav, vonk, sbc, twopi, onepi
     CALL mckpp_print(routine, message)
-    WRITE(message, *) "TK0, spd, dpy, epsw, albocn = ", TK0, spd, dpy, epsw, albocn
+    WRITE(message, *) "TK0, spd, dpy, epsw, albocn = ", & 
+                       TK0, spd, dpy, epsw, albocn
     CALL mckpp_print(routine, message)
-    WRITE(message, *) "EL, SL, FL, FLSN = ", EL, SL, FL, FLSN
+    WRITE(message, *) "EL, SL, FL, FLSN = ", & 
+                       EL, SL, FL, FLSN
     CALL mckpp_print(routine, message)
 
   END SUBROUTINE read_constants_namelist
@@ -363,8 +370,10 @@ CONTAINS
       L_SSref = my_name % L_SSref
     END IF
 
-    WRITE(message, *) "LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID, LRHS, L_SSref = ", &
-        LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID, LRHS, L_SSref
+    WRITE(message, *) "LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID = ", & 
+                       LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID
+    CALL mckpp_print(routine, message)
+    WRITE(message, *) "LRHS, L_SSref = ", LRHS, L_SSref
     CALL mckpp_print(routine, message)
 
   END SUBROUTINE read_procswit_namelist
@@ -380,7 +389,7 @@ CONTAINS
       SEQUENCE
       LOGICAL :: L_REGGRID, L_STRETCHGRID, L_VGRID_FILE
       REAL :: dmax, alat, alon, delta_lat, delta_lon, dscale
-      CHARACTER(LEN=max_nc_filename_len) :: vgrid_file
+      CHARACTER(LEN=max_nc_filename_len) :: vgrid_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -408,7 +417,6 @@ CONTAINS
       L_STRETCHGRID = .FALSE.
       L_REGGRID = .TRUE.
       L_VGRID_FILE = .FALSE.
-      vgrid_file = ""
 
       READ(nml_unit,NAME_DOMAIN)
       CALL mckpp_print(routine, "Read Namelist DOMAIN")
@@ -417,7 +425,8 @@ CONTAINS
         CALL mckpp_abort(routine, "You must specify a depth for the domain")
       END IF
       IF ((L_STRETCHGRID) .AND. (dscale .EQ. 0.0)) THEN
-        CALL mckpp_abort(routine, "You cannot have dscale=0 for stretched grids") 
+        CALL mckpp_abort(routine, & 
+                         "You cannot have dscale=0 for stretched grids") 
       END IF
  
       my_name % L_REGGRID = L_REGGRID
@@ -471,7 +480,7 @@ CONTAINS
     TYPE name_type
       SEQUENCE
       LOGICAL :: L_LANDSEA
-      CHARACTER(LEN=max_nc_filename_len) :: landsea_file
+      CHARACTER(LEN=max_nc_filename_len) :: landsea_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -489,7 +498,6 @@ CONTAINS
     ! Initialize, read nml and pack into buffer
     IF (l_root) THEN
       L_LANDSEA = .FALSE.
-      landsea_file = ""
       
       READ(nml_unit,NAME_LANDSEA)
       CALL mckpp_print(routine, "Read Namelist LANDSEA")
@@ -524,8 +532,8 @@ CONTAINS
     TYPE name_type
       SEQUENCE
       LOGICAL :: L_INITDATA, L_INTERPINIT, L_RESTART
-      CHARACTER(max_nc_filename_len) :: initdata_file
-      CHARACTER(max_restart_filename_len) :: restart_infile
+      CHARACTER(max_nc_filename_len) :: initdata_file = ""
+      CHARACTER(max_restart_filename_len) :: restart_infile = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -545,7 +553,6 @@ CONTAINS
       L_INITDATA = .TRUE.
       L_INTERPINIT = .TRUE.
       L_RESTART = .FALSE.
-      restart_infile = 'fort.30'
 
       READ(nml_unit,NAME_START) 
       CALL mckpp_print(routine, "Read Namelist START")
@@ -570,10 +577,13 @@ CONTAINS
       restart_infile = my_name % restart_infile
     END IF
 
-    WRITE(message,*) "L_INITDATA, initdata_file, L_INTERPINIT, L_RESTART, restart_infile = ", &
-        L_INITDATA, TRIM(initdata_file), L_INTERPINIT, L_RESTART, TRIM(restart_infile)
+    WRITE(message,*) "L_INITDATA, initdata_file, L_INTERPINIT = ", & 
+                      L_INITDATA, TRIM(initdata_file), L_INTERPINIT
     CALL mckpp_print(routine, message) 
-
+    WRITE(message,*) "L_RESTART, restart_infile = ", & 
+                      L_RESTART, TRIM(restart_infile)
+    CALL mckpp_print(routine, message) 
+ 
   END SUBROUTINE read_start_namelist
 
 
@@ -651,12 +661,14 @@ CONTAINS
 
     TYPE name_type
       SEQUENCE
-      LOGICAL :: L_COUPLE, L_CLIMSST, L_UPD_CLIMSST, L_CPLWGHT, L_CLIMICE, L_UPD_CLIMICE, &
-          L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN, L_COUPLE_CURRENTS, L_CLIMCURR, &
-          L_UPD_CLIMCURR, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST, L_BAD_ICE_DEPTH
-      INTEGER :: ifirst, ilast, jfirst, jlast, ndtupdsst, ndtupdice, ndtupdcurr, &
-          climsst_period, climice_period 
-      CHARACTER(LEN=max_nc_filename_len) :: sstin_file, cplwght_file, icein_file, currin_file
+      LOGICAL :: L_COUPLE, L_CLIMSST, L_UPD_CLIMSST, L_CPLWGHT, L_CLIMICE, & 
+                 L_UPD_CLIMICE, L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, & 
+                 L_OUTKELVIN, L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR, & 
+                 L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST, L_BAD_ICE_DEPTH
+      INTEGER :: ifirst, ilast, jfirst, jlast, ndtupdsst, ndtupdice, & 
+                 ndtupdcurr, climsst_period, climice_period 
+      CHARACTER(LEN=max_nc_filename_len) :: sstin_file = "", & 
+          cplwght_file = "", icein_file = "", currin_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -692,10 +704,6 @@ CONTAINS
       ilast = nx
       jfirst = 1
       jlast = ny
-      sstin_file = ""
-      cplwght_file = ""
-      icein_file = ""
-      currin_file = ""
        
       READ(nml_unit,NAME_COUPLE)
       CALL mckpp_print(routine, "Read Namelist COUPLE")
@@ -766,28 +774,32 @@ CONTAINS
       currin_file = my_name % currin_file
     END IF
 
-    WRITE(message,*) "L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST, sstin_file = ", &
-        L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST, TRIM(sstin_file)
+    WRITE(message,*) "L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST = ", & 
+                      L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT = ", L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT
+    WRITE(message,*) "sstin_file, L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT = ", & 
+                      TRIM(sstin_file), L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "cplwght_file = ", TRIM(cplwght_file)
+    WRITE(message,*) "cplwght_file = ", TRIM(ADJUSTL(cplwght_file))
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "icein_file = ", TRIM(icein_file)
+    WRITE(message,*) "icein_file = ", TRIM(ADJUSTL(icein_file))
     CALL mckpp_print(routine, message)
     WRITE(message,*) "L_CLIMICE, L_UPD_CLIMICE, ndtupdice = ", &
-        L_CLIMICE, L_UPD_CLIMICE, ndtupdice
+                      L_CLIMICE, L_UPD_CLIMICE, ndtupdice
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN, L_COUPLE_CURRENTS = ", &
-        L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN, L_COUPLE_CURRENTS
+    WRITE(message,*) "L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN = ", & 
+                      L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN
     CALL mckpp_print(routine, message) 
     WRITE(message,*) "currin_file = ", TRIM(currin_file)
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_CLIMCURR, L_UPD_CLIMCURR, ndtupdcurr, L_PERIODIC_CLIMICE = ", &
-        L_CLIMCURR, L_UPD_CLIMCURR, ndtupdcurr, L_PERIODIC_CLIMICE
+    WRITE(message,*) "L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR = ", & 
+                      L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_PERIODIC_CLIMSST, climsst_period, climice_period, L_BAD_ICE_DEPTH = ", &
-        L_PERIODIC_CLIMSST, climsst_period, climice_period, L_BAD_ICE_DEPTH
+    WRITE(message,*) "ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST = ", &
+                      ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "climsst_period, climice_period, L_BAD_ICE_DEPTH = ", & 
+                      climsst_period, climice_period, L_BAD_ICE_DEPTH
     CALL mckpp_print(routine, message) 
 
   END SUBROUTINE read_couple_namelist
@@ -801,8 +813,9 @@ CONTAINS
 
     TYPE name_type
       SEQUENCE
-      LOGICAL :: L_ADVECT, L_RELAX_SST, L_RELAX_CALCONLY, L_RELAX_SAL, L_RELAX_OCNT
-      CHARACTER(max_restart_filename_len) :: advect_file
+      LOGICAL :: L_ADVECT, L_RELAX_SST, L_RELAX_CALCONLY, L_RELAX_SAL, & 
+                 L_RELAX_OCNT
+      CHARACTER(max_restart_filename_len) :: advect_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -829,7 +842,6 @@ CONTAINS
       relax_sst_in = 0.0
       relax_sal_in = 0.0
       relax_ocnt_in = 0.0
-      advect_file = ""
 
       READ(nml_unit,NAME_ADVEC)
       CALL mckpp_print(routine, "Read Namelist ADVEC")
@@ -886,7 +898,7 @@ CONTAINS
     TYPE name_type
       SEQUENCE
       LOGICAL :: L_JERLOV
-      CHARACTER(LEN=max_nc_filename_len) :: paras_file
+      CHARACTER(LEN=max_nc_filename_len) :: paras_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -904,8 +916,7 @@ CONTAINS
     ! Initialize, read nml and pack into buffer
     IF (l_root) THEN 
       L_JERLOV = .TRUE.
-      paras_file = '3D_ocnparas.nc'
-
+ 
       READ(nml_unit,NAME_PARAS)
       CALL mckpp_print(routine, "Read Namelist PARAS")
 
@@ -937,17 +948,20 @@ CONTAINS
  
     TYPE name_type
       SEQUENCE
-      LOGICAL :: L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR, L_PERIODIC_FCORR, L_NO_FREEZE, &
-          L_NO_ISOTHERM, L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL, L_INTERP_SAL, & 
-          L_UPD_OCNT, L_PERIODIC_OCNT, L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR, &
-          L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR, L_VARY_BOTTOM_TEMP, &
-          L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP
-      INTEGER :: ndtupdfcorr, fcorr_period, isotherm_bottom, & 
-          ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt, ocnt_period, ndt_interp_ocnt, & 
-          ndtupdsfcorr, sfcorr_period, ndtupdbottom, bottom_temp_period, dtuvdamp
+      LOGICAL :: L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR, L_PERIODIC_FCORR, & 
+                 L_NO_FREEZE, L_NO_ISOTHERM, L_FLUXDATA, L_REST, L_UPD_SAL, & 
+                 L_PERIODIC_SAL, L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT, & 
+                 L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR, L_UPD_SFCORR, & 
+                 L_PERIODIC_SFCORR, L_DAMP_CURR, L_VARY_BOTTOM_TEMP, &
+                 L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP
+      INTEGER :: ndtupdfcorr, fcorr_period, isotherm_bottom, ndtupdsal, & 
+                 sal_period, ndt_interp_sal, ndtupdocnt, ocnt_period, & 
+                 ndt_interp_ocnt, ndtupdsfcorr, sfcorr_period, ndtupdbottom, & 
+                 bottom_temp_period, dtuvdamp
       REAL :: isotherm_threshold
-      CHARACTER (LEN=max_nc_filename_len) :: fcorrin_file, forcing_file, &
-          sal_file, ocnT_file, sfcorrin_file, bottomin_file
+      CHARACTER (LEN=max_nc_filename_len) :: fcorrin_file = "", & 
+          forcing_file = "", sal_file = "", ocnT_file = "", & 
+          sfcorrin_file = "", bottomin_file = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -982,33 +996,31 @@ CONTAINS
       L_NO_FREEZE = .FALSE.
       L_NO_ISOTHERM = .FALSE.
       L_DAMP_CURR = .FALSE.
-      fcorrin_file = ""
-      forcing_file = "1D_ocean_forcing.nc"
-      sal_file = ""
-      ocnT_file = "none"
-      sfcorrin_file = ""
-      bottomin_file = ""
 
       READ(nml_unit,NAME_FORCING)  
       CALL mckpp_print(routine, "Read Namelist FORCING")
 
       IF (L_FCORR_WITHZ .AND. L_FCORR) THEN
-        WRITE(message, *) "L_FCORR and L_FCORR_WITHZ are mutually exclusive. Choose one or neither."
+        WRITE(message, *) "L_FCORR and L_FCORR_WITHZ are mutually ", & 
+                          "exclusive. Choose one or neither."
         CALL mckpp_abort(routine, message)
       ENDIF
       IF (L_SFCORR_WITHZ .AND. L_SFCORR) THEN
-        WRITE(message, *) "L_SFCORR and L_SFCORR_WITHZ are mutually exclusive. Choose one or neither."
+        WRITE(message, *) "L_SFCORR and L_SFCORR_WITHZ are mutually ", & 
+                          "exclusive. Choose one or neither."
         CALL mckpp_abort(routine, message)
       ENDIF
       IF (L_FCORR_WITHZ .AND. L_RELAX_SST) THEN
-        WRITE(message, *) "L_FCORR_WITHZ and L_RELAX_SST are mutually exclusive. Choose one or neither."
+        WRITE(message, *) "L_FCORR_WITHZ and L_RELAX_SST are mutually ", & 
+                          "exclusive. Choose one or neither."
         CALL mckpp_abort(routine, message)
       ENDIF
       IF (L_NO_ISOTHERM .AND. (ocnT_file .eq. 'none' .or.&
           sal_file .eq. 'none')) THEN
-        WRITE(message, *) "If you specify L_NO_ISOTHERM for reseting of isothermal points, " &
-            // "you must specify files from which to read climatological ocean temperature " &
-            // "(ocnT_file) and salinity (sal_file)."
+        WRITE(message, *) "If you specify L_NO_ISOTHERM for reseting of ", & 
+                          "isothermal points, you must specify files from ", & 
+                          "which to read climatological ocean temperature ", &
+                          "(ocnT_file) and salinity (sal_file)."
         CALL mckpp_abort(routine, message)
       ENDIF
 
@@ -1108,26 +1120,38 @@ CONTAINS
       bottomin_file = my_name % bottomin_file    
     END IF
 
-    WRITE(message,*) "L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR, L_PERIODIC_FCORR, L_NO_FREEZE = ", &
-        L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR, L_PERIODIC_FCORR, L_NO_FREEZE
+    WRITE(message,*) "L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR = ", & 
+                      L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_NO_ISOTHERM, L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL, L_INTERP_SAL = ", &
-        L_NO_ISOTHERM, L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL, L_INTERP_SAL
+    WRITE(message,*) "L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM = ", & 
+                      L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_UPD_OCNT, L_PERIODIC_OCNT, L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR = ", &
-        L_UPD_OCNT, L_PERIODIC_OCNT, L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR
+    WRITE(message,*) "L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL = ", & 
+                      L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR, L_VARY_BOTTOM_TEMP = ", &
-        L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR, L_VARY_BOTTOM_TEMP
+    WRITE(message,*) "L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT = ", & 
+                      L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP = ", &
-        L_UPD_BOTTOM_TEMP, L_PERIODIC_BOTTOM_TEMP
+    WRITE(message,*) "L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR = ", & 
+                      L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR = ", & 
+                      L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP = ", & 
+                      L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "L_PERIODIC_BOTTOM_TEMP = ", & 
+                      L_PERIODIC_BOTTOM_TEMP
     CALL mckpp_print(routine, message) 
     WRITE(message,*) "ndtupdfcorr, fcorr_period, isotherm_bottom = ", &
-        ndtupdfcorr, fcorr_period, isotherm_bottom
+                      ndtupdfcorr, fcorr_period, isotherm_bottom
     CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt, ocnt_period, ndt_interp_ocnt = ", &
-        ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt, ocnt_period, ndt_interp_ocnt
+    WRITE(message,*) "ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt = ", & 
+                      ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "ocnt_period, ndt_interp_ocnt, isotherm_threshold = ", &
+                      ocnt_period, ndt_interp_ocnt, isotherm_threshold
     CALL mckpp_print(routine, message) 
     WRITE(message,*) "isotherm_threshold = ", isotherm_threshold
     CALL mckpp_print(routine, message) 
@@ -1151,7 +1175,7 @@ CONTAINS
       SEQUENCE
       LOGICAL :: L_RESTARTW
       INTEGER :: ndt_per_restart
-      CHARACTER(max_restart_filename_len) :: restart_outfile
+      CHARACTER(max_restart_filename_len) :: restart_outfile = ""
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -1171,7 +1195,6 @@ CONTAINS
     ! Initialize, read nml and pack into buffer
     IF (l_root) THEN
       L_RESTARTW = .TRUE.
-      restart_outfile = ""
       
       READ(nml_unit,NAME_OUTPUT)
       CALL mckpp_print(routine, "Read Namelist OUTPUT") 
@@ -1199,7 +1222,8 @@ CONTAINS
   END SUBROUTINE read_output_namelist
 
 
-  SUBROUTINE make_mpi_type(calling_routine, count, types, blocklens, new_mpi_type)
+  SUBROUTINE make_mpi_type(calling_routine, count, types, blocklens, & 
+                           new_mpi_type)
 
     CHARACTER(LEN=*), INTENT(IN) ::  calling_routine
     INTEGER, INTENT(IN) :: count
@@ -1214,7 +1238,8 @@ CONTAINS
 
     context = update_context(calling_routine, routine) 
     IF (count .LT. 1) THEN
-      CALL mckpp_abort(context, "Error in initialize_namelists creating MPI type.")
+      CALL mckpp_abort(context, & 
+                       "Error in initialize_namelists creating MPI type.")
     END IF
 
     ! Calculate displacements
@@ -1227,7 +1252,8 @@ CONTAINS
     END IF
 
     ! Create new type
-    CALL mpi_type_create_struct(count, blocklens, displs, types, new_mpi_type, ierr)
+    CALL mpi_type_create_struct(count, blocklens, displs, types, & 
+                                new_mpi_type, ierr)
     CALL mpi_type_commit(new_mpi_type, ierr)
 
   END SUBROUTINE make_mpi_type
