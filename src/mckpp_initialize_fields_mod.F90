@@ -58,17 +58,12 @@ CONTAINS
     ! Initialize advection options
     CALL mckpp_initialize_advection()
 
+    ! Initialize water type for optical properties of seawater
+    CALL mckpp_initialize_optics()
+
     CALL mckpp_finalize_logs()
     CALL mpi_barrier(comm, ierr) 
     CALL mckpp_abort(routine, "stop")
-
-    ! Initialize relaxation of SST, temperature and/or salinity
-    IF ( kpp_const_fields%l_relax_sst .OR. kpp_const_fields%l_relax_sal & 
-         .OR. kpp_const_fields%l_relax_ocnt ) &   
-       CALL mckpp_initialize_relaxation()
-
-    ! Initialize water type for optical properties of seawater
-    CALL mckpp_initialize_optics()
 
     ! Initialize ocean profiles
     IF ( kpp_const_fields%l_restart ) THEN     
@@ -80,6 +75,12 @@ CONTAINS
     ! Initialize boundary conditions
     IF ( kpp_const_fields%l_climsst ) CALL mckpp_read_sst()
     IF ( kpp_const_fields%l_climice ) CALL mckpp_read_ice()
+
+    ! Initialize relaxation of SST, temperature and/or salinity
+    ! We need to call this after reading SSTs 
+    IF ( kpp_const_fields%l_relax_sst .OR. kpp_const_fields%l_relax_sal & 
+         .OR. kpp_const_fields%l_relax_ocnt ) &   
+       CALL mckpp_initialize_relaxation()
 
     ! Heat corrections
     IF ( kpp_const_fields%l_fcorr_withz ) THEN     
