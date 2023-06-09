@@ -450,8 +450,8 @@ CONTAINS
       ALLOCATE( kpp_3d_fields%icedepth(nx,ny) )
       ALLOCATE( kpp_3d_fields%snowdepth(nx,ny) )
     END IF 
-    ALLOCATE( kpp_3d_fields%dlat_all(npts) )
-    ALLOCATE( kpp_3d_fields%dlon_all(npts) )
+    ALLOCATE( kpp_3d_fields%dlat_all(ny) )
+    ALLOCATE( kpp_3d_fields%dlon_all(nx) )
 
   END SUBROUTINE mckpp_allocate_3d_fields
 

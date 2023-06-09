@@ -1,10 +1,12 @@
 ! XIOS code for reading/writing restarts and writing diagnostics.
-! Used by mckpp_xios_control module which contains higher-level routines used by KPP model. 
+! Used by mckpp_xios_control module which contains higher-level routines 
+! used by KPP model. 
 MODULE mckpp_xios_io
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
-  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, update_context
+  USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, & 
+        update_context
   USE mckpp_mpi_control, ONLY: comm
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
   USE mckpp_time_control, ONLY: ntime, time
@@ -14,7 +16,8 @@ MODULE mckpp_xios_io
   IMPLICIT NONE
 
   PUBLIC :: mckpp_xios_diagnostic_definition, mckpp_xios_restart_definition, &
-       mckpp_xios_diagnostic_output, mckpp_xios_write_restart, mckpp_xios_read_restart
+            mckpp_xios_diagnostic_output, mckpp_xios_write_restart, & 
+            mckpp_xios_read_restart
 
   PRIVATE
 
@@ -46,9 +49,9 @@ CONTAINS
     CALL xios_set_timestep(timestep=dtime) 
     CALL xios_set_domain_attr("domain_kpp", type="rectilinear", & 
         data_dim=1, mask_1d=mask, &  
-        ni_glo=NX, nj_glo=NY, & 
+        ni_glo=nx, nj_glo=ny, & 
         lonvalue_1d=lons, latvalue_1d=lats)
-    CALL xios_set_axis_attr("levels_kpp", n_glo=NZP1, value=levs) 
+    CALL xios_set_axis_attr("levels_kpp", n_glo=nzp1, value=levs) 
 
     CALL xios_close_context_definition()
 
@@ -59,13 +62,14 @@ CONTAINS
 
     dtime%second = kpp_const_fields%dto
     ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
-    start_date = xios_date(0000,01,01,00,00,00)+xios_day*(kpp_const_fields%startt+1)
+    start_date = xios_date(0000,01,01,00,00,00) + & 
+                 xios_day * ( kpp_const_fields%startt + 1 )
 
     ALLOCATE( lons(nx), lats(ny), levs(nzp1), mask(npts) ) 
-    lons = kpp_3d_fields%dlon(1:NX)
-    lats = kpp_3d_fields%dlat(1::NX)
+    lons = kpp_3d_fields%dlon_all
+    lats = kpp_3d_fields%dlat_all
     levs = kpp_const_fields%zm
-    mask = kpp_3d_fields%L_OCEAN
+    mask = kpp_3d_fields%l_ocean
 
   END SUBROUTINE mckpp_xios_set_dimensions
   

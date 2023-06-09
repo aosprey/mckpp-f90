@@ -41,7 +41,7 @@ CONTAINS
         CALL mckpp_netcdf_open(routine, file, ncid)
 
         CALL mckpp_netcdf_determine_boundaries( & 
-          routine, file, ncid, kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), & 
+          routine, file, ncid, kpp_const_fields%alon, kpp_const_fields%alat, & 
           offset_lon, offset_lat )
 
         start = (/ offset_lon, offset_lat /) 

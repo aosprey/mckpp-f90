@@ -8,7 +8,7 @@ MODULE mckpp_initialize_landsea_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
         max_message_len, nupe 
   USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, mckpp_scatter_field, &
-        l_root, root, npts_local, offset_global, start_global, end_global 
+        l_root, root, npts_local, inds_global
   USE mckpp_parameters, ONLY: npts, nx, ny
 
   IMPLICIT NONE
@@ -44,9 +44,9 @@ CONTAINS
           offset_lon, offset_lat)
 
         CALL mckpp_netcdf_get_var( routine, file, ncid, "longitude", & 
-                                   lon_in, offset_lon )
+                                   kpp_3d_fields%dlon_all, offset_lon )
         CALL mckpp_netcdf_get_var( routine, file, ncid, "latitude", & 
-                                   lat_in, offset_lat )
+                                   kpp_3d_fields%dlat_all, offset_lat )
 
         start = (/ offset_lon, offset_lat /)
         count = (/ nx, ny /) 
@@ -58,19 +58,9 @@ CONTAINS
 
       ENDIF 
 
-      ! Broadcast lons and lats 
-      CALL mckpp_broadcast_field(lon_in, nx, root)
-      CALL mckpp_broadcast_field(lat_in, ny, root) 
-
-      ! Expand to full grid
-      ipt = 1
-      DO j = 1, ny
-        DO i = 1, nx
-          kpp_3d_fields%dlon_all(ipt) = lon_in(i)
-          kpp_3d_fields%dlat_all(ipt) = lat_in(j)
-          ipt = ipt + 1 
-        END DO
-      END DO
+      ! Broadcast full vector of lons and lats 
+      CALL mckpp_broadcast_field(kpp_3d_fields%dlon_all, nx, root)
+      CALL mckpp_broadcast_field(kpp_3d_fields%dlat_all, ny, root) 
 
       ! Scatter ocdepth and lsm 
       CALL mckpp_scatter_field(ocdepth_global, kpp_3d_fields%ocdepth, root)
@@ -82,20 +72,18 @@ CONTAINS
     ! Generate a regularly spaced grid  
     ELSEIF (kpp_const_fields%l_reggrid) THEN    
 
-      ipt = 1
-      DO j = 1, ny
-        DO i = 1, nx
-          kpp_3d_fields%dlon(ipt) = kpp_const_fields%alon + (i-1) * & 
+      DO i = 1, nx 
+        kpp_3d_fields%dlon_all(i) = kpp_const_fields%alon + (i-1) * & 
                                     kpp_const_fields%delta_lon
-          kpp_3d_fields%dlat(ipt) = kpp_const_fields%alat + (j-1) * & 
+      END DO 
+      DO j = 1, ny 
+        kpp_3d_fields%dlat_all(i) = kpp_const_fields%alat + (j-1) * & 
                                     kpp_const_fields%delta_lat
-          ipt = ipt + 1 
-        ENDDO
-      ENDDO
+      END DO 
       kpp_3d_fields%ocdepth = -10000.
       kpp_3d_fields%L_OCEAN = .TRUE.
 
-    ! Not method specified
+    ! No method specified
     ELSE
 
       WRITE(message,*) "If you set L_REGGRID=.FALSE., you must specify a ", & 
@@ -105,9 +93,14 @@ CONTAINS
  
     ENDIF
 
-    ! Get local lat, lons 
-    kpp_3d_fields%dlat = kpp_3d_fields%dlat_all(start_global:end_global) 
-    kpp_3d_fields%dlon = kpp_3d_fields%dlon_all(start_global:end_global) 
+    ! Work out lons and lats for local domain
+    DO ipt = 1, npts_local 
+      i = inds_global(ipt,1) 
+      j = inds_global(ipt,2) 
+
+      kpp_3d_fields%dlon(ipt) = kpp_3d_fields%dlon_all(i)
+      kpp_3d_fields%dlat(ipt) = kpp_3d_fields%dlat_all(j)
+    END DO
 
     WRITE(nupe,*) "kpp_3d_fields%dlat_all = ", kpp_3d_fields%dlat_all
     WRITE(nupe,*) "kpp_3d_fields%dlon_all = ", kpp_3d_fields%dlon_all

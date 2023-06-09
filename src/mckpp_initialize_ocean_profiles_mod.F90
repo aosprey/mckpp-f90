@@ -38,7 +38,7 @@ CONTAINS
 
     CALL mckpp_netcdf_determine_boundaries( & 
       routine, file, ncid, &
-      kpp_3d_fields%dlon(1), kpp_3d_fields%dlat(1), offset_lon, offset_lat) 
+      kpp_const_fields%alon, kpp_const_fields%alat, offset_lon, offset_lat) 
     CALL mckpp_netcdf_get_coord(routine, file, ncid, "zvel", nz_in)
 
     ALLOCATE( z_in(nz_in) )

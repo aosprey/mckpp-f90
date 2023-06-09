@@ -3,16 +3,23 @@ MODULE mckpp_mpi_control
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_initialize_logs, mckpp_finalize_logs, &
         mckpp_print, mckpp_print_error, max_message_len 
-  USE mckpp_parameters, ONLY : npts, nz
+  USE mckpp_parameters, ONLY : nx, npts, nz
   USE mpi
   USE xios
 
   IMPLICIT NONE
 
-  INTEGER :: comm, rank, nproc, npts_local, offset_global, start_global, & 
-             end_global
+  INTEGER :: comm, rank, nproc
+  INTEGER :: npts_local, &                     ! local data size 
+             offset_global, &                  ! pos in global 1d array of npts
+             start_global, end_global          ! inds in global 1d array of npts
+  
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: inds_global ! i,j inds in global 2d 
+                                                      ! array of nx, ny
   INTEGER :: root = 0
   LOGICAL :: l_root
+  
+  ! Not used 
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
   INTEGER, PRIVATE :: subdomain_type
@@ -70,7 +77,7 @@ CONTAINS
   SUBROUTINE mckpp_decompose_domain()
 
     INTEGER, DIMENSION(2) :: global_sizes, local_sizes, starts
-    INTEGER :: tmp_type, dbl_size, ierr
+    INTEGER :: tmp_type, dbl_size, ierr, ind, ipt
     INTEGER(kind=MPI_ADDRESS_KIND) :: extent, start 
     CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN"
     CHARACTER(LEN=max_message_len) :: message
@@ -86,18 +93,30 @@ CONTAINS
     ! Decompose
     npts_local = npts / nproc
    
-    ! Work out global indices
+    ! Work out index in global 1d (npts) array 
     offset_global = rank*npts_local
     start_global = offset_global + 1 
     end_global = offset_global + npts_local 
 
-    IF (l_root) THEN
-      WRITE(message,*) "nproc, npts_local = ", nproc, npts_local 
-      CALL mckpp_print(routine, message) 
-      WRITE(message,*) "offset_global, start_global, end_global = ", & 
-                        offset_global, start_global, end_global
-      CALL mckpp_print(routine, message) 
-    END IF
+    ! Work out i, j indices in 2d (nx,ny) array
+    ALLOCATE( inds_global(npts_local,2) ) 
+
+    ipt = 1 
+    DO ind = start_global, end_global 
+      inds_global(ipt,1) = MOD( (ind-1), nx ) + 1
+      inds_global(ipt,2) = ( (ind-1) / nx ) + 1 
+      ipt = ipt+1
+    END DO 
+
+    WRITE(message,*) "nproc, npts_local = ", nproc, npts_local 
+    CALL mckpp_print(routine, message) 
+    WRITE(message,*) "offset_global, start_global, end_global = ", & 
+                      offset_global, start_global, end_global
+    CALL mckpp_print(routine, message) 
+    WRITE(message, *) "inds_global(:,1) = ", inds_global(:,1)
+    CALL mckpp_print(routine, message) 
+    WRITE(message, *) "inds_global(:,2) = ", inds_global(:,2)
+    CALL mckpp_print(routine, message) 
 
     ! Setup derived type for sub-domains that we can use for scatters
     global_sizes = (/ npts, nz /)
