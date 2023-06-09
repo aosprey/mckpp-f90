@@ -3,7 +3,7 @@ MODULE mckpp_mpi_control
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_initialize_logs, mckpp_finalize_logs, &
         mckpp_print, mckpp_print_error, max_message_len 
-  USE mckpp_parameters, ONLY : nx, npts, nz
+  USE mckpp_parameters, ONLY : nx, npts, nzp1
   USE mpi
   USE xios
 
@@ -119,8 +119,8 @@ CONTAINS
     CALL mckpp_print(routine, message) 
 
     ! Setup derived type for sub-domains that we can use for scatters
-    global_sizes = (/ npts, nz /)
-    local_sizes = (/ npts_local, nz /)
+    global_sizes = (/ npts, nzp1 /)
+    local_sizes = (/ npts_local, nzp1 /)
     starts = (/ 0,0 /)
 
     CALL MPI_type_create_subarray( 2, global_sizes, local_sizes, starts, &
@@ -169,18 +169,18 @@ CONTAINS
   END SUBROUTINE mckpp_scatter_field_int_1d
 
   
-  ! Scatter 2d array (npts, nz) 
+  ! Scatter 2d array (npts, nzp1) 
   ! - needs to be these exact sizes 
   SUBROUTINE mckpp_scatter_field_real_2d(global, local, root)
 
-    REAL, DIMENSION(npts,nz), INTENT(IN) :: global
-    REAL, DIMENSION(npts_local,nz), INTENT(OUT) :: local
+    REAL, DIMENSION(npts,nzp1), INTENT(IN) :: global
+    REAL, DIMENSION(npts_local,nzp1), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
 
     INTEGER :: ierr
 
     CALL MPI_scatter( global, 1, subdomain_type, &
-                      local, npts_local*nz, MPI_DOUBLE_PRECISION, & 
+                      local, npts_local*nzp1, MPI_DOUBLE_PRECISION, & 
                       root, comm, ierr)  
 
   END SUBROUTINE mckpp_scatter_field_real_2d

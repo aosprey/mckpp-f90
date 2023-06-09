@@ -61,16 +61,16 @@ CONTAINS
     ! Initialize water type for optical properties of seawater
     CALL mckpp_initialize_optics()
 
-    CALL mckpp_finalize_logs()
-    CALL mpi_barrier(comm, ierr) 
-    CALL mckpp_abort(routine, "stop")
-
     ! Initialize ocean profiles
     IF ( kpp_const_fields%l_restart ) THEN     
       CALL mckpp_read_restart()
     ELSE
       CALL mckpp_initialize_ocean_profiles()
     ENDIF
+
+    CALL mckpp_finalize_logs()
+    CALL mpi_barrier(comm, ierr) 
+    CALL mckpp_abort(routine, "stop")
  
     ! Initialize boundary conditions
     IF ( kpp_const_fields%l_climsst ) CALL mckpp_read_sst()
