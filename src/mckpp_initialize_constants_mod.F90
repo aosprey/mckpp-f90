@@ -140,7 +140,6 @@ SUBROUTINE mckpp_initialize_constants(kpp_const_fields)
   ENDIF
   kpp_const_fields%startt=kpp_const_fields%startt/kpp_const_fields%spd
   kpp_const_fields%finalt=kpp_const_fields%finalt/kpp_const_fields%spd
-  kpp_const_fields%time=kpp_const_fields%startt
  
   kpp_const_fields%L_OUTKELVIN=L_OUTKELVIN
   kpp_const_fields%L_COUPLE=L_COUPLE

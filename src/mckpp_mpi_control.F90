@@ -84,7 +84,7 @@ CONTAINS
     npts_local = npts / nproc
    
     ! Work out global indices
-    offset_global = (rank-1)*npts_local
+    offset_global = rank*npts_local
     start_global = offset_global + 1 
     end_global = offset_global + npts_local 
 
@@ -131,10 +131,11 @@ CONTAINS
 
   
   ! Scatter 2d array (npts, nz) 
+  ! - needs to be these exact sizes 
   SUBROUTINE mckpp_scatter_field_2d(global, local, root)
 
-    REAL, DIMENSION(:,:), INTENT(IN) :: global
-    REAL, DIMENSION(:,:), INTENT(OUT) :: local
+    REAL, DIMENSION(npts,nz), INTENT(IN) :: global
+    REAL, DIMENSION(npts_local,nz), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
 
     INTEGER :: ierr

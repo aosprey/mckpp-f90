@@ -429,12 +429,12 @@ CONTAINS
     ALLOCATE( kpp_3d_fields%jerlov(npts_local) )
     ALLOCATE( kpp_3d_fields%nmodeadv(npts_local,2) )
     ALLOCATE( kpp_3d_fields%modeadv(npts_local,maxmodeadv,2) )
+    ALLOCATE( kpp_3d_fields%cplwght(npts_local) )
 
     ! These fields are on the full domain (npts) or
     ! driving domain (npts_globe)
     ! May only be valid on root pe
     ! Do we need to store these globally? 
-    ALLOCATE( kpp_3d_fields%cplwght(npts_globe) )
     IF ( kpp_const_fields%L_COUPLE ) THEN 
       ALLOCATE( kpp_3d_fields%sst(nx_globe,ny_globe) )
       ALLOCATE( kpp_3d_fields%iceconc(nx_globe,ny_globe) )

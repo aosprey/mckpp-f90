@@ -1,6 +1,4 @@
 MODULE mckpp_abort_mod
-  
-  IMPLICIT NONE
 
   USE mckpp_log_messages, ONLY: mckpp_print_stderr, mckpp_finalize_logs
   USE mpi 

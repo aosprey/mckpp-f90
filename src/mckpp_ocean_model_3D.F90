@@ -28,9 +28,6 @@ PROGRAM mckpp_ocean_model_3d
 
   CALL mckpp_initialize_namelist()
   CALL mckpp_initialize_time()
-  CALL mpi_barrier(comm, ierr) 
-  CALL mckpp_abort(routine, "stop")
-  
   CALL mckpp_initialize_fields()
   CALL mckpp_initialize_output()
 

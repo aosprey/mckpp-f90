@@ -8,8 +8,7 @@ MODULE mckpp_initialize_landsea_mod
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
         max_message_len, nupe 
   USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, mckpp_scatter_field, &
-        l_root, root, npts_local, offset_global, start_global, & 
-        end_global 
+        l_root, root, npts_local, offset_global, start_global, end_global 
   USE mckpp_parameters, ONLY: npts, nx, ny
 
   IMPLICIT NONE
@@ -22,7 +21,7 @@ CONTAINS
     INTEGER, DIMENSION(2) :: start, count
     REAL, DIMENSION(nx) :: lon_in
     REAL, DIMENSION(ny) :: lat_in
-    REAL, DIMENSION(npts) :: landsea_global, ocedepth_global 
+    REAL, DIMENSION(npts) :: landsea_global, ocdepth_global 
     REAL, DIMENSION(npts_local) :: landsea
     CHARACTER(LEN=max_nc_filename_len) :: file
     CHARACTER(LEN=24) :: routine = "MCKPP_INITIALIZE_LANDSEA"

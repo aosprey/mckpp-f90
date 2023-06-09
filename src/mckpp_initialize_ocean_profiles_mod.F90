@@ -26,15 +26,10 @@ CONTAINS
 
     CALL mckpp_print(routine, "")
  
-    IF ( .NOT. kpp_const_fields%l_initdata ) THEN
-      CALL mckpp_print_error(routine, "No code for l_initdata=.FALSE.")
-      CALL mckpp_abort()
-    END IF
-    IF ( .NOT. kpp_const_fields%l_interpinit ) THEN
-      CALL mckpp_print_error(routine, &
-                             "You have to interpolate initial profiles")
-      CALL mckpp_abort()
-    END IF
+    IF ( .NOT. kpp_const_fields%l_initdata ) & 
+      CALL mckpp_abort(routine, "No code for l_initdata=.FALSE.")
+    IF ( .NOT. kpp_const_fields%l_interpinit ) &
+      CALL mckpp_abort(routine, "You have to interpolate initial profiles")
 
     file = kpp_const_fields%initdata_file
     WRITE(message,*) "Reading ", TRIM(file)

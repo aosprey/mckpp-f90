@@ -5,7 +5,8 @@ MODULE mckpp_initialize_coupling_weight_mod
         max_nc_filename_len, mckpp_netcdf_determine_boundaries, & 
         mckpp_netcdf_get_var
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-  USE mckpp_parameters, ONLY: nx, ny
+  USE mckpp_mpi_control, ONLY: mckpp_scatter_field, l_root, root
+  USE mckpp_parameters, ONLY: nx, ny, npts
 
   IMPLICIT NONE
 
@@ -23,7 +24,7 @@ CONTAINS
 
     INTEGER :: ncid, offset_lat, offset_lon
     INTEGER, DIMENSION(2) :: start, count 
-    REAL, DIMENSION(nx, ny) :: cplwght_global
+    REAL, DIMENSION(npts) :: cplwght_global
     CHARACTER(LEN=max_nc_filename_len) :: file
     CHARACTER(LEN=31) :: routine = "MCKPP_INITIALIZE_COUPLINGWEIGHT"
     CHARACTER(LEN=max_message_len) :: message
