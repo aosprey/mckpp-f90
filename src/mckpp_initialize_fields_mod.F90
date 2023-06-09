@@ -30,7 +30,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_temperatures_bottom_mod, ONLY: mckpp_read_temperatures_bottom
   USE mckpp_xios_control, ONLY: mckpp_read_restart
-  USE mpi 
+  USE mpi
 
   IMPLICIT NONE
 
@@ -55,12 +55,12 @@ CONTAINS
     CALL mckpp_initialize_coupling_weight()    
     CALL mckpp_initialize_flags()
 
+    ! Initialize advection options
+    CALL mckpp_initialize_advection()
+
     CALL mckpp_finalize_logs()
     CALL mpi_barrier(comm, ierr) 
     CALL mckpp_abort(routine, "stop")
-
-    ! Initialize advection options
-    CALL mckpp_initialize_advection()
 
     ! Initialize relaxation of SST, temperature and/or salinity
     IF ( kpp_const_fields%l_relax_sst .OR. kpp_const_fields%l_relax_sal & 

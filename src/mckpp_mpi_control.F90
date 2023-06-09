@@ -10,13 +10,16 @@ MODULE mckpp_mpi_control
   IMPLICIT NONE
 
   INTEGER :: comm, rank, nproc, npts_local, offset_global, start_global, & 
-             end_global, subdomain_type
+             end_global
   INTEGER :: root = 0
   LOGICAL :: l_root
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
+  INTEGER, PRIVATE :: subdomain_type
+
   INTERFACE mckpp_scatter_field
-    MODULE PROCEDURE mckpp_scatter_field_1d, mckpp_scatter_field_2d
+    MODULE PROCEDURE mckpp_scatter_field_real_1d, mckpp_scatter_field_real_2d, &
+      mckpp_scatter_field_int_1d
   END INTERFACE mckpp_scatter_field 
 
 CONTAINS
@@ -100,6 +103,7 @@ CONTAINS
     global_sizes = (/ npts, nz /)
     local_sizes = (/ npts_local, nz /)
     starts = (/ 0,0 /)
+
     CALL MPI_type_create_subarray( 2, global_sizes, local_sizes, starts, &
                                    MPI_ORDER_FORTRAN, MPI_DOUBLE_PRECISION, & 
                                    tmp_type, ierr )
@@ -109,16 +113,16 @@ CONTAINS
     extent = dbl_size*npts_local
 
     CALL MPI_type_create_resized( tmp_type, start, extent, subdomain_type, ierr )
-    CALL MPI_type_commit(subdomain_type, ierr)
+    CALL MPI_type_commit( subdomain_type, ierr )
 
   END SUBROUTINE mckpp_decompose_domain
 
 
-  ! Scatter 1d array (npts) 
-  SUBROUTINE mckpp_scatter_field_1d(global, local, root)
+  ! Scatter 1d real array (npts) 
+  SUBROUTINE mckpp_scatter_field_real_1d(global, local, root)
 
-    REAL, DIMENSION(:), INTENT(IN) :: global
-    REAL, DIMENSION(:), INTENT(OUT) :: local
+    REAL, DIMENSION(npts), INTENT(IN) :: global
+    REAL, DIMENSION(npts_local), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
 
     INTEGER :: ierr
@@ -127,12 +131,28 @@ CONTAINS
                       local, npts_local, MPI_DOUBLE_PRECISION, & 
                       root, comm, ierr )  
 
-  END SUBROUTINE mckpp_scatter_field_1d
+  END SUBROUTINE mckpp_scatter_field_real_1d
+
+
+  ! Scatter 1d integer array (npts) 
+  SUBROUTINE mckpp_scatter_field_int_1d(global, local, root)
+
+    INTEGER, DIMENSION(npts), INTENT(IN) :: global
+    INTEGER, DIMENSION(npts_local), INTENT(OUT) :: local
+    INTEGER, INTENT(IN) :: root
+
+    INTEGER :: ierr
+
+    CALL MPI_scatter( global, npts_local, MPI_INTEGER, &
+                      local, npts_local, MPI_INTEGER, & 
+                      root, comm, ierr )  
+
+  END SUBROUTINE mckpp_scatter_field_int_1d
 
   
   ! Scatter 2d array (npts, nz) 
   ! - needs to be these exact sizes 
-  SUBROUTINE mckpp_scatter_field_2d(global, local, root)
+  SUBROUTINE mckpp_scatter_field_real_2d(global, local, root)
 
     REAL, DIMENSION(npts,nz), INTENT(IN) :: global
     REAL, DIMENSION(npts_local,nz), INTENT(OUT) :: local
@@ -144,7 +164,7 @@ CONTAINS
                       local, npts_local*nz, MPI_DOUBLE_PRECISION, & 
                       root, comm, ierr)  
 
-  END SUBROUTINE mckpp_scatter_field_2d
+  END SUBROUTINE mckpp_scatter_field_real_2d
   
 
   SUBROUTINE mckpp_broadcast_field(field, count, root)
