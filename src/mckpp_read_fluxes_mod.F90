@@ -2,6 +2,7 @@ MODULE mckpp_read_fluxes_mod
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_mpi_control, ONLY: root, l_root, mckpp_scatter_field, npts_local
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, & 
        mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
        mckpp_netcdf_get_coord, mckpp_netcdf_get_var
@@ -62,45 +63,69 @@ CONTAINS
 
     IMPLICIT NONE
 
-    REAL, DIMENSION(npts), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, shf, & 
-                                          rain, snow
+    REAL, DIMENSION(npts_local), INTENT(OUT) :: taux, tauy, swf, lwf, lhf, & 
+                                                shf, rain, snow
+    REAL, DIMENSION(npts) :: var_global
     CHARACTER(LEN=max_nc_filename_len) :: file  
     REAL :: update_time
     INTEGER :: ncid
     CHARACTER(LEN=17) :: routine = "MCKPP_READ_FLUXES"
     CHARACTER(LEN=max_message_len) :: message
 
-    file = kpp_const_fields%forcing_file
-    CALL mckpp_netcdf_open(routine, file, ncid)
+    IF (l_root) THEN 
 
-    ! Work out time to read in from 
-    CALL mckpp_get_update_time( & 
-      file, time, kpp_const_fields%ndtocn, file_times, & 
-      num_times, .FALSE., 0, update_time, start(3), method=1 )
+      file = kpp_const_fields%forcing_file
+      CALL mckpp_netcdf_open(routine, file, ncid)
 
-    WRITE(message,*) 'Reading fluxes for time ', update_time
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) 'Reading fluxes from time point ',start(3)
-    CALL mckpp_print(routine, message)
+      ! Work out time to read in from 
+      CALL mckpp_get_update_time( & 
+        file, time, kpp_const_fields%ndtocn, file_times, & 
+        num_times, .FALSE., 0, update_time, start(3), method=1 )
 
-    ! Read fields
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "taux", taux, & 
-                               start, count, 3 )
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "tauy", tauy, & 
-                               start, count, 3 )   
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "swf", swf, &
-                               start, count, 3 )   
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "lwf", lwf, & 
-                               start, count, 3 )   
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "lhf", lhf, & 
-                               start, count, 3 )   
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "shf", shf, & 
-                               start, count, 3 )   
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "precip", rain, & 
-                               start, count, 3)   
+      WRITE(message,*) 'Reading fluxes for time ', update_time
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) 'Reading fluxes from time point ',start(3)
+      CALL mckpp_print(routine, message)
+
+      ! Read fields
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "taux", var_global, & 
+                                 start, count, 3 )
+    ENDIF
+    CALL mckpp_scatter_field( var_global, taux, root) 
+
+    IF (l_root) & 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "tauy", var_global, & 
+                                 start, count, 3 ) 
+    CALL mckpp_scatter_field( var_global, tauy, root) 
+
+    IF (l_root) & 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "swf", var_global, &
+                                  start, count, 3 ) 
+    CALL mckpp_scatter_field( var_global, swf, root) 
+
+    IF (l_root) &   
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "lwf", var_global, & 
+                                 start, count, 3 )   
+    CALL mckpp_scatter_field( var_global, lwf, root) 
+
+    IF (l_root) & 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "lhf", var_global, & 
+                                 start, count, 3 )   
+    CALL mckpp_scatter_field( var_global, lhf, root) 
+
+    IF (l_root) &
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "shf", var_global, & 
+                                 start, count, 3 )   
+    CALL mckpp_scatter_field( var_global, shf, root) 
+
+    IF (l_root) & 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "precip", var_global, & 
+                                 start, count, 3)   
+    CALL mckpp_scatter_field( var_global, rain, root) 
+
     snow = 0.0
 
-    CALL mckpp_netcdf_close(routine, file, ncid)
+    IF (l_root) CALL mckpp_netcdf_close(routine, file, ncid)
 
   END SUBROUTINE mckpp_read_fluxes
 

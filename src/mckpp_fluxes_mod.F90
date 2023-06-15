@@ -2,7 +2,8 @@ MODULE mckpp_fluxes_mod
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, & 
         kpp_const_type
-  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
+  USE mckpp_log_messages, ONLY: mckpp_print, max_message_len, nupe
+  USE mckpp_mpi_control, ONLY: l_root, npts_local
   USE mckpp_parameters, ONLY: npts, nz, nsflxs
   USE mckpp_read_fluxes_mod, ONLY: mckpp_initialize_fluxes_file, & 
         mckpp_read_fluxes
@@ -26,9 +27,10 @@ CONTAINS
     kpp_3d_fields%sflux = 0.0
     kpp_3d_fields%sflux(:,:,5,0) = 1e-20
 
-    IF ( kpp_const_fields%l_fluxdata ) & 
-      CALL mckpp_initialize_fluxes_file()
- 
+    IF ( kpp_const_fields%l_fluxdata ) THEN 
+      IF ( l_root ) CALL mckpp_initialize_fluxes_file()
+    END IF  
+
   END SUBROUTINE mckpp_initialize_fluxes
 
 
@@ -50,10 +52,20 @@ CONTAINS
     ELSE
       CALL mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     END IF
+
+    WRITE(nupe, *) "taux = ", taux
+    WRITE(nupe, *) "tauy = ", tauy
+    WRITE(nupe, *) "swf = ", swf
+    WRITE(nupe, *) "lwf = ", lwf
+    WRITE(nupe, *) "lhf = ", lhf
+    WRITE(nupe, *) "shf = ", shf 
+    WRITE(nupe, *) "rain = ", rain 
+    WRITE(nupe, *) "snow = ", snow
+
       
 !!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt,kpp_1d_fields)
 !!$OMP DO SCHEDULE(dynamic)
-    DO ipt = 1, npts         
+    DO ipt = 1, npts_local        
       IF ( kpp_3d_fields%l_ocean(ipt) ) THEN 
 
         IF ( (taux(ipt) .EQ. 0.0) .AND. (tauy(ipt) .EQ. 0.0) ) & 
@@ -85,6 +97,8 @@ CONTAINS
     END DO
 !!$OMP END DO
 !!$OMP END PARALLEL
+
+    WRITE(nupe,*) "kpp_3d_fields%wxnt(:,1,1) = ", kpp_3d_fields%wxnt(:,1,1)
   
   END SUBROUTINE mckpp_fluxes
 
