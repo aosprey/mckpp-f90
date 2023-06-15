@@ -26,15 +26,8 @@ END SUBROUTINE mckpp_physics_overrides_bottomtemp
 
 ! Written by NPK 27/8/07
 SUBROUTINE mckpp_physics_overrides_sst0()
-  
-  INTEGER ix,iy,ipoint
-
-  DO iy=1,ny
-     DO ix=1,nx
-        ipoint=(iy-1)*nx+ix
-        kpp_3d_fields%SST0(ipoint)=kpp_3d_fields%SST(ix+kpp_const_fields%ifirst-1,iy+kpp_const_fields%jfirst-1)
-     ENDDO
-  ENDDO
+ 
+  kpp_3d_fields%sst0 = kpp_3d_fields%sst 
   
 END SUBROUTINE mckpp_physics_overrides_sst0
 
