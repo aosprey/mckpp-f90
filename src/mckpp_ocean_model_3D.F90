@@ -54,11 +54,11 @@ PROGRAM mckpp_ocean_model_3d
       CALL mckpp_boundary_update()
       CALL mckpp_stop_timer("Update ancillaries")
     ENDIF
-
+ 
     ! Physics
     CALL mckpp_physics_driver()
 
-    ! Diagnostic output 
+   ! Diagnostic output 
     CALL mckpp_start_timer("Diagnostic output") 
     CALL mckpp_output_control()
     CALL mckpp_stop_timer("Diagnostic output")

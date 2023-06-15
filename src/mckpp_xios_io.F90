@@ -208,13 +208,7 @@ CONTAINS
     CALL xios_send_field("PminusE_in", kpp_3d_fields%sflux(:,6,5,0))
 
     ! Coupling weight 
-    DO ix=kpp_const_fields%ifirst,kpp_const_fields%ilast
-      DO iy=kpp_const_fields%jfirst,kpp_const_fields%jlast
-        ipt=(iy-1)*NX_GLOBE+ix
-        temp_1d((iy-kpp_const_fields%jfirst)*NX+ix-kpp_const_fields%ifirst+1)=kpp_3d_fields%cplwght(ipt)
-      ENDDO
-    ENDDO
-    CALL xios_send_field("cplwght", temp_1d)
+     CALL xios_send_field("cplwght", kpp_3d_fields%cplwght) 
 
     ! Fraction of points below freezing 
     CALL xios_send_field("freeze_flag", kpp_3d_fields%freeze_flag)
@@ -339,7 +333,9 @@ CONTAINS
       ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, & 
       data_ni=npts_local, data_ibegin=data_ibegin)
     IF (.NOT. read_mode) THEN
-      CALL xios_set_domain_attr("domain_kpp_nomask", lonvalue_1d=lons, latvalue_1d=lats)
+      CALL xios_set_domain_attr("domain_kpp_nomask", & 
+            lonvalue_1d=lons, latvalue_1d=lats, & 
+            lon_name="longitude", lat_name="latitude")
     END IF 
 
     CALL xios_get_handle("axis_definition", axisdefn_hdl) 
