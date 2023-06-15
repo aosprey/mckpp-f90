@@ -28,6 +28,11 @@ MODULE mckpp_mpi_control
 
   INTEGER, PRIVATE :: subdomain_type
 
+
+  INTERFACE mckpp_broadcast_field 
+    MODULE PROCEDURE mckpp_broadcast_field_real, mckpp_broadcast_field_logical
+  END INTERFACE mckpp_broadcast_field 
+
   INTERFACE mckpp_scatter_field
     MODULE PROCEDURE mckpp_scatter_field_real_1d, mckpp_scatter_field_real_2d, &
       mckpp_scatter_field_int_1d
@@ -212,7 +217,6 @@ CONTAINS
     INTEGER, DIMENSION(npts), INTENT(IN) :: global
     INTEGER, DIMENSION(npts_local), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
-
     INTEGER :: ierr
 
     CALL MPI_scatter( global, npts_local, MPI_INTEGER, &
@@ -229,7 +233,6 @@ CONTAINS
     REAL, DIMENSION(npts,nzp1), INTENT(IN) :: global
     REAL, DIMENSION(npts_local,nzp1), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
-
     INTEGER :: ierr
 
     CALL MPI_scatter( global, 1, subdomain_type, &
@@ -239,16 +242,26 @@ CONTAINS
   END SUBROUTINE mckpp_scatter_field_real_2d
   
 
-  SUBROUTINE mckpp_broadcast_field(field, count, root)
+  SUBROUTINE mckpp_broadcast_field_real(field, count, root)
 
     REAL, DIMENSION(:), INTENT(INOUT) :: field
     INTEGER, INTENT(IN) :: count, root
-
     INTEGER :: ierr
 
     CALL MPI_bcast( field, count, MPI_DOUBLE_PRECISION, root, comm, ierr ) 
 
-  END SUBROUTINE mckpp_broadcast_field
+  END SUBROUTINE mckpp_broadcast_field_real 
+
+
+  SUBROUTINE mckpp_broadcast_field_logical(field, count, root) 
+
+    LOGICAL, DIMENSION(:), INTENT(INOUT) :: field
+    INTEGER, INTENT(IN) :: count, root
+    INTEGER :: ierr
+
+    CALL MPI_bcast( field, count, MPI_LOGICAL, root, comm, ierr ) 
+
+  END SUBROUTINE mckpp_broadcast_field_logical
 
 
   ! 1d decomposition
@@ -307,7 +320,6 @@ CONTAINS
     REAL, DIMENSION(:), INTENT(IN) :: global
     REAL, DIMENSION(:), INTENT(OUT) :: local
     INTEGER, INTENT(IN) :: root
-
     INTEGER :: ierr
 
     CALL MPI_scatterv(global, npts_local_all, offset_global_all, & 

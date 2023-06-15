@@ -6,9 +6,9 @@ MODULE mckpp_initialize_landsea_mod
         mckpp_netcdf_determine_boundaries, mckpp_netcdf_get_var, & 
         max_nc_filename_len
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
-        max_message_len, nupe 
+        max_message_len, nupe
   USE mckpp_mpi_control, ONLY: mckpp_broadcast_field, mckpp_scatter_field, &
-        l_root, root, npts_local, inds_global
+        l_root, root, npts_local, inds_global, start_global, end_global
   USE mckpp_parameters, ONLY: npts, nx, ny
 
   IMPLICIT NONE
@@ -56,18 +56,18 @@ CONTAINS
                                    ocdepth_global, start, count, 2 )       
         CALL mckpp_netcdf_close(routine, file, ncid)
 
+        ! Generate logical lsm
+        kpp_3d_fields%l_ocean_all = landsea_global .NE. 1.0 
+
       ENDIF 
 
-      ! Broadcast full vector of lons and lats 
+      ! Broadcast full vector of lons and lats, and global lsm 
       CALL mckpp_broadcast_field(kpp_3d_fields%dlon_all, nx, root)
       CALL mckpp_broadcast_field(kpp_3d_fields%dlat_all, ny, root) 
+      CALL mckpp_broadcast_field(kpp_3d_fields%l_ocean_all, npts, root) 
 
-      ! Scatter ocdepth and lsm 
+      ! Scatter ocdepth
       CALL mckpp_scatter_field(ocdepth_global, kpp_3d_fields%ocdepth, root)
-      CALL mckpp_scatter_field(landsea_global, landsea, root)
-
-      ! Generate logical lsm 
-      kpp_3d_fields%l_ocean = landsea .NE. 1.0 
 
     ! Generate a regularly spaced grid  
     ELSEIF (kpp_const_fields%l_reggrid) THEN    
@@ -81,7 +81,7 @@ CONTAINS
                                     kpp_const_fields%delta_lat
       END DO 
       kpp_3d_fields%ocdepth = -10000.
-      kpp_3d_fields%L_OCEAN = .TRUE.
+      kpp_3d_fields%l_ocean_all = .TRUE.
 
     ! No method specified
     ELSE
@@ -93,14 +93,18 @@ CONTAINS
  
     ENDIF
 
-    ! Work out lons and lats for local domain
+    ! Work out lons, lats and lsm for local domain
     DO ipt = 1, npts_local 
       i = inds_global(ipt,1) 
-      j = inds_global(ipt,2) 
-
       kpp_3d_fields%dlon(ipt) = kpp_3d_fields%dlon_all(i)
+    END DO 
+
+    DO ipt = 1, npts_local 
+      j = inds_global(ipt,2) 
       kpp_3d_fields%dlat(ipt) = kpp_3d_fields%dlat_all(j)
     END DO
+    
+    kpp_3d_fields%l_ocean = kpp_3d_fields%l_ocean_all(start_global:end_global)
 
     WRITE(nupe,*) "kpp_3d_fields%dlat_all = ", kpp_3d_fields%dlat_all
     WRITE(nupe,*) "kpp_3d_fields%dlon_all = ", kpp_3d_fields%dlon_all

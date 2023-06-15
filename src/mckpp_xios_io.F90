@@ -7,8 +7,8 @@ MODULE mckpp_xios_io
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, & 
         update_context
-  USE mckpp_mpi_control, ONLY: comm, inds_global, npts_local, ni, nj, ibegin, &
-        jbegin, data_ni, data_ibegin
+  USE mckpp_mpi_control, ONLY: comm, inds_global, start_global, end_global, & 
+        npts_local, ni, nj, ibegin, jbegin, data_ni, data_ibegin
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
   USE mckpp_time_control, ONLY: ntime, time
@@ -65,18 +65,29 @@ CONTAINS
   ! Need to call this after mckpp_initialize_fields() 
   SUBROUTINE mckpp_xios_define_dimensions() 
 
+    INTEGER :: ipt, ix, iy
+
     dtime%second = kpp_const_fields%dto
 
     ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
     start_date = xios_date(0000,01,01,00,00,00) + & 
                  xios_day * ( kpp_const_fields%startt + 1 )
 
-    ! Maybe don't need to define these variables 
-    ALLOCATE( lons(nx), lats(ny), levs(nzp1), mask(npts) ) 
-    lons = kpp_3d_fields%dlon_all
-    lats = kpp_3d_fields%dlat_all
+    ! Need the lons, lats and mask, for the 2d local subdomain 
+    ALLOCATE( lons(ni), lats(nj), levs(nzp1), mask(ni*nj) ) 
+
+    lons = kpp_3d_fields%dlon_all(ibegin+1:ibegin+ni) 
+    lats = kpp_3d_fields%dlat_all(jbegin+1:jbegin+nj)
+
     levs = kpp_const_fields%zm
-    mask = kpp_3d_fields%l_ocean
+
+    ipt = 1 
+    DO ix = ibegin + 1, ibegin + ni 
+      DO iy = jbegin + 1, jbegin + nj 
+        mask = kpp_3d_fields%l_ocean_all( ix + (iy-1)*nx ) 
+        ipt = ipt+1
+      END DO 
+    END DO 
 
   END SUBROUTINE mckpp_xios_define_dimensions
   

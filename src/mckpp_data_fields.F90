@@ -86,6 +86,7 @@ MODULE mckpp_data_fields
 
     LOGICAL, ALLOCATABLE :: & 
         l_ocean(:), & 
+        l_ocean_all(:), &
         l_initflag(:), &
         run_physics(:)
 
@@ -438,6 +439,7 @@ CONTAINS
     ALLOCATE( kpp_3d_fields%snowdepth(npts_local) )
     ALLOCATE( kpp_3d_fields%dlat_all(ny) )
     ALLOCATE( kpp_3d_fields%dlon_all(nx) )
+    ALLOCATE( kpp_3d_fields%l_ocean_all(npts) )
 
   END SUBROUTINE mckpp_allocate_3d_fields
 
