@@ -1,8 +1,10 @@
 MODULE mckpp_physics_overrides
 
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, kpp_const_type
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type, & 
+        kpp_const_type
   USE mckpp_log_messages, ONLY: mckpp_print_warning, max_message_len
-  USE mckpp_parameters, ONLY: nx, ny, npts, nzp1
+  USE mckpp_mpi_control, ONLY: npts_local
+  USE mckpp_parameters, ONLY: nzp1
   
   IMPLICIT NONE
   
@@ -11,14 +13,15 @@ CONTAINS
 ! Written by NPK 10/4/08
 SUBROUTINE mckpp_physics_overrides_bottomtemp()
 
-  INTEGER ipt,z
+  INTEGER :: ipt
   
-  DO ipt=1,npts
-     kpp_3d_fields%tinc_fcorr(ipt,NZP1)=kpp_3d_fields%bottom_temp(ipt)-kpp_3D_fields%X(ipt,NZP1,1)
-     kpp_3d_fields%ocnTcorr(ipt,NZP1)=kpp_3d_fields%tinc_fcorr(ipt,NZP1)*&
-          kpp_3d_fields%rho(ipt,NZP1)*kpp_3d_fields%cp(ipt,NZP1)/&
-          kpp_const_fields%dto
-     kpp_3d_fields%X(ipt,NZP1,1) = kpp_3d_fields%bottom_temp(ipt)
+  DO ipt = 1, npts_local
+     kpp_3d_fields%tinc_fcorr(ipt,nzp1) = kpp_3d_fields%bottom_temp(ipt) - & 
+                                          kpp_3D_fields%X(ipt,nzp1,1)
+     kpp_3d_fields%ocnTcorr(ipt,nzp1) = kpp_3d_fields%tinc_fcorr(ipt,nzp1) * &
+                 kpp_3d_fields%rho(ipt,nzp1) * kpp_3d_fields%cp(ipt,nzp1) / &
+                 kpp_const_fields%dto
+     kpp_3d_fields%X(ipt,nzp1,1) = kpp_3d_fields%bottom_temp(ipt)
   ENDDO
   
 END SUBROUTINE mckpp_physics_overrides_bottomtemp
@@ -76,12 +79,12 @@ SUBROUTINE mckpp_physics_overrides_check_profile(kpp_1d_fields,kpp_const_fields)
   ! Note that the value of the flag is equal to the *fraction* of levels
   ! at that point that were < -1.8C.
   IF (kpp_1d_fields%L_OCEAN .and. kpp_const_fields%L_NO_FREEZE) THEN
-     DO z=1,NZP1
+     DO z=1,nzp1
         IF (kpp_1d_fields%X(z,1) .lt. -1.8) THEN
            kpp_1d_fields%tinc_fcorr(z)=kpp_1d_fields%tinc_fcorr(z)+&
                 (-1.8-kpp_1d_fields%X(z,1))
            kpp_1d_fields%X(z,1)=-1.8
-           kpp_1d_fields%freeze_flag=kpp_1d_fields%freeze_flag+1.0/REAL(NZP1)
+           kpp_1d_fields%freeze_flag=kpp_1d_fields%freeze_flag+1.0/REAL(nzp1)
         ENDIF
      ENDDO
   ENDIF

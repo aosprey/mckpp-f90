@@ -3,6 +3,7 @@ MODULE mckpp_initialize_ocean
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, kpp_1d_type
   USE mckpp_log_messages, ONLY: mckpp_print
+  USE mckpp_mpi_control, ONLY: npts_local
   USE mckpp_parameters
   USE mckpp_types_transfer, ONLY: mckpp_fields_3dto1d, mckpp_fields_1dto3d
   USE mckpp_physics_verticalmixing_mod, ONLY: mckpp_physics_verticalmixing
@@ -47,11 +48,11 @@ SUBROUTINE MCKPP_INITIALIZE_OCEAN_MODEL()
 
 !$OMP PARALLEL DEFAULT(none) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
-!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts_local, nvel, nsclr, nvp1, nsp1, itermax) &
 !$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv) &
 !$OMP PRIVATE(ipt, k, l, deltaz, kpp_1d_fields, hmix0, kmix0)
 !$OMP DO SCHEDULE(dynamic)
-     DO ipt=1,npts
+     DO ipt=1,npts_local
         IF (kpp_3d_fields%run_physics(ipt)) THEN
 
           CALL mckpp_fields_3dto1d(kpp_3d_fields,ipt,kpp_1d_fields)

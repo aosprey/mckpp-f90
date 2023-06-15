@@ -2,6 +2,7 @@ MODULE mckpp_physics_driver_mod
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_1d_type, kpp_const_fields
   USE mckpp_timer, ONLY: mckpp_define_new_timer, mckpp_start_timer, mckpp_stop_timer
+  USE mckpp_mpi_control, ONLY: npts_local
   USE mckpp_parameters
   USE mckpp_physics_ocnstep_mod, ONLY: mckpp_physics_ocnstep
   USE mckpp_physics_overrides, ONLY: mckpp_physics_overrides_bottomtemp, mckpp_physics_overrides_check_profile
@@ -26,7 +27,7 @@ SUBROUTINE mckpp_physics_driver()
 #ifdef OPENMP
 !$OMP PARALLEL DEFAULT(NONE) &
 !$OMP SHARED(kpp_3d_fields, kpp_const_fields) &
-!$OMP SHARED(nz, nzp1, nx, ny, npts, nvel, nsclr, nvp1, nsp1, itermax) &
+!$OMP SHARED(nz, nzp1, nx, ny, npts_local, nvel, nsclr, nvp1, nsp1, itermax) &
 !$OMP SHARED(hmixtolfrac, nztmax, nzp1tmax, nsflxs, njdt, maxmodeadv, ntime) &
 !$OMP PRIVATE(trans_timer_name, phys_timer_name, tid, index, kpp_1d_fields)
   tid=OMP_GET_THREAD_NUM()
@@ -43,7 +44,7 @@ SUBROUTINE mckpp_physics_driver()
   WRITE(trans_timer_name,'(A19)') 'KPP 3D/1D thread 01'
   WRITE(phys_timer_name,'(A21)') 'KPP Physics thread 01'
 #endif /*OPENMP*/
-  DO ipt=1,npts
+  DO ipt = 1, npts_local
     IF (kpp_3d_fields%run_physics(ipt)) THEN
 
         CALL mckpp_start_timer(trans_timer_name)
