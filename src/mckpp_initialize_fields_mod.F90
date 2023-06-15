@@ -1,6 +1,5 @@
 MODULE mckpp_initialize_fields_mod
 
-  USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_boundary_interpolate, ONLY: mckpp_boundary_interpolate_temp, &
         mckpp_boundary_interpolate_sal
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields, &
@@ -15,10 +14,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_initialize_ocean_profiles_mod, ONLY: mckpp_initialize_ocean_profiles
   USE mckpp_initialize_optics_mod, ONLY: mckpp_initialize_optics
   USE mckpp_initialize_relaxtion_mod, ONLY: mckpp_initialize_relaxation
-  USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_warning, & 
-        max_message_len, mckpp_finalize_logs
-  USE mckpp_mpi_control, ONLY: mckpp_decompose_domain, comm
-  USE mckpp_parameters, ONLY: nx, ny, npts
+  USE mckpp_mpi_control, ONLY: mckpp_decompose_domain
   USE mckpp_physics_lookup_mod, ONLY: mckpp_physics_lookup
   USE mckpp_read_heat_corrections_mod, ONLY: mckpp_read_fcorr_2d, &
         mckpp_read_fcorr_3d
@@ -30,6 +26,7 @@ MODULE mckpp_initialize_fields_mod
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_temperatures_bottom_mod, ONLY: mckpp_read_temperatures_bottom
   USE mckpp_xios_control, ONLY: mckpp_read_restart
+
   USE mpi
 
   IMPLICIT NONE
@@ -38,9 +35,7 @@ CONTAINS
 
   SUBROUTINE mckpp_initialize_fields()
 
-    INTEGER :: ierr
     CHARACTER(LEN=23) :: routine = "MCKPP_INITIALIZE_FIELDS"
-    CHARACTER(LEN=max_message_len) :: message 
 
     CALL mckpp_decompose_domain()  
     CALL mckpp_allocate_3d_fields()
@@ -67,10 +62,6 @@ CONTAINS
     ELSE
       CALL mckpp_initialize_ocean_profiles()
     ENDIF
-
-    CALL mckpp_finalize_logs()
-    CALL mpi_barrier(comm, ierr) 
-    CALL mckpp_abort(routine, "stop")
  
     ! Initialize boundary conditions
     IF ( kpp_const_fields%l_climsst ) CALL mckpp_read_sst()
