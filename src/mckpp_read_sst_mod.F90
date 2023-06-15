@@ -3,10 +3,11 @@ MODULE mckpp_read_sst_mod
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_mpi_control, ONLY: l_root, root, mckpp_scatter_field
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, & 
         mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
         mckpp_netcdf_get_coord, mckpp_netcdf_get_var
-  USE mckpp_parameters, ONLY: nx, ny
+  USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_time_control, ONLY: mckpp_get_update_time, time
 
   IMPLICIT NONE
@@ -17,7 +18,7 @@ MODULE mckpp_read_sst_mod
 
   LOGICAL :: l_initialized = .FALSE. 
   INTEGER :: num_times
-  INTEGER, DIMENSION(3) :: start
+  INTEGER, DIMENSION(3) :: start, count
   REAL, DIMENSION(:), ALLOCATABLE :: file_times
 
 CONTAINS
@@ -39,6 +40,7 @@ CONTAINS
       offset_lon, offset_lat, num_times)
 
     start = (/ offset_lon, offset_lat, 1 /)
+    count = (/ nx, ny, 1 /) 
 
     ! Read in time field
     ALLOCATE(file_times(num_times)) 
@@ -54,32 +56,38 @@ CONTAINS
     CHARACTER(LEN=max_nc_filename_len) :: file
     REAL :: update_time
     INTEGER :: ncid, i, j
-    REAL :: offset_sst
+    REAL, DIMENSION(npts) :: sst_global
 
     CHARACTER(LEN=14) :: routine = "MCKPP_READ_SST"
     CHARACTER(LEN=max_message_len) :: message
 
-    file = kpp_const_fields%sst_file
-    CALL mckpp_netcdf_open(routine, file, ncid)
+    IF (l_root) THEN 
 
-    ! On first call, get file dimensions
-    IF (.NOT. l_initialized) CALL initialize_sst(file, ncid)
+      file = kpp_const_fields%sst_file
+      CALL mckpp_netcdf_open(routine, file, ncid)
 
-    ! Work out time to read and check against times in file
-    CALL mckpp_get_update_time( & 
-      file, time, kpp_const_fields%ndtupdsst, file_times, & 
-      num_times, kpp_const_fields%l_periodic_climsst, &  
-      kpp_const_fields%climsst_period, update_time, start(3), method=1 )
+      ! On first call, get file dimensions
+      IF (.NOT. l_initialized) CALL initialize_sst(file, ncid)
 
-    WRITE(message,*) 'Reading climatological SST for time ', update_time
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) 'Reading climatological SST from position ',start(3)
-    CALL mckpp_print(routine, message)
+      ! Work out time to read and check against times in file
+      CALL mckpp_get_update_time( & 
+        file, time, kpp_const_fields%ndtupdsst, file_times, & 
+        num_times, kpp_const_fields%l_periodic_climsst, &  
+        kpp_const_fields%climsst_period, update_time, start(3), method=1 )
 
-    ! Read data 
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "sst", kpp_3d_fields%sst, & 
-                               start) 
-    CALL mckpp_netcdf_close(routine, file, ncid)
+      WRITE(message,*) 'Reading climatological SST for time ', update_time
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) 'Reading climatological SST from position ',start(3)
+      CALL mckpp_print(routine, message)
+
+      ! Read data 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "sst", & 
+                                 sst_global, start, count, 3 ) 
+      CALL mckpp_netcdf_close(routine, file, ncid)
+ 
+    END IF 
+
+    CALL mckpp_scatter_field( sst_global, kpp_3d_fields%sst, root )
 
     ! KPP expects temperatures in CELSIUS.  If climatological SSTs are
     ! in Kelvin, subtract 273.15.

@@ -77,12 +77,12 @@ MODULE mckpp_data_fields
         shf(:), &
         rain(:), & 
         snow(:), &
-        sst(:,:), &
-        iceconc(:,:), & 
-        usf(:,:), & 
-        vsf(:,:), &
-        icedepth(:,:), & 
-        snowdepth(:,:)
+        sst(:), &
+        iceconc(:), & 
+        usf(:), & 
+        vsf(:), &
+        icedepth(:), & 
+        snowdepth(:)
 
     LOGICAL, ALLOCATABLE :: & 
         l_ocean(:), & 
@@ -430,26 +430,12 @@ CONTAINS
     ALLOCATE( kpp_3d_fields%nmodeadv(npts_local,2) )
     ALLOCATE( kpp_3d_fields%modeadv(npts_local,maxmodeadv,2) )
     ALLOCATE( kpp_3d_fields%cplwght(npts_local) )
-
-    ! These fields are on the full domain (npts) or
-    ! driving domain (npts_globe)
-    ! May only be valid on root pe
-    ! Do we need to store these globally? 
-    IF ( kpp_const_fields%L_COUPLE ) THEN 
-      ALLOCATE( kpp_3d_fields%sst(nx_globe,ny_globe) )
-      ALLOCATE( kpp_3d_fields%iceconc(nx_globe,ny_globe) )
-      ALLOCATE( kpp_3d_fields%usf(nx_globe,ny_globe) )
-      ALLOCATE( kpp_3d_fields%vsf(nx_globe,ny_globe) )
-      ALLOCATE( kpp_3d_fields%icedepth(nx_globe,ny_globe) )
-      ALLOCATE( kpp_3d_fields%snowdepth(nx_globe,ny_globe) )
-    ELSE
-      ALLOCATE( kpp_3d_fields%sst(nx,ny) )
-      ALLOCATE( kpp_3d_fields%iceconc(nx,ny) )
-      ALLOCATE( kpp_3d_fields%usf(nx,ny) )
-      ALLOCATE( kpp_3d_fields%vsf(nx,ny) )
-      ALLOCATE( kpp_3d_fields%icedepth(nx,ny) )
-      ALLOCATE( kpp_3d_fields%snowdepth(nx,ny) )
-    END IF 
+    ALLOCATE( kpp_3d_fields%sst(npts_local) )
+    ALLOCATE( kpp_3d_fields%iceconc(npts_local) )
+    ALLOCATE( kpp_3d_fields%usf(npts_local) )
+    ALLOCATE( kpp_3d_fields%vsf(npts_local) )
+    ALLOCATE( kpp_3d_fields%icedepth(npts_local) )
+    ALLOCATE( kpp_3d_fields%snowdepth(npts_local) )
     ALLOCATE( kpp_3d_fields%dlat_all(ny) )
     ALLOCATE( kpp_3d_fields%dlon_all(nx) )
 

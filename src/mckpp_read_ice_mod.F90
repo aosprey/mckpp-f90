@@ -3,10 +3,11 @@ MODULE mckpp_read_ice_mod
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, max_message_len
+  USE mckpp_mpi_control, ONLY: l_root, root, mckpp_scatter_field
   USE mckpp_netcdf_read, ONLY: max_nc_filename_len, mckpp_netcdf_open, & 
         mckpp_netcdf_close, mckpp_netcdf_determine_boundaries, & 
         mckpp_netcdf_get_coord, mckpp_netcdf_get_var
-!  USE mckpp_parameters, ONLY: nx, ny
+  USE mckpp_parameters, ONLY: nx, ny, npts
   USE mckpp_time_control, ONLY: mckpp_get_update_time, time
 
   IMPLICIT NONE
@@ -17,7 +18,7 @@ MODULE mckpp_read_ice_mod
 
   LOGICAL :: l_initialized = .FALSE. 
   INTEGER :: num_times
-  INTEGER, DIMENSION(3) :: start
+  INTEGER, DIMENSION(3) :: start, count
   REAL, DIMENSION(:), ALLOCATABLE :: file_times
 
 CONTAINS
@@ -40,6 +41,7 @@ CONTAINS
       offset_lon, offset_lat, num_times )
 
     start = (/ offset_lon, offset_lat, 1 /)
+    count = (/ nx, ny, 1 /)
 
     ! Read in time field
     ALLOCATE(file_times(num_times)) 
@@ -61,59 +63,72 @@ CONTAINS
     CHARACTER(LEN=max_nc_filename_len) :: file
     REAL :: update_time
     INTEGER :: ncid
+    REAL, DIMENSION(npts) :: var_global
 !    REAL :: max_ice, min_ice
 !    INTEGER :: i, j
 
     CHARACTER(LEN=14) :: routine = "MCKPP_READ_ICE"
     CHARACTER(LEN=max_message_len) :: message
 
-    file = kpp_const_fields%ice_file
-    CALL mckpp_netcdf_open(routine, file, ncid)
+    IF (l_root) THEN 
+ 
+      file = kpp_const_fields%ice_file
+      CALL mckpp_netcdf_open(routine, file, ncid)
 
-    ! On first call, get file dimensions
-    IF ( .NOT. l_initialized ) CALL initialize_ice(file, ncid)
+      ! On first call, get file dimensions
+      IF ( .NOT. l_initialized ) CALL initialize_ice(file, ncid)
 
-    ! Work out time to read and check against times in file
-    CALL mckpp_get_update_time( & 
-      file, time, kpp_const_fields%ndtupdice, file_times, & 
-      num_times, kpp_const_fields%L_periodic_climice, & 
-      kpp_const_fields%climice_period,  update_time, start(3), method=1 )
+      ! Work out time to read and check against times in file
+      CALL mckpp_get_update_time( & 
+        file, time, kpp_const_fields%ndtupdice, file_times, & 
+        num_times, kpp_const_fields%L_periodic_climice, & 
+        kpp_const_fields%climice_period,  update_time, start(3), method=1 )
    
-    WRITE(message,*) 'Reading climatological ice concentration for time ', & 
-                     update_time
-    CALL mckpp_print(routine, message)
+      WRITE(message,*) 'Reading climatological ice concentration for time ', & 
+                        update_time
+      CALL mckpp_print(routine, message)
 
-    ! Read and process data
-    CALL mckpp_netcdf_get_var( routine, file, ncid, "iceconc", & 
-                               kpp_3d_fields%iceconc, start ) 
+      CALL mckpp_netcdf_get_var( routine, file, ncid, "iceconc", & 
+                                 var_global, start, count, 3 ) 
 
-!    max_ice = -1000.
-!    min_ice = 1000.
-!    DO j = 1, ny 
-!      DO i = 1, nx
+    END IF 
+    CALL mckpp_scatter_field( var_global, kpp_3d_fields%iceconc, root )
+
+!     max_ice = -1000.
+!     min_ice = 1000.
+!     DO j = 1, ny 
+!       DO i = 1, nx
 !        IF ( kpp_3d_fields%iceconc(i, j) .GT. max_ice ) & 
 !          max_ice = kpp_3d_fields%iceconc(i, j)
-!        IF ( kpp_3d_fields%iceconc(i, j) .LT. min_ice ) & 
-!          min_ice = kpp_3d_fields%iceconc(i, j)
+!         IF ( kpp_3d_fields%iceconc(i, j) .LT. min_ice ) & 
+!           min_ice = kpp_3d_fields%iceconc(i, j)
+!       ENDDO
 !     ENDDO
-!   ENDDO
 
     IF ( kpp_const_fields%l_clim_ice_depth ) THEN
-      WRITE(message,*) 'Reading climatological ice depth for time ', update_time
+      WRITE(message,*) 'Reading climatological ice depth for time ', & 
+                       update_time
       CALL mckpp_print(routine, message)
 
-      CALL mckpp_netcdf_get_var( routine, file, ncid, "icedepth", & 
-                                 kpp_3d_fields%icedepth, start )
-    ENDIF
+      IF (l_root) & 
+        CALL mckpp_netcdf_get_var( routine, file, ncid, "icedepth", & 
+                                   var_global, start, count, 3 )
+      CALL mckpp_scatter_field( var_global, kpp_3d_fields%icedepth, root )
+    END IF
 
     IF ( kpp_const_fields%l_clim_snow_on_ice ) THEN
-      WRITE(message,*) 'Reading climatological snow depth for time ', update_time
+      WRITE(message,*) 'Reading climatological snow depth for time ', & 
+                       update_time
       CALL mckpp_print(routine, message)
 
-      CALL mckpp_netcdf_get_var( routine, file, ncid, "snowdepth", & 
-                                 kpp_3d_fields%snowdepth, start )
+      IF (l_root) &
+        CALL mckpp_netcdf_get_var( routine, file, ncid, "snowdepth", & 
+                                   var_global, start, count, 3 )
+      CALL mckpp_scatter_field( var_global, kpp_3d_fields%snowdepth, root )
+
     ENDIF
-    CALL mckpp_netcdf_close(routine, file, ncid)
+
+    IF (l_root) CALL mckpp_netcdf_close(routine, file, ncid)
 
   END SUBROUTINE mckpp_read_ice
 
