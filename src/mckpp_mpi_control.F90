@@ -4,22 +4,26 @@ MODULE mckpp_mpi_control
   USE mckpp_log_messages, ONLY: mckpp_initialize_logs, mckpp_finalize_logs, &
         mckpp_print, mckpp_print_error, max_message_len 
   USE mckpp_parameters, ONLY : nx, npts, nzp1
-  USE mpi
+
+  USE mpi  
   USE xios
 
   IMPLICIT NONE
 
   INTEGER :: comm, rank, nproc
+  INTEGER :: root = 0
+  LOGICAL :: l_root
+
   INTEGER :: npts_local, &                     ! local data size 
              offset_global, &                  ! pos in global 1d array of npts
              start_global, end_global          ! inds in global 1d array of npts
   
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: inds_global ! i,j inds in global 2d 
                                                       ! array of nx, ny
-  INTEGER :: root = 0
-  LOGICAL :: l_root
+
+  INTEGER :: ni, nj, ibegin, jbegin, data_ni, data_ibegin   ! XIOS domain defn
   
-  ! Not used 
+  ! Only reqd for 2d domain decomposition - not currently used 
   INTEGER, DIMENSION(:), ALLOCATABLE :: npts_local_all, offset_global_all
 
   INTEGER, PRIVATE :: subdomain_type
@@ -76,9 +80,7 @@ CONTAINS
   ! Call after mckpp_initialize_namelist (so npts is set)
   SUBROUTINE mckpp_decompose_domain()
 
-    INTEGER, DIMENSION(2) :: global_sizes, local_sizes, starts
-    INTEGER :: tmp_type, dbl_size, ierr, ind, ipt
-    INTEGER(kind=MPI_ADDRESS_KIND) :: extent, start 
+    INTEGER :: ind, ipt
     CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN"
     CHARACTER(LEN=max_message_len) :: message
 
@@ -118,7 +120,23 @@ CONTAINS
     WRITE(message, *) "inds_global(:,2) = ", inds_global(:,2)
     CALL mckpp_print(routine, message) 
 
-    ! Setup derived type for sub-domains that we can use for scatters
+    ! Set up derived type required for scatter 
+    CALL mckpp_setup_types() 
+   
+    ! Set up variables to define local domain to XIOS 
+    CALL mckpp_define_xios_domain()
+
+  END SUBROUTINE mckpp_decompose_domain
+
+
+  ! Setup derived type for sub-domains that we can use for scatters
+  ! This is only required for 2d (npts, nz) fields. 
+  SUBROUTINE mckpp_setup_types() 
+
+    INTEGER, DIMENSION(2) :: global_sizes, local_sizes, starts
+    INTEGER :: ierr, tmp_type, dbl_size
+    INTEGER(kind=MPI_ADDRESS_KIND) :: extent, start 
+
     global_sizes = (/ npts, nzp1 /)
     local_sizes = (/ npts_local, nzp1 /)
     starts = (/ 0,0 /)
@@ -131,10 +149,45 @@ CONTAINS
     start = 0
     extent = dbl_size*npts_local
 
-    CALL MPI_type_create_resized( tmp_type, start, extent, subdomain_type, ierr )
+    CALL MPI_type_create_resized( tmp_type, start, extent, & 
+                                  subdomain_type, ierr )
     CALL MPI_type_commit( subdomain_type, ierr )
 
-  END SUBROUTINE mckpp_decompose_domain
+  END SUBROUTINE mckpp_setup_types
+
+
+  ! Define local domain for XIOS 
+  SUBROUTINE mckpp_define_xios_domain()
+
+    CHARACTER(LEN=24) :: routine = "MCKPP_DEFINE_XIOS_DOMAIN"
+    CHARACTER(LEN=max_message_len) :: message
+
+    ! Work out local domain in the way XIOS expects. 
+    ! This is complicated for a 1d decmop, as we need to define a 2d ni*nj
+    ! domain which covers all local points. 
+
+    nj = inds_global(npts_local, 2) - inds_global(1, 2) + 1 
+    jbegin = inds_global(1,2) - 1
+
+    ! Two cases: 
+    ! - The subdomain is a part of a row
+    IF (nj .EQ. 1) THEN 
+      ni = npts_local
+      ibegin = inds_global(1,1) - 1
+      data_ibegin = 0
+
+    ! - The subdomain spans multiple rows
+    ELSE 
+      ni = nx 
+      ibegin = 0 
+      data_ibegin = inds_global(1,1) - 1
+    END IF
+
+    WRITE(message, *) "ni, nj, ibegin, jbegin, data_ni, data_ibegin = ", & 
+                       ni, nj, ibegin, jbegin, data_ni, data_ibegin
+    CALL mckpp_print(message, routine) 
+
+  END SUBROUTINE mckpp_define_xios_domain
 
 
   ! Scatter 1d real array (npts) 

@@ -3,11 +3,13 @@
 ! used by KPP model. 
 MODULE mckpp_xios_io
 
-  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_abort_mod, ONLY: mckpp_abort
+  USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print_error, max_message_len, & 
         update_context
-  USE mckpp_mpi_control, ONLY: comm
+  USE mckpp_mpi_control, ONLY: comm, inds_global, npts_local, ni, nj, ibegin, &
+        jbegin, data_ni, data_ibegin
+  USE mckpp_netcdf_read, ONLY: max_nc_filename_len
   USE mckpp_parameters, ONLY: nx, ny, nx_globe, ny_globe, npts, nz, nzp1, nsp1
   USE mckpp_time_control, ONLY: ntime, time
 
@@ -42,15 +44,16 @@ CONTAINS
 
     CALL xios_define_calendar(type="Gregorian")
 
-    CALL mckpp_xios_set_dimensions() 
+    CALL mckpp_xios_define_dimensions() 
 
     CALL xios_set_start_date(start_date) 
     CALL xios_set_time_origin(start_date) 
     CALL xios_set_timestep(timestep=dtime) 
     CALL xios_set_domain_attr("domain_kpp", type="rectilinear", & 
-        data_dim=1, mask_1d=mask, &  
-        ni_glo=nx, nj_glo=ny, & 
-        lonvalue_1d=lons, latvalue_1d=lats)
+      ni_glo=nx, nj_glo=ny, lonvalue_1d=lons, latvalue_1d=lats, & 
+      data_dim=1, mask_1d=mask, & 
+      ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, & 
+      data_ni=npts_local, data_ibegin=data_ibegin)
     CALL xios_set_axis_attr("levels_kpp", n_glo=nzp1, value=levs) 
 
     CALL xios_close_context_definition()
@@ -58,20 +61,24 @@ CONTAINS
   END SUBROUTINE mckpp_xios_diagnostic_definition
 
 
-  SUBROUTINE mckpp_xios_set_dimensions() 
+  ! Work out start date, lats, lons and mask
+  ! Need to call this after mckpp_initialize_fields() 
+  SUBROUTINE mckpp_xios_define_dimensions() 
 
     dtime%second = kpp_const_fields%dto
+
     ! Work out date from days counter, and add 1 as 1st Jan is day 0. 
     start_date = xios_date(0000,01,01,00,00,00) + & 
                  xios_day * ( kpp_const_fields%startt + 1 )
 
+    ! Maybe don't need to define these variables 
     ALLOCATE( lons(nx), lats(ny), levs(nzp1), mask(npts) ) 
     lons = kpp_3d_fields%dlon_all
     lats = kpp_3d_fields%dlat_all
     levs = kpp_const_fields%zm
     mask = kpp_3d_fields%l_ocean
 
-  END SUBROUTINE mckpp_xios_set_dimensions
+  END SUBROUTINE mckpp_xios_define_dimensions
   
 
   SUBROUTINE mckpp_xios_diagnostic_output()
@@ -83,7 +90,7 @@ CONTAINS
     CALL xios_update_calendar(ntime)
 
     !!! Depth-varying diagnostics 
-    ALLOCATE( temp_2d(npts, nzp1) ) 
+    ALLOCATE( temp_2d(npts_local, nzp1) ) 
 
     ! Zonal current
     CALL xios_send_field("u", kpp_3d_fields%U(:,:,1))
@@ -166,7 +173,7 @@ CONTAINS
     CALL xios_send_field("sinc_fcorr", kpp_3d_fields%Sinc_fcorr)
 
     !!! Single-level diagnostics 
-    ALLOCATE( temp_1d(npts) ) 
+    ALLOCATE( temp_1d(npts_local) ) 
 
     ! Mixed layer depth  
     CALL xios_send_field("hmix", kpp_3d_fields%hmix) 
@@ -249,12 +256,11 @@ CONTAINS
   
   SUBROUTINE mckpp_xios_read_restart(restart_filename) 
 
-    CHARACTER(LEN=17), INTENT(IN) :: restart_filename
+    CHARACTER(LEN=max_nc_filename_len), INTENT(IN) :: restart_filename
     
     CHARACTER(LEN=16) :: context_name = "ctx_restart_read"
     TYPE(xios_context) :: ctx_hdl_restart
     CHARACTER(LEN=23) :: routine = "MCKPP_XIOS_READ_RESTART"
-
 
     ! Define a new context for this restart file 
     CALL xios_context_initialize(context_name, comm)
@@ -317,10 +323,11 @@ CONTAINS
     CALL xios_get_handle("domain_definition", domaindefn_hdl) 
     CALL xios_add_child(domaindefn_hdl, domain_hdl, "domain_kpp_nomask")
     CALL xios_set_domain_attr("domain_kpp_nomask", type="rectilinear", & 
-        data_dim=1, ni_glo=NX, nj_glo=NY, lon_name="longitude", lat_name="latitude")
-    IF (read_mode) THEN
-      CALL xios_set_domain_attr("domain_kpp_nomask", ni=nx, nj=ny, ibegin=0, jbegin=0)
-    ELSE
+      ni_glo=nx, nj_glo=ny, & 
+      data_dim=1, mask_1d=mask, & 
+      ni=ni, nj=nj, ibegin=ibegin, jbegin=jbegin, & 
+      data_ni=npts_local, data_ibegin=data_ibegin)
+    IF (.NOT. read_mode) THEN
       CALL xios_set_domain_attr("domain_kpp_nomask", lonvalue_1d=lons, latvalue_1d=lats)
     END IF 
 
@@ -437,7 +444,7 @@ CONTAINS
   
   SUBROUTINE mckpp_xios_restart_input()
 
-    REAL, DIMENSION(npts) :: tmp
+    REAL, DIMENSION(npts_local) :: tmp
 
     ! Assume only reading restart once at start of run
     CALL xios_update_calendar(0)
