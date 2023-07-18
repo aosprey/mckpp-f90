@@ -92,11 +92,6 @@ CONTAINS
     ! Initial surface temp
     kpp_3d_fields%tref(:) = kpp_3d_fields%x(:,1,1)
 
-    WRITE(nupe,*) "kpp_3d_fields%u(:,2,1) = ", kpp_3d_fields%u(:,2,1)
-    WRITE(nupe,*) "kpp_3d_fields%u(:,2,2) = ", kpp_3d_fields%u(:,2,2)
-    WRITE(nupe,*) "kpp_3d_fields%x(:,2,1) = ", kpp_3d_fields%x(:,2,1)
-    WRITE(nupe,*) "kpp_3d_fields%x(:,2,2) = ", kpp_3d_fields%x(:,2,2)
-
   END SUBROUTINE mckpp_initialize_ocean_profiles
 
 

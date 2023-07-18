@@ -97,10 +97,6 @@ CONTAINS
       END IF
     END DO
 
-    WRITE(nupe,*) "kpp_const_fields%dm = ", kpp_const_fields%dm
-    WRITE(nupe,*) "kpp_const_fields%hm = ", kpp_const_fields%hm
-    WRITE(nupe,*) "kpp_const_fields%zm = ", kpp_const_fields%zm
-
   END SUBROUTINE mckpp_initialize_geography
 
 END MODULE mckpp_initialize_geography_mod

@@ -2,7 +2,7 @@ MODULE mckpp_mpi_control
 
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_log_messages, ONLY: mckpp_initialize_logs, mckpp_finalize_logs, &
-        mckpp_print, mckpp_print_error, max_message_len 
+        mckpp_print, mckpp_print_error, max_message_len, l_debug
   USE mckpp_parameters, ONLY : nx, npts, nzp1
 
   USE mpi  
@@ -115,16 +115,14 @@ CONTAINS
       ipt = ipt+1
     END DO 
 
-    WRITE(message,*) "nproc, npts_local = ", nproc, npts_local 
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "offset_global, start_global, end_global = ", & 
-                      offset_global, start_global, end_global
-    CALL mckpp_print(routine, message) 
-    WRITE(message, *) "inds_global(:,1) = ", inds_global(:,1)
-    CALL mckpp_print(routine, message) 
-    WRITE(message, *) "inds_global(:,2) = ", inds_global(:,2)
-    CALL mckpp_print(routine, message) 
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "nproc, npts_local = ", nproc, npts_local 
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "offset_global, start_global, end_global = ", & 
+                        offset_global, start_global, end_global
+      CALL mckpp_print(routine, message) 
+    END IF 
+      
     ! Set up derived type required for scatter 
     CALL mckpp_setup_types() 
    
@@ -188,9 +186,11 @@ CONTAINS
       data_ibegin = inds_global(1,1) - 1
     END IF
 
-    WRITE(message, *) "ni, nj, ibegin, jbegin, data_ni, data_ibegin = ", & 
-                       ni, nj, ibegin, jbegin, data_ni, data_ibegin
+    IF (l_debug) THEN
+      WRITE(message, *) "ni, nj, ibegin, jbegin, data_ni, data_ibegin = ", & 
+                         ni, nj, ibegin, jbegin, data_ni, data_ibegin
     CALL mckpp_print(message, routine) 
+    END IF 
 
   END SUBROUTINE mckpp_define_xios_domain
 
@@ -275,8 +275,10 @@ CONTAINS
     CHARACTER(LEN=22) :: routine = "MCKPP_DECOMPOSE_DOMAIN_UNEVEN"
     CHARACTER(LEN=max_message_len) :: message
 
-    IF (l_root) CALL mckpp_print(routine, "proc, offset_global, npts_local")
-    
+    IF (l_debug .AND. l_root) THEN
+      CALL mckpp_print(routine, "proc, offset_global, npts_local")
+    END IF 
+      
     ALLOCATE( npts_local_all(0:nproc-1) )
     ALLOCATE( offset_global_all(0:nproc-1) )
 
@@ -294,7 +296,7 @@ CONTAINS
       offset_global_all(n) = index
       index = index + npts_local_all(n)
 
-      IF (l_root) THEN
+      IF (l_debug .AND. l_root) THEN
         WRITE(message,*) n, offset_global_all(n), npts_local_all(n)
         CALL mckpp_print(routine, message) 
       END IF
@@ -305,10 +307,12 @@ CONTAINS
 
     start_global = offset_global + 1
     end_global = offset_global + npts_local
-    
-    WRITE(message,*) "offset_global, npts_local, start_global, end_global = ", &
-                      offset_global, npts_local, start_global, end_global
-    CALL mckpp_print(routine, message)
+
+    IF (l_debug) THEN 
+      WRITE(message,*) "offset_global, npts_local, start_global, end_global = ", &
+                        offset_global, npts_local, start_global, end_global
+      CALL mckpp_print(routine, message)
+    END IF
 
   END SUBROUTINE mckpp_decompose_domain_uneven
 

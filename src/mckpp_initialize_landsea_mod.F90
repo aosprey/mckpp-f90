@@ -106,13 +106,6 @@ CONTAINS
     
     kpp_3d_fields%l_ocean = kpp_3d_fields%l_ocean_all(start_global:end_global)
 
-    WRITE(nupe,*) "kpp_3d_fields%dlat_all = ", kpp_3d_fields%dlat_all
-    WRITE(nupe,*) "kpp_3d_fields%dlon_all = ", kpp_3d_fields%dlon_all
-    WRITE(nupe,*) "kpp_3d_fields%dlat = ", kpp_3d_fields%dlat
-    WRITE(nupe,*) "kpp_3d_fields%dlon = ", kpp_3d_fields%dlon
-    WRITE(nupe,*) "kpp_3d_fields%l_ocean = ", kpp_3d_fields%l_ocean
-    WRITE(nupe,*) "kpp_3d_fields%ocdepth = ", kpp_3d_fields%ocdepth
-
   END SUBROUTINE mckpp_initialize_landsea
 
 END MODULE mckpp_initialize_landsea_mod

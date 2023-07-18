@@ -9,13 +9,14 @@ MODULE mckpp_log_messages
   PUBLIC :: mckpp_initialize_logs, mckpp_finalize_logs, &
        mckpp_print, mckpp_print_error, mckpp_print_warning, &
        mckpp_print_stderr, update_context, max_message_len, &
-       nupe, nuout, nuerr
+       nupe, nuout, nuerr, l_debug
   
   PRIVATE 
 
   INTEGER :: my_rank 
   INTEGER, PARAMETER :: max_message_len = 250, &
       nuout = 6, nuerr = 0, nupe = 99
+  LOGICAL :: l_debug = .TRUE.  ! This could go in a namelist
 
 CONTAINS
 

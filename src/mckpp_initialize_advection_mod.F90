@@ -71,18 +71,6 @@ CONTAINS
         END DO 
       END DO 
 
-      WRITE(nupe,*) "kpp_3d_fields%nmodeadv(:,1) = ", & 
-                     kpp_3d_fields%nmodeadv(:,1)   
-      WRITE(nupe,*) "kpp_3d_fields%nmodeadv(:,2) = ", & 
-                     kpp_3d_fields%nmodeadv(:,2) 
-      WRITE(nupe,*) "kpp_3d_fields%modeadv(:,:,1) = ", & 
-                     kpp_3d_fields%modeadv(:,:,1) 
-      WRITE(nupe,*) "kpp_3d_fields%modeadv(:,:,2) = ", & 
-                     kpp_3d_fields%modeadv(:,:,2) 
-      WRITE(nupe,*) "kpp_3d_fields%advection(:,:,1) = ", & 
-                     kpp_3d_fields%advection(:,:,1)
-      WRITE(nupe,*) "kpp_3d_fields%advection(:,:,2) = ", & 
-                     kpp_3d_fields%advection(:,:,2)   
     ELSE
 
       CALL mckpp_print(routine, "No advection has been specified.")     

@@ -53,16 +53,6 @@ CONTAINS
       CALL mckpp_read_fluxes(taux, tauy, swf, lwf, lhf, shf, rain, snow)
     END IF
 
-    WRITE(nupe, *) "taux = ", taux
-    WRITE(nupe, *) "tauy = ", tauy
-    WRITE(nupe, *) "swf = ", swf
-    WRITE(nupe, *) "lwf = ", lwf
-    WRITE(nupe, *) "lhf = ", lhf
-    WRITE(nupe, *) "shf = ", shf 
-    WRITE(nupe, *) "rain = ", rain 
-    WRITE(nupe, *) "snow = ", snow
-
-      
 !!$OMP PARALLEL DEFAULT(shared) PRIVATE(ipt,kpp_1d_fields)
 !!$OMP DO SCHEDULE(dynamic)
     DO ipt = 1, npts_local        
@@ -98,8 +88,6 @@ CONTAINS
 !!$OMP END DO
 !!$OMP END PARALLEL
 
-    WRITE(nupe,*) "kpp_3d_fields%wxnt(:,1,1) = ", kpp_3d_fields%wxnt(:,1,1)
-  
   END SUBROUTINE mckpp_fluxes
 
 
@@ -112,8 +100,6 @@ CONTAINS
     CHARACTER(LEN=31) :: routine = "MCKPP_FLUXES_NTFLUX"
     CHARACTER(LEN=max_message_len) :: message
   
-    ! WRITE(message,*) "At time = ", ntime
-    ! CALL mckpp_print(routine, message)
     IF ( ntime .LE. 1 ) THEN
       DO k = 0, nz
         kpp_1d_fields%swdk_opt(k) = mckpp_fluxes_swdk( & 

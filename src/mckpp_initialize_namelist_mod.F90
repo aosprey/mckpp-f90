@@ -4,7 +4,7 @@ MODULE mckpp_initialize_namelist_mod
   USE mckpp_abort_mod, ONLY: mckpp_abort
   USE mckpp_initialize_constants_mod, ONLY: mckpp_initialize_constants
   USE mckpp_log_messages, ONLY: mckpp_print, mckpp_print_error, & 
-        max_message_len, update_context
+        max_message_len, update_context, l_debug
   USE mckpp_mpi_control, ONLY: root, l_root, comm
   USE mckpp_namelists
   USE mckpp_parameters
@@ -193,22 +193,24 @@ CONTAINS
     mrp1 = mr + 1 
     npts_globe = nx_globe * ny_globe
 
-    WRITE(message,*) "hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb = ", & 
-                      hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb 
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) "itermax, ngrid, nzl, nzu, nzdivmax, nztmax = ", &  
-                      itermax, ngrid, nzl, nzu, nzdivmax, nztmax 
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) "nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr = ", &
-                      nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) "nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1 = ", & 
-                      nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) "nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe = ", &
-                      nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
-    CALL mckpp_print(routine, message)
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb = ", & 
+                        hmixtolfrac, nz, ndim, nx, ny, nvel, nsclr, nsb 
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) "itermax, ngrid, nzl, nzu, nzdivmax, nztmax = ", &  
+                        itermax, ngrid, nzl, nzu, nzdivmax, nztmax 
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) "nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr = ", &
+                        nzp1tmax, igridmax, nsflxs, ndharm, maxmodeadv, mr
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) "nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1 = ", & 
+                        nx_globe, ny_globe, nzm1, nzp1, npts, nvp1, nsp1
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) "nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe = ", &
+                        nzp1tmax, nsflxsm1, nsflxsp2, mrp1, npts_globe
+      CALL mckpp_print(routine, message)
+   END IF 
+      
   END SUBROUTINE read_parameters_namelist
 
 
@@ -293,16 +295,18 @@ CONTAINS
       FLSN = my_name % FLSN
     END IF
 
-    WRITE(message, *) "grav, vonk, sbc, twopi, onepi = ",  & 
-                       grav, vonk, sbc, twopi, onepi
-    CALL mckpp_print(routine, message)
-    WRITE(message, *) "TK0, spd, dpy, epsw, albocn = ", & 
-                       TK0, spd, dpy, epsw, albocn
-    CALL mckpp_print(routine, message)
-    WRITE(message, *) "EL, SL, FL, FLSN = ", & 
-                       EL, SL, FL, FLSN
-    CALL mckpp_print(routine, message)
-
+    IF (l_debug) THEN 
+      WRITE(message, *) "grav, vonk, sbc, twopi, onepi = ",  & 
+                         grav, vonk, sbc, twopi, onepi
+      CALL mckpp_print(routine, message)
+      WRITE(message, *) "TK0, spd, dpy, epsw, albocn = ", & 
+                         TK0, spd, dpy, epsw, albocn
+      CALL mckpp_print(routine, message)
+      WRITE(message, *) "EL, SL, FL, FLSN = ", & 
+                         EL, SL, FL, FLSN
+      CALL mckpp_print(routine, message)
+    END IF 
+      
   END SUBROUTINE read_constants_namelist
 
 
@@ -370,12 +374,14 @@ CONTAINS
       L_SSref = my_name % L_SSref
     END IF
 
-    WRITE(message, *) "LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID = ", & 
-                       LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID
-    CALL mckpp_print(routine, message)
-    WRITE(message, *) "LRHS, L_SSref = ", LRHS, L_SSref
-    CALL mckpp_print(routine, message)
-
+    IF (l_debug) THEN 
+      WRITE(message, *) "LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID = ", & 
+                         LKPP, LRI,LDD ,LICE, LBIO, LNBFLX, LTGRID
+      CALL mckpp_print(routine, message)
+      WRITE(message, *) "LRHS, L_SSref = ", LRHS, L_SSref
+      CALL mckpp_print(routine, message)
+    END IF 
+      
   END SUBROUTINE read_procswit_namelist
 
 
@@ -459,15 +465,17 @@ CONTAINS
       vgrid_file = my_name % vgrid_file
     END IF
 
-    WRITE(message,*) "DMAX, alon, alat, delta_lat, delta_lon = ", &
-        DMAX, alon, alat, delta_lat, delta_lon
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_STRETCHGRID, dscale, L_REGGRID, L_VGRID_FILE", &
-        L_STRETCHGRID, dscale, L_REGGRID, L_VGRID_FILE
-    CALL mckpp_print(routine, message) 
-    WRITE(message, *) "vgrid_file = ", TRIM(ADJUSTL(vgrid_file))
-    CALL mckpp_print(routine, message) 
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "DMAX, alon, alat, delta_lat, delta_lon = ", &
+                        DMAX, alon, alat, delta_lat, delta_lon
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_STRETCHGRID, dscale, L_REGGRID, L_VGRID_FILE", &
+                        L_STRETCHGRID, dscale, L_REGGRID, L_VGRID_FILE
+      CALL mckpp_print(routine, message) 
+      WRITE(message, *) "vgrid_file = ", TRIM(ADJUSTL(vgrid_file))
+      CALL mckpp_print(routine, message) 
+    END IF 
+      
   END SUBROUTINE read_domain_namelist
 
 
@@ -516,9 +524,11 @@ CONTAINS
       landsea_file = my_name % landsea_file
     END IF
 
-    WRITE(message,*) "L_LANDSEA, landsea_file = ", &
-        L_LANDSEA, TRIM(landsea_file)
-    CALL mckpp_print(routine, message) 
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_LANDSEA, landsea_file = ", &
+                        L_LANDSEA, TRIM(landsea_file)
+      CALL mckpp_print(routine, message)
+    END IF 
 
   END SUBROUTINE read_landsea_namelist
 
@@ -577,12 +587,14 @@ CONTAINS
       restart_infile = my_name % restart_infile
     END IF
 
-    WRITE(message,*) "L_INITDATA, initdata_file, L_INTERPINIT = ", & 
-                      L_INITDATA, TRIM(initdata_file), L_INTERPINIT
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_RESTART, restart_infile = ", & 
-                      L_RESTART, TRIM(restart_infile)
-    CALL mckpp_print(routine, message) 
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_INITDATA, initdata_file, L_INTERPINIT = ", & 
+                        L_INITDATA, TRIM(initdata_file), L_INTERPINIT
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_RESTART, restart_infile = ", & 
+                        L_RESTART, TRIM(restart_infile)
+      CALL mckpp_print(routine, message)
+    END IF 
  
   END SUBROUTINE read_start_namelist
 
@@ -646,9 +658,11 @@ CONTAINS
       nyear = my_name % nyear
     END IF
 
-    WRITE(message,*) "dtsec, startt, finalt, ndtocn, nyear = ", &
-        dtsec, startt, finalt, ndtocn, nyear
-    CALL mckpp_print(routine, message) 
+    IF (l_debug) THEN 
+      WRITE(message,*) "dtsec, startt, finalt, ndtocn, nyear = ", &
+                        dtsec, startt, finalt, ndtocn, nyear
+      CALL mckpp_print(routine, message)
+    END IF 
 
   END SUBROUTINE read_times_namelist
 
@@ -774,33 +788,35 @@ CONTAINS
       currin_file = my_name % currin_file
     END IF
 
-    WRITE(message,*) "L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST = ", & 
-                      L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "sstin_file, L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT = ", & 
-                      TRIM(sstin_file), L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "cplwght_file = ", TRIM(ADJUSTL(cplwght_file))
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "icein_file = ", TRIM(ADJUSTL(icein_file))
-    CALL mckpp_print(routine, message)
-    WRITE(message,*) "L_CLIMICE, L_UPD_CLIMICE, ndtupdice = ", &
-                      L_CLIMICE, L_UPD_CLIMICE, ndtupdice
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN = ", & 
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST = ", &
+                        L_COUPLE, ifirst, ilast, jfirst, jlast, L_CLIMSST
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "sstin_file, L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT = ", & 
+                        TRIM(sstin_file), L_UPD_CLIMSST, ndtupdsst, L_CPLWGHT
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "cplwght_file = ", TRIM(ADJUSTL(cplwght_file))
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "icein_file = ", TRIM(ADJUSTL(icein_file))
+      CALL mckpp_print(routine, message)
+      WRITE(message,*) "L_CLIMICE, L_UPD_CLIMICE, ndtupdice = ", &
+                        L_CLIMICE, L_UPD_CLIMICE, ndtupdice
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN = ", &
                       L_CLIM_ICE_DEPTH, L_CLIM_SNOW_ON_ICE, L_OUTKELVIN
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "currin_file = ", TRIM(currin_file)
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR = ", & 
-                      L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST = ", &
-                      ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "climsst_period, climice_period, L_BAD_ICE_DEPTH = ", & 
-                      climsst_period, climice_period, L_BAD_ICE_DEPTH
-    CALL mckpp_print(routine, message) 
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "currin_file = ", TRIM(currin_file)
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR = ", & 
+                        L_COUPLE_CURRENTS, L_CLIMCURR, L_UPD_CLIMCURR
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST = ", &
+                        ndtupdcurr, L_PERIODIC_CLIMICE, L_PERIODIC_CLIMSST
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "climsst_period, climice_period, L_BAD_ICE_DEPTH = ", & 
+                        climsst_period, climice_period, L_BAD_ICE_DEPTH
+      CALL mckpp_print(routine, message)
+    END IF 
 
   END SUBROUTINE read_couple_namelist
 
@@ -873,19 +889,21 @@ CONTAINS
       advect_file = my_name % advect_file
     END IF
 
-    WRITE(message,*) "L_ADVECT, advect_file, L_RELAX_SST = ", &
-        L_ADVECT, TRIM(advect_file), L_RELAX_SST
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_RELAX_CALCONLY, L_RELAX_SAL, L_RELAX_OCNT = ", &
-        L_RELAX_CALCONLY, L_RELAX_SAL, L_RELAX_OCNT
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "relax_sst_in = ", relax_sst_in
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "relax_sal_in = ", relax_sal_in
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "relax_ocnt_in = ", relax_ocnt_in
-    CALL mckpp_print(routine, message) 
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_ADVECT, advect_file, L_RELAX_SST = ", &
+                        L_ADVECT, TRIM(advect_file), L_RELAX_SST
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_RELAX_CALCONLY, L_RELAX_SAL, L_RELAX_OCNT = ", &
+                        L_RELAX_CALCONLY, L_RELAX_SAL, L_RELAX_OCNT
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "relax_sst_in = ", relax_sst_in
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "relax_sal_in = ", relax_sal_in
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "relax_ocnt_in = ", relax_ocnt_in
+      CALL mckpp_print(routine, message) 
+    END IF 
+      
   END SUBROUTINE read_advec_namelist
 
 
@@ -934,9 +952,11 @@ CONTAINS
       paras_file = my_name % paras_file
     END IF
 
-    WRITE(message,*) "paras_file, L_JERLOV = ", TRIM(paras_file), L_JERLOV
-    CALL mckpp_print(routine, message) 
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "paras_file, L_JERLOV = ", TRIM(paras_file), L_JERLOV
+      CALL mckpp_print(routine, message) 
+    END IF 
+      
   END SUBROUTINE read_paras_namelist
 
 
@@ -1120,47 +1140,49 @@ CONTAINS
       bottomin_file = my_name % bottomin_file    
     END IF
 
-    WRITE(message,*) "L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR = ", & 
-                      L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM = ", & 
-                      L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL = ", & 
-                      L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT = ", & 
-                      L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR = ", & 
-                      L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR = ", & 
-                      L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP = ", & 
-                      L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "L_PERIODIC_BOTTOM_TEMP = ", & 
-                      L_PERIODIC_BOTTOM_TEMP
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ndtupdfcorr, fcorr_period, isotherm_bottom = ", &
-                      ndtupdfcorr, fcorr_period, isotherm_bottom
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt = ", & 
-                      ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ocnt_period, ndt_interp_ocnt, isotherm_threshold = ", &
-                      ocnt_period, ndt_interp_ocnt, isotherm_threshold
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "isotherm_threshold = ", isotherm_threshold
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "fcorrin_file, forcing_file, sal_file = ", &
-        TRIM(fcorrin_file), TRIM(forcing_file), TRIM(sal_file)
-    CALL mckpp_print(routine, message) 
-    WRITE(message,*) "ocnT_file, sfcorrin_file, bottomin_file = ", &
-        TRIM(ocnT_file), TRIM(sfcorrin_file), TRIM(bottomin_file)
-    CALL mckpp_print(routine, message) 
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR = ", & 
+                        L_FCORR_WITHZ, L_FCORR, L_UPD_FCORR
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM = ", & 
+                        L_PERIODIC_FCORR, L_NO_FREEZE, L_NO_ISOTHERM
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL = ", & 
+                        L_FLUXDATA, L_REST, L_UPD_SAL, L_PERIODIC_SAL
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT = ", & 
+                        L_INTERP_SAL, L_UPD_OCNT, L_PERIODIC_OCNT
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR = ", & 
+                        L_INTERP_OCNT, L_SFCORR_WITHZ, L_SFCORR
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR = ", & 
+                        L_UPD_SFCORR, L_PERIODIC_SFCORR, L_DAMP_CURR
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP = ", & 
+                        L_VARY_BOTTOM_TEMP, L_UPD_BOTTOM_TEMP
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "L_PERIODIC_BOTTOM_TEMP = ", & 
+                        L_PERIODIC_BOTTOM_TEMP
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "ndtupdfcorr, fcorr_period, isotherm_bottom = ", &
+                        ndtupdfcorr, fcorr_period, isotherm_bottom
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt = ", &
+                        ndtupdsal, sal_period, ndt_interp_sal, ndtupdocnt
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "ocnt_period, ndt_interp_ocnt, isotherm_threshold = ", &
+                        ocnt_period, ndt_interp_ocnt, isotherm_threshold
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "isotherm_threshold = ", isotherm_threshold
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "fcorrin_file, forcing_file, sal_file = ", &
+                        TRIM(fcorrin_file), TRIM(forcing_file), TRIM(sal_file)
+      CALL mckpp_print(routine, message) 
+      WRITE(message,*) "ocnT_file, sfcorrin_file, bottomin_file = ", &
+                       TRIM(ocnT_file), TRIM(sfcorrin_file), TRIM(bottomin_file)
+      CALL mckpp_print(routine, message)
+    END IF 
 
   END SUBROUTINE read_forcing_namelist
 
@@ -1215,10 +1237,12 @@ CONTAINS
       restart_outfile = my_name % restart_outfile
     END IF
 
-    WRITE(message,*) "L_RESTARTW, restart_outfile, ndt_per_restart = ", &
-        L_RESTARTW, restart_outfile, ndt_per_restart
-    CALL mckpp_print(routine, message) 
-
+    IF (l_debug) THEN 
+      WRITE(message,*) "L_RESTARTW, restart_outfile, ndt_per_restart = ", &
+                        L_RESTARTW, restart_outfile, ndt_per_restart
+      CALL mckpp_print(routine, message) 
+    END IF 
+      
   END SUBROUTINE read_output_namelist
 
 
