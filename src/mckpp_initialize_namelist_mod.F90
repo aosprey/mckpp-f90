@@ -223,7 +223,7 @@ CONTAINS
     TYPE name_type
       SEQUENCE
       REAL(KIND=8) :: grav, vonk, sbc, twopi, onepi, TK0, spd, dpy, epsw, & 
-                      albocn, EL, SL, FL, FLSN
+                      albocn, sice, EL, SL, FL, FLSN
     END TYPE name_type
     TYPE(name_type) my_name
 
@@ -233,7 +233,7 @@ CONTAINS
     ! Define MPI type
     count = 1
     types(1) = MPI_REAL8
-    lens(1) = 14
+    lens(1) = 15
     CALL make_mpi_type(routine, count, types, lens, name_type_mpi)
 
     ! Initialize, read nml and pack into buffer
@@ -267,6 +267,7 @@ CONTAINS
       my_name % dpy = dpy
       my_name % epsw = epsw
       my_name % albocn = albocn
+      my_name % sice = sice
       my_name % EL = EL
       my_name % SL = SL
       my_name % FL = FL
@@ -289,6 +290,7 @@ CONTAINS
       dpy = my_name % dpy
       epsw = my_name % epsw
       albocn = my_name % albocn
+      sice = my_name %sice
       EL = my_name % EL
       SL = my_name % SL
       FL = my_name % FL
@@ -302,11 +304,11 @@ CONTAINS
       WRITE(message, *) "TK0, spd, dpy, epsw, albocn = ", & 
                          TK0, spd, dpy, epsw, albocn
       CALL mckpp_print(routine, message)
-      WRITE(message, *) "EL, SL, FL, FLSN = ", & 
-                         EL, SL, FL, FLSN
+      WRITE(message, *) "sice, EL, SL, FL, FLSN = ", & 
+                         sice, EL, SL, FL, FLSN
       CALL mckpp_print(routine, message)
     END IF 
-      
+
   END SUBROUTINE read_constants_namelist
 
 

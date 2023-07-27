@@ -2,7 +2,8 @@ MODULE mckpp_boundary_interpolate
 
   USE mckpp_data_fields, ONLY: kpp_3d_fields, kpp_const_fields
   USE mckpp_log_messages, ONLY: mckpp_print, max_message_len
-  USE mckpp_parameters, ONLY: npts, nzp1
+  USE mckpp_mpi_control, ONLY: npts_local
+  USE mckpp_parameters, ONLY: nzp1
   USE mckpp_read_temperatures_3d_mod, ONLY: mckpp_read_temperatures_3d
   USE mckpp_read_salinity_mod, ONLY: mckpp_read_salinity_3d
   USE mckpp_time_control, ONLY: time
@@ -19,8 +20,8 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_TEMP()
   CHARACTER(LEN=max_message_len) :: message
 
   REAL, allocatable :: prev_ocnT(:,:),next_ocnT(:,:)  
-  allocate(prev_ocnT(NPTS,NZP1))
-  allocate(next_ocnT(NPTS,NZP1))
+  allocate(prev_ocnT(npts_local, nzp1))
+  allocate(next_ocnT(npts_local, nzp1))
 
   true_time=time
   ndays_upd_ocnT=kpp_const_fields%ndtupdocnT*kpp_const_fields%dto/kpp_const_fields%spd
@@ -74,8 +75,8 @@ SUBROUTINE MCKPP_BOUNDARY_INTERPOLATE_SAL()
   CHARACTER(LEN=max_message_len) :: message
 
   REAL, allocatable :: prev_sal(:,:),next_sal(:,:)
-  allocate(prev_sal(NPTS,NZP1))
-  allocate(next_sal(NPTS,NZP1))
+  allocate(prev_sal(npts_local, nzp1))
+  allocate(next_sal(npts_local, nzp1))
 
   true_time=time
   ndays_upd_sal=kpp_const_fields%ndtupdsal*kpp_const_fields%dto/kpp_const_fields%spd

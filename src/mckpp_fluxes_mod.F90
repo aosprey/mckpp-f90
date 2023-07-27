@@ -37,7 +37,7 @@ CONTAINS
   SUBROUTINE mckpp_fluxes()
 
     TYPE(kpp_1d_type) :: kpp_1d_fields
-    REAL(8), DIMENSION(npts) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
+    REAL(8), DIMENSION(npts_local) :: taux, tauy, swf, lwf, lhf, shf, rain, snow
     INTEGER :: ipt
 
     IF ( .NOT. kpp_const_fields%l_fluxdata ) THEN
