@@ -9,8 +9,8 @@ See the wiki for more information on the project: https://github.com/aosprey/mck
 ## Installation ## 
 
 Pre-requisites: 
-* Fortran 90 compiler (tested gfortran v9.3.0 and Cray fortran v10.0.4) 
-* XIOS parallel I/O library: https://forge.ipsl.jussieu.fr/ioserver (tested r1964)
+* Fortran 90 compiler (tested gfortran v9.3.0 and Cray fortran v15.0.0) 
+* XIOS parallel I/O library: https://forge.ipsl.jussieu.fr/ioserver (tested r2245)
   * This needs netcdf4 and hdf5
 * FCM build system: http://metomi.github.io/fcm/doc/
 
