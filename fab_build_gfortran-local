@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+# Requires FAB: https://metomi.github.io/fab/
+
+export NETCDF_DIR=/home/annette/Software/netcdf
+export XIOS_DIR=/home/annette/Software/xios/xios_trunk_r2505
+
+export FC="mpif90"
+export FFLAGS="-c -fopenmp -g -fcheck=all -cpp -O3 -fdefault-real-8 -J\$output -I$XIOS_DIR/inc -I$NETCDF_DIR/include"
+export LD="mpif90"
+export LDFLAGS="-fopenmp -L$XIOS_DIR/lib -lxios -lstdc++ -L$NETCDF_DIR/lib -lnetcdf -lnetcdff"
+
+./fab_build_steps.py

@@ -1,0 +1,18 @@
+#!/usr/bin/bash 
+
+# Requires FAB: https://metomi.github.io/fab/
+
+#. /work/n02/n02/annette/fab_venv/bin/activate
+
+#module load cray-python
+#module load cray-hdf5-parallel
+#module load cray-netcdf-hdf5parallel
+
+export XIOS_DIR=/work/n02/n02/jwc/XIOS/extract/xios_trunk_r2245
+
+export FC="ftn"
+export FFLAGS="-s real64 -homp -hflex_mp=strict -J\$output -I$XIOS_DIR/inc"
+export LD="ftn"
+export LDFLAGS="-homp -L$XIOS_DIR/lib -lxios -lstdc++"
+
+./fab_build_steps.py
