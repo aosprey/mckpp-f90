@@ -2,28 +2,28 @@
  
 Multi-Column configuration of the K Profile Parameterisation mixed-layer ocean model. 
 
-This is a development version. We are working towards a modern f90 MPI parallel version of the original: http://puma.nerc.ac.uk/trac/KPP_ocean
+This is a development version. We are working towards a modern Fortran, MPI parallel version of the original: https://github.com/NCAS-CMS/KPP_ocean
 
 See the wiki for more information on the project: https://github.com/aosprey/mckpp-f90/wiki
 
 ## Installation ## 
 
 Pre-requisites: 
-* Fortran 90 compiler (tested gfortran v9.3.0 and Cray fortran v15.0.0) 
+* Modern Fortran compiler (tested gfortran v11.4.0 and Cray fortran v15.0.0) 
 * XIOS parallel I/O library: https://forge.ipsl.jussieu.fr/ioserver (tested r2245)
   * This needs netcdf4 and hdf5
 * FCM build system: http://metomi.github.io/fcm/doc/
 
 Compiling: 
 * Create an FCM build config file for your compiler and platform, using one of the existing ones as template. 
-* For archer2 use `fcm-make-crayftn-archer2.cfg`, and load the following modules: 
+* For ARCHER2 use `fcm-make-crayftn-archer2.cfg`, and load the following modules: 
   ```
   module load cray-hdf5-parallel
   module load cray-netcdf-hdf5parallel
   ```
 * Then build with `fcm make -f <config-file>`
   
-Instructions for running a forced test on archer2: 
+Instructions for running a forced test on ARCHER2: 
 * Create a run directory. 
 * Copy the control scripts and the executable into the run directory: 
   ```
@@ -34,7 +34,7 @@ Instructions for running a forced test on archer2:
   ```
   ln -s $UMDIR/kpp/terramaris_forced/*.nc . 
   ```
-* Check the slurm script settings and submit: 
+* Check the Slurm batch settings and submit: 
   ```
   sbatch KPPocean.slurm
   ```
